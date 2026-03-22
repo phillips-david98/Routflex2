@@ -8826,6 +8826,7 @@ const AI_QUICK = [
   { label:'🧭 Sugerir NOVOS', q:'sugerir alocação dos clientes novos' },
 ];
 const aiUI = { open:false, ready:false, busy:false };
+const AI_MAX_CLIENTES_DIA = 20;
 const AI_DAY_ALIASES = {
   SEG: ['seg', 'segunda', 'segunda feira', '2a', '2 feira'],
   TER: ['ter', 'terca', 'terca feira', 'terça', 'terça feira', '3a', '3 feira'],
@@ -9259,17 +9260,68 @@ function _aiCollectNewClientsForSuggestion() {
   });
 }
 
-function _aiFindBestDriverForNewClient(client, dddDrivers, routedClients) {
+function _aiBuildRoutingProfiles(dddDrivers, routedClients) {
+  const driverProfiles = new Map();
+
+  dddDrivers.forEach((driver) => {
+    driverProfiles.set(driver.id, {
+      driver,
+      totalLat: 0,
+      totalLon: 0,
+      totalCount: 0,
+      dayProfiles: new Map(),
+    });
+  });
+
+  routedClients.forEach((entry) => {
+    const profile = driverProfiles.get(entry.driverId);
+    if (!profile) return;
+
+    profile.totalLat += entry.lat;
+    profile.totalLon += entry.lon;
+    profile.totalCount += 1;
+
+    if (!profile.dayProfiles.has(entry.day)) {
+      profile.dayProfiles.set(entry.day, { totalLat: 0, totalLon: 0, count: 0 });
+    }
+    const dayProfile = profile.dayProfiles.get(entry.day);
+    dayProfile.totalLat += entry.lat;
+    dayProfile.totalLon += entry.lon;
+    dayProfile.count += 1;
+  });
+
+  // Finaliza centroides e contador projetado de capacidade por dia.
+  const dayProjectedCount = new Map();
+  driverProfiles.forEach((profile, driverId) => {
+    profile.routeCentroid = profile.totalCount > 0
+      ? { lat: profile.totalLat / profile.totalCount, lon: profile.totalLon / profile.totalCount }
+      : null;
+
+    profile.dayProfiles.forEach((dayProfile, day) => {
+      dayProfile.centroid = {
+        lat: dayProfile.totalLat / dayProfile.count,
+        lon: dayProfile.totalLon / dayProfile.count,
+      };
+      dayProjectedCount.set(`${driverId}|${day}`, dayProfile.count);
+    });
+  });
+
+  return { driverProfiles, dayProjectedCount };
+}
+
+function _aiFindBestDriverForNewClient(client, dddDrivers, driverProfiles) {
   let best = null;
 
   dddDrivers.forEach((driver) => {
+    const profile = driverProfiles.get(driver.id);
     const baseDistance = distanceKm(client.lat, client.lon, driver.lat, driver.lon);
-    const sameDriverClients = routedClients.filter((entry) => entry.driverId === driver.id);
-    const routeDistance = sameDriverClients.length
-      ? Math.min(...sameDriverClients.map((entry) => distanceKm(client.lat, client.lon, entry.lat, entry.lon)))
-      : Infinity;
-    const score = Math.min(baseDistance, routeDistance);
 
+    // Escalável: compara com centroide da rota do motorista (quando existir), sem varrer todos os pontos.
+    const routeDistance = profile && profile.routeCentroid
+      ? distanceKm(client.lat, client.lon, profile.routeCentroid.lat, profile.routeCentroid.lon)
+      : Infinity;
+
+    const score = Math.min(baseDistance, routeDistance);
     if (!best || score < best.score) {
       best = {
         driver,
@@ -9283,30 +9335,20 @@ function _aiFindBestDriverForNewClient(client, dddDrivers, routedClients) {
   return best;
 }
 
-function _aiFindBestDayForNewClient(client, driverId, routedClients) {
-  const sameDriverClients = routedClients.filter((entry) => entry.driverId === driverId);
-  const byDay = new Map();
-
-  sameDriverClients.forEach((entry) => {
-    const day = entry.day;
-    if (!byDay.has(day)) byDay.set(day, []);
-    byDay.get(day).push(entry);
-  });
-
-  // Se o motorista ainda não tem rota, sugere SEG por padrão operacional.
-  if (!byDay.size) {
-    return { day: 'SEG', dayScore: Infinity };
+function _aiFindDayCandidatesByProximity(client, driverId, driverProfiles) {
+  const profile = driverProfiles.get(driverId);
+  if (!profile || !profile.dayProfiles || !profile.dayProfiles.size) {
+    return [];
   }
 
-  let bestDay = null;
-  byDay.forEach((dayClients, day) => {
-    const minDistance = Math.min(...dayClients.map((entry) => distanceKm(client.lat, client.lon, entry.lat, entry.lon)));
-    if (!bestDay || minDistance < bestDay.dayScore) {
-      bestDay = { day, dayScore: minDistance };
-    }
+  const candidates = [];
+  profile.dayProfiles.forEach((dayProfile, day) => {
+    const dayDistance = distanceKm(client.lat, client.lon, dayProfile.centroid.lat, dayProfile.centroid.lon);
+    candidates.push({ day, dayDistance });
   });
 
-  return bestDay || { day: 'SEG', dayScore: Infinity };
+  candidates.sort((a, b) => a.dayDistance - b.dayDistance);
+  return candidates;
 }
 
 function _aiSuggestNewClientsAllocation() {
@@ -9332,33 +9374,67 @@ function _aiSuggestNewClientsAllocation() {
   }
 
   const routedClients = _aiCollectRoutedClientsForSuggestion();
+  const { driverProfiles, dayProjectedCount } = _aiBuildRoutingProfiles(dddDrivers, routedClients);
   const suggestions = newClients.map((client) => {
-    const bestDriver = _aiFindBestDriverForNewClient(client, dddDrivers, routedClients);
-    const bestDay = _aiFindBestDayForNewClient(client, bestDriver.driver.id, routedClients);
+    const bestDriver = _aiFindBestDriverForNewClient(client, dddDrivers, driverProfiles);
+    const dayCandidates = _aiFindDayCandidatesByProximity(client, bestDriver.driver.id, driverProfiles);
+
+    let chosenDay = null;
+    let chosenDayDistance = null;
+    let reason = null;
+
+    // Hard constraint: não ultrapassar AI_MAX_CLIENTES_DIA por dia.
+    for (const candidate of dayCandidates) {
+      const key = `${bestDriver.driver.id}|${candidate.day}`;
+      const currentCount = dayProjectedCount.get(key) || 0;
+      if (currentCount < AI_MAX_CLIENTES_DIA) {
+        chosenDay = candidate.day;
+        chosenDayDistance = candidate.dayDistance;
+        dayProjectedCount.set(key, currentCount + 1);
+        break;
+      }
+    }
+
+    if (!chosenDay && !dayCandidates.length) {
+      reason = 'SEM_ROTA_BASE';
+    } else if (!chosenDay) {
+      reason = 'CAPACIDADE_EXCEDIDA';
+    }
+
     return {
-      clientId: client.id,
-      nome: client.nomeFantasia || client.tradeName || client.name || client.id,
-      suggestedDriverId: bestDriver.driver.id,
-      suggestedDriverName: bestDriver.driver.name,
-      suggestedDay: bestDay.day,
-      driverDistanceKm: Number(bestDriver.score).toFixed(2),
-      dayDistanceKm: Number(bestDay.dayScore).toFixed(2),
+      cliente_id: client.id,
+      motorista_sugerido: getDriverShortCode(bestDriver.driver.id) || bestDriver.driver.name,
+      dia_sugerido: chosenDay,
+      distancia_km: Number(bestDriver.score).toFixed(2),
+      status_sugestao: chosenDay ? 'ALOCADO' : 'SEM_DIA_SUGERIDO',
+      motivo: chosenDay ? null : reason,
+      // Campos auxiliares para leitura no preview
+      _nome: client.nomeFantasia || client.tradeName || client.name || client.id,
+      _driverName: bestDriver.driver.name,
+      _dayDistanceKm: chosenDayDistance == null ? null : Number(chosenDayDistance).toFixed(2)
     };
   });
 
   const previewLines = suggestions.slice(0, 8).map((item) => (
-    `• ${item.nome} (${item.clientId}) → ${item.suggestedDriverName} | ${item.suggestedDay}`
+    item.status_sugestao === 'ALOCADO'
+      ? `• ${item._nome} (${item.cliente_id}) → ${item._driverName} | ${item.dia_sugerido} (${item.distancia_km} km)`
+      : `• ${item._nome} (${item.cliente_id}) → ${item._driverName} | sem dia (${item.motivo})`
   ));
   const hiddenCount = Math.max(0, suggestions.length - previewLines.length);
   const preview = hiddenCount > 0
     ? `${previewLines.join('\n')}\n• ... e mais ${hiddenCount} cliente(s)`
     : previewLines.join('\n');
 
+  const allocatedCount = suggestions.filter((item) => item.status_sugestao === 'ALOCADO').length;
+  const noDayCount = suggestions.length - allocatedCount;
+
   return {
     ok: true,
     processed: suggestions.length,
     suggestions,
-    message: `Sugestão concluída para ${suggestions.length} cliente(s) NOVOS no DDD ${state.selectedDDD}.\n\n${preview}\n\nObservação: nenhuma alteração foi aplicada automaticamente.`
+    message: `Sugestão concluída para ${suggestions.length} cliente(s) NOVOS no DDD ${state.selectedDDD}.\n` +
+      `Alocados: ${allocatedCount} | Sem dia: ${noDayCount} (limite ${AI_MAX_CLIENTES_DIA}/dia).\n\n${preview}\n\n` +
+      'Observação: nenhuma alteração foi aplicada automaticamente e nenhuma rota existente foi modificada.'
   };
 }
 
