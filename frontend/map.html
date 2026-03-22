@@ -4546,6 +4546,77 @@ function distanceKm(lat1, lon1, lat2, lon2) {
   return radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+const MAX_DISTANCIA_VALIDA_KM = 500;
+const MULTIPLICADOR_LIMITE_DISTANCIA = 10;
+
+function computeStraightDistanceForWaypointsKm(waypointsLonLat) {
+  if (!Array.isArray(waypointsLonLat) || waypointsLonLat.length < 2) return 0;
+  let total = 0;
+  for (let index = 1; index < waypointsLonLat.length; index += 1) {
+    const [lonA, latA] = waypointsLonLat[index - 1];
+    const [lonB, latB] = waypointsLonLat[index];
+    total += distanceKm(latA, lonA, latB, lonB);
+  }
+  return total;
+}
+
+function evaluateRouteDistanceSanity(clienteId, distanciaRotaKm, distanciaLinhaRetaKm) {
+  const routeKm = Number(distanciaRotaKm);
+  const straightKm = Number(distanciaLinhaRetaKm);
+  const routeValueValid = Number.isFinite(routeKm);
+  const straightValueValid = Number.isFinite(straightKm) && straightKm >= 0;
+
+  const rotaInvalida = (!routeValueValid)
+    || (!straightValueValid)
+    || routeKm <= 0
+    || routeKm > MAX_DISTANCIA_VALIDA_KM
+    || routeKm > straightKm * MULTIPLICADOR_LIMITE_DISTANCIA;
+
+  const flag = (straightValueValid && routeValueValid && straightKm < 50 && routeKm > 300)
+    ? 'POSSIVEL_BARREIRA_GEOGRAFICA'
+    : null;
+
+  return {
+    cliente_id: clienteId,
+    distancia_rota: routeValueValid ? Number(routeKm.toFixed(2)) : null,
+    distancia_linha_reta: straightValueValid ? Number(straightKm.toFixed(2)) : null,
+    distancia_final: rotaInvalida && straightValueValid
+      ? Number(straightKm.toFixed(2))
+      : (routeValueValid ? Number(routeKm.toFixed(2)) : null),
+    tipo_distancia: rotaInvalida ? 'ESTIMADA' : 'REAL',
+    rota_valida: !rotaInvalida,
+    flag,
+  };
+}
+
+function setRouteClientsAccessStatus(routeClients, routeId, diagnostic) {
+  routeClients.forEach((client) => {
+    const shouldBlock = !diagnostic.rota_valida;
+    client.routeValidation = {
+      source: 'ROAD_SANITY',
+      routeId,
+      rota_valida: diagnostic.rota_valida,
+      flag: diagnostic.flag,
+      tipo_distancia: diagnostic.tipo_distancia,
+      distancia_final: diagnostic.distancia_final,
+      updatedAt: new Date().toISOString()
+    };
+
+    client.autoRoutingBlocked = shouldBlock;
+    if (shouldBlock) {
+      client.accessStatus = 'ACESSO_DIFICIL';
+      client.accessReason = diagnostic.flag || 'SEM_ROTA_VIAVEL';
+    } else if (client.accessStatus === 'ACESSO_DIFICIL') {
+      client.accessStatus = null;
+      client.accessReason = null;
+    }
+  });
+}
+
+function getAutoRoutableClients(scopeClients) {
+  return (scopeClients || []).filter((client) => !client.autoRoutingBlocked);
+}
+
 function colorForVehicle(vehicle) {
   if (vehicle === 'carro') return '#52d0ff';
   if (vehicle === 'moto') return '#ffb347';
@@ -4907,10 +4978,17 @@ async function fetchRoadRoute() {
     const data = await resp.json();
     if (!data.routes || data.routes.length === 0) throw new Error('nenhuma rota retornada');
 
+    const routeDistanceKm = Number(data.routes[0].distance) / 1000;
+    const straightDistanceKm = computeStraightDistanceForWaypointsKm(waypoints);
+    const diagnostic = evaluateRouteDistanceSanity(route.routeId, routeDistanceKm, straightDistanceKm);
+    setRouteClientsAccessStatus(route.clients, route.routeId, diagnostic);
+
     // Remove old road layer if switching to a different route
     clearRoadRoute();
 
-    const coords = data.routes[0].geometry.coordinates.map(([lon, lat]) => [lat, lon]);
+    const coords = diagnostic.rota_valida
+      ? data.routes[0].geometry.coordinates.map(([lon, lat]) => [lat, lon])
+      : waypoints.map(([lon, lat]) => [lat, lon]);
     const lineColor = dayColors[route.day] || '#52d0ff';
 
     roadRouteLayer = L.polyline(coords, {
@@ -4925,11 +5003,20 @@ async function fetchRoadRoute() {
     syncRoadRouteVisibility();
     map.fitBounds(roadRouteLayer.getBounds(), { padding: [50, 50] });
 
-    const distReal = (data.routes[0].distance / 1000).toFixed(1);
+    const distReal = Number(diagnostic.distancia_rota || 0).toFixed(1);
+    const distFinal = Number(diagnostic.distancia_final || 0).toFixed(1);
     const durMin = Math.round(data.routes[0].duration / 60);
-    const msg = `Percurso real ${state.showDriverBase ? 'com base' : 'entre PDVs'}: ${distReal} km | ${durMin} min | ${route.clients.length} paradas — pressione ALT+P para fechar`;
+    const modeLabel = diagnostic.tipo_distancia === 'REAL' ? 'REAL' : 'ESTIMADA';
+    const barrierLabel = diagnostic.flag ? ` | ${diagnostic.flag}` : '';
+    const msg = diagnostic.rota_valida
+      ? `Percurso real ${state.showDriverBase ? 'com base' : 'entre PDVs'}: ${distReal} km | ${durMin} min | ${route.clients.length} paradas — pressione ALT+P para fechar`
+      : `Rota invalida detectada (${modeLabel}). Usando fallback em linha reta: ${distFinal} km.${barrierLabel} Clientes marcados para tratamento manual.`;
     updatePlannerHint(msg);
-    showRoadRouteToast(`${distReal} km reais | ${durMin} min | ${state.showDriverBase ? 'com base' : 'PDV a PDV'}`);
+    showRoadRouteToast(
+      diagnostic.rota_valida
+        ? `${distReal} km reais | ${durMin} min | ${state.showDriverBase ? 'com base' : 'PDV a PDV'}`
+        : `${distFinal} km estimados | rota inválida`
+    );
   } catch (err) {
     clearRoadRoute();
     updatePlannerHint(`Erro ao buscar percurso real: ${err.message}. Verifique sua conexao.`);
@@ -5942,6 +6029,8 @@ function openClientPopup(client, latlng, options = {}) {
     ? `<div class="pdv-status-banner pdv-status-inativo">&#9888; Cliente INATIVO — não entra em roteirização automática. Inclusão manual requer confirmação.</div>`
     : ct === 'sem_coordenada'
     ? `<div class="pdv-status-banner pdv-status-sem-coord">&#9888; Sem coordenada válida — não pode entrar em cálculo de rota. Corrija o endereço no CRM.</div>`
+    : client.autoRoutingBlocked
+    ? `<div class="pdv-status-banner pdv-status-sem-coord">&#9888; Acesso difícil detectado (${client.accessReason || 'SEM_ROTA_VIAVEL'}) — cliente fora da roteirização automática.</div>`
     : ct === 'novo'
     ? `<div class="pdv-status-banner pdv-status-novo">&#9432; Cliente NOVO — disponível para configuração manual de dia de visita.</div>`
     : '';
@@ -8188,14 +8277,15 @@ async function optimizeSelectedRoutes() {
   btn.textContent = 'Calculando…';
 
   const filteredClients = getFilteredClients();
-  if (!filteredClients.length) {
+  const autoRoutableClients = getAutoRoutableClients(filteredClients);
+  if (!autoRoutableClients.length) {
     btn.disabled = false;
     btn.textContent = 'Otimizar sequenciamento';
-    updatePlannerHint('Nenhuma visita no filtro atual para otimizar.');
+    updatePlannerHint('Nenhuma visita elegível para otimização automática no filtro atual.');
     return;
   }
 
-  const payload = buildAdvancedPlanPayload(filteredClients);
+  const payload = buildAdvancedPlanPayload(autoRoutableClients);
 
   try {
     if (!payload) {
@@ -8214,7 +8304,7 @@ async function optimizeSelectedRoutes() {
     }
 
     const result = await response.json();
-    applyAdvancedPlanResult(filteredClients, result);
+    applyAdvancedPlanResult(autoRoutableClients, result);
     state.plannerStatus = 'optimized';
     markPlanAsDirty();
     applyFilters({ skipFitBounds: true });
@@ -8225,7 +8315,7 @@ async function optimizeSelectedRoutes() {
     updatePlannerHint(`Plano profissional aplicado: ${plannedCount} clientes planejados, ${droppedCount} pendentes, ${distance.toFixed(1)} km totais.`);
     loadAdvancedHistory();
   } catch (error) {
-    runLocalFallbackOptimization(filteredClients);
+    runLocalFallbackOptimization(autoRoutableClients);
     state.plannerStatus = 'optimized';
     applyFilters({ skipFitBounds: true });
     updatePlannerHint(`Backend indisponível para otimização avançada (${error.message}). Aplicado fallback local por distância.`);
@@ -9246,6 +9336,7 @@ function _aiCollectRoutedClientsForSuggestion() {
     const ct = String(client.clientType || 'ativo').toLowerCase();
     if (!isActiveEquivalentClientType(ct)) return false;
     if (!client.driverId || !client.day) return false;
+    if (client.autoRoutingBlocked) return false;
     return true;
   });
 }
