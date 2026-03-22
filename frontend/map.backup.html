@@ -1,0 +1,2606 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROUTflex Control Tower</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<style>
+:root {
+  --bg: #07111f;
+  --bg-soft: #0d1d30;
+  --panel: rgba(8, 20, 37, 0.92);
+  --panel-strong: rgba(10, 27, 49, 0.98);
+  --panel-border: rgba(125, 177, 227, 0.16);
+  --text: #edf4ff;
+  --muted: #8fa7c4;
+  --primary: #52d0ff;
+  --primary-strong: #1ea8db;
+  --success: #28c58b;
+  --warning: #ffb347;
+  --danger: #ff6f61;
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  --radius: 22px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(82, 208, 255, 0.14), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(255, 179, 71, 0.12), transparent 24%),
+    linear-gradient(180deg, #06111d 0%, #081726 40%, #06111d 100%);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 36px 36px;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+button, select {
+  font: inherit;
+}
+
+.app-shell {
+  height: 100vh;
+  padding: 14px;
+  overflow: hidden;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 12px 18px;
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(9, 28, 49, 0.92), rgba(6, 17, 31, 0.94));
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.brand-tag {
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(82, 208, 255, 0.14);
+  color: var(--primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.brand h1 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.55rem, 2.5vw, 2.15rem);
+  line-height: 1;
+}
+
+.brand p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.header-status {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(90px, 1fr));
+  gap: 8px;
+  min-width: min(100%, 420px);
+}
+
+.status-tile {
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.status-tile span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.status-tile strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1rem;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr) 320px;
+  gap: 18px;
+  height: calc(100vh - 112px);
+  min-height: 0;
+}
+
+.panel {
+  position: relative;
+  min-height: 0;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.panel-scroll {
+  height: 100%;
+  min-height: 0;
+  padding: 18px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.panel-scroll::-webkit-scrollbar {
+  width: 9px;
+}
+
+.panel-scroll::-webkit-scrollbar-thumb {
+  background: rgba(82, 208, 255, 0.45);
+  border-radius: 999px;
+}
+
+.section {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid rgba(130, 172, 216, 0.12);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.section-header h2,
+.section-header h3 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+}
+
+.section-header span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.field select,
+.pill-input {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(138, 186, 235, 0.18);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+}
+
+.field select:focus,
+.pill-input:focus {
+  outline: none;
+  border-color: rgba(82, 208, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(82, 208, 255, 0.14);
+}
+
+.field option {
+  color: #0a1727;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.kpi-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(148, 194, 238, 0.12);
+}
+
+.kpi-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kpi-card strong {
+  display: block;
+  margin-top: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+}
+
+.kpi-card small {
+  color: #b5c8de;
+}
+
+.control-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip-button,
+.action-button,
+.route-action {
+  border: 1px solid rgba(138, 186, 235, 0.16);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.chip-button {
+  min-width: 48px;
+  padding: 10px 12px;
+  font-weight: 700;
+}
+
+.chip-button:hover,
+.action-button:hover,
+.route-action:hover,
+.route-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(82, 208, 255, 0.5);
+}
+
+.chip-button.is-active {
+  background: rgba(82, 208, 255, 0.16);
+  color: #d9f7ff;
+  border-color: rgba(82, 208, 255, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(82, 208, 255, 0.25);
+}
+
+.chip-button.is-muted {
+  opacity: 0.35;
+}
+
+.chip-button.day-seg.is-active { background: rgba(231, 76, 60, 0.18); border-color: rgba(231, 76, 60, 0.42); }
+.chip-button.day-ter.is-active { background: rgba(255, 102, 178, 0.18); border-color: rgba(255, 102, 178, 0.42); }
+.chip-button.day-qua.is-active { background: rgba(52, 152, 219, 0.18); border-color: rgba(52, 152, 219, 0.42); }
+.chip-button.day-qui.is-active { background: rgba(46, 204, 113, 0.18); border-color: rgba(46, 204, 113, 0.42); }
+.chip-button.day-sex.is-active { background: rgba(230, 126, 34, 0.18); border-color: rgba(230, 126, 34, 0.42); }
+.chip-button.day-sab.is-active { background: rgba(241, 196, 15, 0.18); border-color: rgba(241, 196, 15, 0.42); }
+.chip-button.day-dom.is-active { background: rgba(149, 165, 166, 0.18); border-color: rgba(149, 165, 166, 0.42); }
+
+.action-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.action-button,
+.route-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 14px;
+  font-weight: 600;
+}
+
+.action-button.primary,
+.route-action.primary {
+  background: linear-gradient(135deg, rgba(82, 208, 255, 0.9), rgba(30, 168, 219, 0.88));
+  color: #062033;
+  border-color: transparent;
+}
+
+.action-button.secondary {
+  background: rgba(255, 179, 71, 0.14);
+  border-color: rgba(255, 179, 71, 0.28);
+}
+
+.alert-list,
+.route-list,
+.timeline-list {
+  display: grid;
+  gap: 10px;
+}
+
+.alert-item,
+.route-item,
+.timeline-item {
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(144, 188, 231, 0.12);
+  background: rgba(255,255,255,0.04);
+}
+
+.alert-item strong,
+.route-item strong,
+.timeline-item strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.route-item {
+  cursor: pointer;
+}
+
+.route-item.is-selected,
+.timeline-item.is-selected {
+  border-color: rgba(82, 208, 255, 0.55);
+  background: rgba(82, 208, 255, 0.12);
+}
+
+.route-meta,
+.inline-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.83rem;
+}
+
+.inline-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: #d9f3ff;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(141, 190, 232, 0.14);
+}
+
+.inline-pill.status-draft { background: rgba(255, 179, 71, 0.14); color: #ffd8a0; }
+.inline-pill.status-optimized { background: rgba(40, 197, 139, 0.16); color: #bbffe4; }
+.inline-pill.status-published { background: rgba(82, 208, 255, 0.18); color: #d5f6ff; }
+
+.map-stage {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
+}
+
+.map-overlay {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  pointer-events: none;
+  z-index: 500;
+}
+
+.toolbar,
+.focus-strip {
+  pointer-events: auto;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(7, 19, 35, 0.78);
+  border: 1px solid rgba(129, 183, 231, 0.12);
+  backdrop-filter: blur(16px);
+}
+
+.toolbar-title h2 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.2rem;
+}
+
+.toolbar-title p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.manual-mode-toggle.is-active {
+  background: linear-gradient(135deg, rgba(82, 208, 255, 0.9), rgba(30, 168, 219, 0.88));
+  color: #062033;
+  border-color: transparent;
+}
+
+.focus-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.focus-card {
+  min-width: 170px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(6, 18, 32, 0.8);
+  border: 1px solid rgba(129, 183, 231, 0.12);
+}
+
+.focus-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.focus-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.1rem;
+}
+
+.planner-dock {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  z-index: 520;
+  display: grid;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  border-radius: 20px;
+  background: rgba(4, 11, 21, 0.88);
+  border: 1px solid rgba(129, 183, 231, 0.14);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.32);
+}
+
+.planner-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.planner-label {
+  display: flex;
+  flex-direction: column;
+  min-width: 72px;
+  color: #eef6ff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.planner-row .control-group {
+  gap: 7px;
+}
+
+.planner-dock .chip-button {
+  min-width: 42px;
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(27, 48, 76, 0.82);
+  border: 1px solid rgba(86, 146, 198, 0.34);
+  color: #d9ebff;
+  box-shadow: inset 0 0 0 1px rgba(103, 170, 226, 0.08);
+}
+
+.planner-dock .chip-button.is-active {
+  background: rgba(34, 88, 132, 0.92);
+  border-color: rgba(94, 191, 255, 0.48);
+  box-shadow: inset 0 0 0 1px rgba(126, 211, 255, 0.24);
+}
+
+.planner-dock .chip-button.is-muted {
+  opacity: 0.42;
+}
+
+.planner-dock .chip-button.day-seg.is-active { background: rgba(146, 53, 55, 0.9); border-color: rgba(231, 76, 60, 0.55); }
+.planner-dock .chip-button.day-ter.is-active { background: rgba(105, 55, 108, 0.9); border-color: rgba(255, 102, 178, 0.5); }
+.planner-dock .chip-button.day-qua.is-active { background: rgba(41, 83, 145, 0.92); border-color: rgba(52, 152, 219, 0.56); }
+.planner-dock .chip-button.day-qui.is-active { background: rgba(29, 101, 89, 0.92); border-color: rgba(46, 204, 113, 0.54); }
+.planner-dock .chip-button.day-sex.is-active { background: rgba(110, 84, 41, 0.92); border-color: rgba(230, 126, 34, 0.54); }
+.planner-dock .chip-button.day-sab.is-active { background: rgba(116, 110, 39, 0.92); border-color: rgba(241, 196, 15, 0.58); }
+.planner-dock .chip-button.day-dom.is-active { background: rgba(66, 87, 107, 0.92); border-color: rgba(149, 165, 166, 0.58); }
+
+.planner-dock .chip-button.is-drop-hover {
+  transform: translateY(-1px) scale(1.04);
+  border-color: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+}
+
+.planner-dock .chip-button.is-drop-target {
+  box-shadow: 0 0 0 2px rgba(82, 208, 255, 0.18), inset 0 0 0 1px rgba(126, 211, 255, 0.22);
+}
+
+.planner-hint {
+  padding-top: 2px;
+  color: #a9bfd8;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+/* ── PDV detail popup ─────────────────────────────── */
+.pdv-popup {
+  position: absolute;
+  z-index: 545;
+  width: 268px;
+  border-radius: 12px;
+  background: rgba(6, 16, 28, 0.97);
+  border: 1px solid rgba(129, 183, 231, 0.18);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  animation: pdvPopupIn 0.15s ease;
+  font-size: 0.79rem;
+}
+@keyframes pdvPopupIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.pdv-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 9px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(129, 183, 231, 0.1);
+  cursor: move;
+  user-select: none;
+}
+.pdv-popup-header-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.pdv-popup-header-title strong {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #eef6ff;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pdv-popup-header-title span {
+  font-size: 0.67rem;
+  color: #3d6a8c;
+}
+.pdv-popup-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.pdv-popup-badge {
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.67rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.pdv-popup-badge.curva-a { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+.pdv-popup-badge.curva-b { background: rgba(52,152,219,0.15); color: #52aef5; border: 1px solid rgba(52,152,219,0.3); }
+.pdv-popup-badge.curva-c { background: rgba(230,126,34,0.15); color: #e6922a; border: 1px solid rgba(230,126,34,0.3); }
+.pdv-popup-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #4e7a9a;
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.12s, color 0.12s;
+}
+.pdv-popup-close:hover { background: rgba(255,255,255,0.13); color: #fff; }
+/* rows: label left + bold value right, matching screenshot style */
+.pdv-popup-rows {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+}
+.pdv-popup-row {
+  display: table-row;
+}
+.pdv-popup-row:not(:last-child) .pdr-label,
+.pdv-popup-row:not(:last-child) .pdr-value {
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.pdr-label, .pdr-value {
+  display: table-cell;
+  padding: 6px 12px;
+  vertical-align: middle;
+  line-height: 1.3;
+}
+.pdr-label {
+  font-size: 0.72rem;
+  color: #5e87ae;
+  white-space: nowrap;
+  width: 46%;
+}
+.pdr-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #d8ecff;
+  text-align: right;
+  word-break: break-word;
+}
+/* day-change section */
+.pdv-popup-day-section {
+  padding: 9px 12px 11px;
+  border-top: 1px solid rgba(129, 183, 231, 0.1);
+  background: rgba(255,255,255,0.02);
+}
+.pdv-popup-day-section p {
+  margin: 0 0 7px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #365a76;
+}
+.pdv-popup-days {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.pdv-day-btn {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.67rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(86,146,198,0.28);
+  background: rgba(20,42,68,0.8);
+  color: #7aaad0;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.pdv-day-btn:hover { background: rgba(40,90,148,0.6); color: #fff; border-color: rgba(94,191,255,0.5); }
+.pdv-day-btn.is-current { background: rgba(34,88,132,0.92); border-color: rgba(94,191,255,0.52); color: #7fd8ff; }
+.pdv-popup-crm-note {
+  padding: 5px 12px 7px;
+  border-top: 1px solid rgba(129,183,231,0.07);
+  font-size: 0.64rem;
+  color: #2f4f66;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pdv-popup-crm-tag {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(52,120,180,0.12);
+  border: 1px solid rgba(52,120,180,0.22);
+  color: #3d7fb0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.manual-planning-panel {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 525;
+  display: none;
+  width: min(360px, calc(100% - 36px));
+  height: calc(100% - 160px);
+  min-height: 260px;
+  border-radius: 22px;
+  border: 1px solid rgba(129, 183, 231, 0.16);
+  background: rgba(4, 13, 24, 0.92);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+  overflow: hidden;
+}
+
+.manual-planning-panel .panel-scroll {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.manual-planning-panel .panel-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.manual-planning-panel .panel-scroll::-webkit-scrollbar-thumb {
+  background: rgba(82, 208, 255, 0.5);
+  border-radius: 999px;
+}
+
+.manual-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.manual-kpi-card {
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 194, 238, 0.12);
+  background: rgba(255,255,255,0.04);
+}
+
+.manual-kpi-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.manual-kpi-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.15rem;
+}
+
+.manual-kpi-card small {
+  color: #bdd1e6;
+  font-size: 0.78rem;
+}
+
+body.manual-planning-mode .app-shell {
+  padding: 10px;
+}
+
+body.manual-planning-mode .app-header,
+body.manual-planning-mode .left-panel,
+body.manual-planning-mode .right-panel,
+body.manual-planning-mode .map-toggle {
+  display: none !important;
+}
+
+body.manual-planning-mode .workspace {
+  grid-template-columns: minmax(0, 1fr);
+  height: calc(100vh - 20px);
+}
+
+body.manual-planning-mode .map-panel {
+  width: 100%;
+}
+
+body.manual-planning-mode .map-overlay {
+  right: 390px;
+}
+
+body.manual-planning-mode .manual-planning-panel {
+  display: block;
+}
+
+.map-panel.map-menu-collapsed .toolbar,
+.map-panel.map-menu-collapsed .focus-strip {
+  display: none;
+}
+
+.menu-reveal-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 530;
+  display: none;
+}
+
+.map-panel.map-menu-collapsed .menu-reveal-btn {
+  display: inline-flex;
+}
+
+.chart-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.bar-chart {
+  display: grid;
+  gap: 8px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 74px 1fr 56px;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.83rem;
+}
+
+.bar-track {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.25s ease;
+}
+
+.progress-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  border: 1px solid rgba(141, 190, 232, 0.12);
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(82, 208, 255, 0.95), rgba(40, 197, 139, 0.9));
+}
+
+.detail-card {
+  display: grid;
+  gap: 10px;
+}
+
+.detail-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.detail-line strong {
+  color: var(--text);
+}
+
+.empty-state {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px dashed rgba(144, 188, 231, 0.22);
+  color: var(--muted);
+}
+
+.map-toggle {
+  position: absolute;
+  top: 18px;
+  z-index: 700;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(129, 183, 231, 0.24);
+  background: rgba(7, 19, 35, 0.88);
+  color: var(--text);
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+}
+
+#toggle-left { left: 18px; }
+#toggle-right { right: 18px; }
+
+.panel.is-collapsed {
+  display: none;
+}
+
+.route-marker-icon { background: transparent; border: none; }
+
+.route-marker-circle {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.9);
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.32);
+}
+
+.driver-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #061726;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #0c1f35;
+  color: var(--text);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section,
+.toolbar,
+.focus-card,
+.route-item,
+.timeline-item,
+.alert-item,
+.status-tile {
+  animation: slideInUp 0.35s ease;
+}
+
+@media (max-width: 1280px) {
+  .workspace {
+    grid-template-columns: 290px minmax(0, 1fr);
+  }
+
+  .right-panel {
+    position: absolute;
+    right: 18px;
+    top: 150px;
+    bottom: 18px;
+    width: min(320px, calc(100vw - 36px));
+    z-index: 900;
+  }
+}
+
+@media (max-width: 960px) {
+  html, body {
+    overflow: auto;
+  }
+
+  .app-shell {
+    height: auto;
+    padding: 12px;
+    overflow: visible;
+  }
+
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-status {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .panel {
+    min-height: auto;
+  }
+
+  .left-panel,
+  .right-panel {
+    position: absolute;
+    top: 122px;
+    bottom: 12px;
+    width: min(86vw, 320px);
+    z-index: 900;
+  }
+
+  .left-panel {
+    left: 12px;
+  }
+
+  .right-panel {
+    right: 12px;
+  }
+
+  .map-stage {
+    min-height: calc(100vh - 220px);
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .manual-planning-panel {
+    width: min(340px, calc(100% - 24px));
+    height: 46%;
+    min-height: 240px;
+  }
+
+  .planner-dock {
+    left: 12px;
+    bottom: 12px;
+    right: 12px;
+  }
+
+  body.manual-planning-mode .map-overlay {
+    right: 12px;
+  }
+
+  body.manual-planning-mode .manual-planning-panel {
+    top: auto;
+    right: 12px;
+    bottom: 132px;
+  }
+}
+
+@media (max-width: 680px) {
+  .header-status,
+  .grid-2,
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .map-overlay {
+    left: 12px;
+    right: 12px;
+    top: 62px;
+  }
+
+  .focus-card {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .planner-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .planner-label {
+    min-width: 0;
+  }
+
+  .manual-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.manual-planning-mode .manual-planning-panel {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    height: 42%;
+    min-height: 220px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-tag">Routing Control Tower</span>
+      <h1>ROUTflex</h1>
+      <p>Estrutura visual do cockpit de roteirizacao com filtros, cenarios, rotas e painel operacional.</p>
+    </div>
+    <div class="header-status">
+      <div class="status-tile">
+        <span>Status do plano</span>
+        <strong id="header-plan-status">Rascunho</strong>
+      </div>
+      <div class="status-tile">
+        <span>Rotas ativas</span>
+        <strong id="header-route-count">0</strong>
+      </div>
+      <div class="status-tile">
+        <span>Stops filtrados</span>
+        <strong id="header-stop-count">0</strong>
+      </div>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="panel left-panel" id="left-panel">
+      <div class="panel-scroll">
+        <section class="section">
+          <div class="section-header">
+            <h2>Janela de planejamento</h2>
+            <span id="planning-range-label">Ciclo comercial em andamento</span>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="session-select">Sessao / DDD</label>
+              <select id="session-select">
+                <option value="all" selected>Todos os DDDs</option>
+                <option value="61">61 - Brasilia</option>
+                <option value="62">62 - Anapolis</option>
+                <option value="64">64 - Rio Verde</option>
+                <option value="65">65 - Cuiaba</option>
+                <option value="66">66 - Tangara da Serra</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="territory-filter">Territorio</label>
+              <select id="territory-filter">
+                <option value="all" selected>Todos</option>
+                <option value="urbano">Urbano</option>
+                <option value="interior">Interior</option>
+                <option value="rodovia">Rodovia</option>
+                <option value="fronteira">Fronteira</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="vehicle-filter">Tipo de veiculo</label>
+              <select id="vehicle-filter">
+                <option value="all" selected>Todos</option>
+                <option value="carro">Carro</option>
+                <option value="moto">Moto</option>
+                <option value="pickup">Pickup</option>
+                <option value="pesado">Pesado</option>
+                <option value="eletrico">Eletrico</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="density-select">Perfil do plano</label>
+              <select id="density-select">
+                <option value="balanced" selected>Balanceado</option>
+                <option value="aggressive">Agressivo</option>
+                <option value="economic">Economico</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <h3>Resumo do cenario</h3>
+            <span id="filter-summary-label">Todos os filtros ativos</span>
+          </div>
+          <div class="kpi-grid" id="kpi-grid"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <h3>Distribuicao</h3>
+            <span>Volume e quilometragem</span>
+          </div>
+          <div class="chart-stack">
+            <div>
+              <div class="inline-meta"><span>Km por veiculo</span></div>
+              <div class="bar-chart" id="km-chart"></div>
+            </div>
+            <div>
+              <div class="inline-meta"><span>Visitas por dia</span></div>
+              <div class="bar-chart" id="day-chart"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <h3>Acoes do plano</h3>
+            <span>Fluxo basico do cockpit</span>
+          </div>
+          <div class="action-stack">
+            <button class="action-button primary" id="optimize-plan-btn">Otimizar sequenciamento</button>
+            <button class="action-button secondary" id="regenerate-data-btn">Gerar novo cenario</button>
+            <button class="action-button" id="publish-plan-btn">Publicar plano</button>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <h3>Riscos operacionais</h3>
+            <span>Leitura rapida do filtro atual</span>
+          </div>
+          <div class="alert-list" id="alert-list"></div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="panel map-panel">
+      <button class="map-toggle" id="toggle-left" type="button">&lt;</button>
+      <button class="map-toggle" id="toggle-right" type="button">&gt;</button>
+
+      <div class="map-stage">
+        <div id="map"></div>
+        <div class="map-overlay">
+          <div class="toolbar">
+            <div class="toolbar-title">
+              <h2 id="toolbar-title">Mapa de execucao</h2>
+              <p id="toolbar-subtitle">Visualize cobertura, densidade e sequencia das visitas por rota.</p>
+            </div>
+            <div class="toolbar-actions">
+              <button class="route-action manual-mode-toggle" id="toggle-manual-mode-btn">Expandir planejamento</button>
+              <button class="route-action" id="toggle-map-menu-btn">Ocultar menu</button>
+              <button class="route-action primary" id="center-route-btn">Centralizar rota</button>
+              <button class="route-action" id="clear-selection-btn">Limpar foco</button>
+            </div>
+          </div>
+
+          <div class="focus-strip">
+            <div class="focus-card">
+              <span>Rota em foco</span>
+              <strong id="focus-route-title">Nenhuma rota selecionada</strong>
+            </div>
+            <div class="focus-card">
+              <span>Distancia prevista</span>
+              <strong id="focus-route-distance">0 km</strong>
+            </div>
+            <div class="focus-card">
+              <span>Tempo estimado</span>
+              <strong id="focus-route-time">0 min</strong>
+            </div>
+            <div class="focus-card">
+              <span>Parada em foco</span>
+              <strong id="focus-stop-title">Nenhuma parada selecionada</strong>
+            </div>
+          </div>
+        </div>
+
+        <button class="route-action menu-reveal-btn" id="show-map-menu-btn">Mostrar menu</button>
+
+        <aside class="manual-planning-panel" id="manual-planning-panel" aria-hidden="true">
+          <div class="panel-scroll">
+            <section class="section">
+              <div class="section-header">
+                <h3>Planejamento manual</h3>
+                <span id="manual-mode-status">Mapa expandido</span>
+              </div>
+              <div class="manual-kpi-grid" id="manual-summary-grid"></div>
+            </section>
+
+            <section class="section">
+              <div class="section-header">
+                <h3>Distancias por veiculo</h3>
+                <span>Distribuicao ativa</span>
+              </div>
+              <div class="bar-chart" id="manual-km-chart"></div>
+            </section>
+
+            <section class="section">
+              <div class="section-header">
+                <h3>Visitas por dia</h3>
+                <span>Balanceamento semanal</span>
+              </div>
+              <div class="bar-chart" id="manual-day-chart"></div>
+            </section>
+
+            <section class="section">
+              <div class="section-header">
+                <h3>Rota em ajuste</h3>
+                <span>Planejamento da visita</span>
+              </div>
+              <div id="manual-route-info" class="detail-card"></div>
+            </section>
+          </div>
+        </aside>
+
+        <div class="planner-dock">
+          <div class="planner-row">
+            <div class="planner-label">
+              <span>Semanas do</span>
+              <span>ciclo</span>
+            </div>
+            <div class="control-group" id="week-buttons"></div>
+          </div>
+          <div class="planner-row">
+            <div class="planner-label">
+              <span>Dias</span>
+              <span>operacionais</span>
+            </div>
+            <div class="control-group" id="day-buttons"></div>
+          </div>
+          <div class="planner-hint" id="planner-hint">Arraste um PDV para semana e dia. A localizacao do cliente permanece fixa.</div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel right-panel" id="right-panel">
+      <div class="panel-scroll">
+        <section class="section">
+          <div class="section-header">
+            <h2>Comando operacional</h2>
+            <span id="planner-status-pill" class="inline-pill status-draft">Rascunho</span>
+          </div>
+          <div class="progress-card">
+            <div class="progress-header">
+              <strong id="readiness-label">Pronto para otimizar</strong>
+              <span id="coverage-label">0%</span>
+            </div>
+            <div class="progress-bar">
+              <span id="coverage-bar" style="width: 0%;"></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <h3>Carteira de rotas</h3>
+            <span id="route-list-count">0 rotas</span>
+          </div>
+          <div class="route-list" id="route-list"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <h3>Detalhe da rota</h3>
+            <span>Condutor, carga e sequencia</span>
+          </div>
+          <div id="route-detail" class="detail-card"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <h3>Timeline de visitas</h3>
+            <span id="timeline-label">Selecione uma rota</span>
+          </div>
+          <div class="timeline-list" id="timeline-list"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <h3>Parada selecionada</h3>
+            <span>Janela e criticidade</span>
+          </div>
+          <div id="stop-detail" class="detail-card"></div>
+        </section>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+const days = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
+const dayColors = {
+  SEG: '#e74c3c',
+  TER: '#ff66b2',
+  QUA: '#3498db',
+  QUI: '#2ecc71',
+  SEX: '#e67e22',
+  SAB: '#f1c40f',
+  DOM: '#95a5a6'
+};
+const dddRegions = {
+  61: 'Brasilia',
+  62: 'Anapolis',
+  64: 'Rio Verde',
+  65: 'Cuiaba',
+  66: 'Tangara da Serra'
+};
+const drivers = {
+  61: { name: 'Base Brasilia', lat: -15.7801, lon: -47.9292, vehicle: 'carro' },
+  62: { name: 'Base Anapolis', lat: -16.3265, lon: -48.9522, vehicle: 'pickup' },
+  64: { name: 'Base Rio Verde', lat: -17.7927, lon: -50.9192, vehicle: 'pesado' },
+  65: { name: 'Base Cuiaba', lat: -15.6014, lon: -56.0979, vehicle: 'moto' },
+  66: { name: 'Base Tangara', lat: -14.6229, lon: -57.4932, vehicle: 'carro' }
+};
+const territories = ['urbano', 'interior', 'rodovia', 'fronteira'];
+const priorities = ['Alta', 'Media', 'Baixa'];
+const windows = ['08:00-10:00', '10:00-12:00', '13:00-15:00', '15:00-18:00'];
+
+const state = {
+  activeWeeks: new Set([1, 2, 3, 4]),
+  activeDays: new Set(days),
+  vehicleFilter: 'all',
+  territoryFilter: 'all',
+  densityProfile: 'balanced',
+  selectedDDD: 'all',
+  selectedRouteId: null,
+  selectedStopId: null,
+  plannerStatus: 'draft',
+  panelLeftOpen: true,
+  panelRightOpen: true,
+  manualPlanningMode: false,
+  mapMenuCollapsed: false,
+  dragClientId: null,
+  dragTargetWeek: null,
+  dragTargetDay: null,
+  dragHoverWeek: null,
+  dragHoverDay: null,
+  dragRouteTarget: null
+};
+
+let clients = [];
+let markers = [];
+let routeLines = [];
+let driverMarkers = [];
+
+const map = L.map('map', { center: [-15.9, -54.8], zoom: 6, minZoom: 4, zoomControl: false });
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap'
+}).addTo(map);
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getVehicleOptions(baseVehicle) {
+  const catalog = ['carro', 'moto', 'pickup', 'pesado', 'eletrico'];
+  return [baseVehicle, ...catalog.filter((item) => item !== baseVehicle)];
+}
+
+function generateClients() {
+  const distribution = { 61: 34, 62: 26, 64: 28, 65: 42, 66: 30 };
+  const nextClients = [];
+
+  Object.entries(distribution).forEach(([dddValue, count]) => {
+    const ddd = Number(dddValue);
+    const driver = drivers[ddd];
+    const vehicleOptions = getVehicleOptions(driver.vehicle);
+
+    for (let index = 0; index < count; index += 1) {
+      const week = randomInt(1, 4);
+      const day = days[randomInt(0, days.length - 1)];
+      const vehicle = vehicleOptions[index % vehicleOptions.length];
+      const territory = territories[(index + ddd) % territories.length];
+      const priority = priorities[randomInt(0, priorities.length - 1)];
+      const serviceTime = randomInt(15, 55);
+      const distance = Number((Math.random() * 34 + 3).toFixed(1));
+      const latOffset = (Math.random() * 0.9) - 0.45;
+      const lonOffset = (Math.random() * 0.9) - 0.45;
+      const lat = Number((driver.lat + latOffset).toFixed(5));
+      const lon = Number((driver.lon + lonOffset).toFixed(5));
+
+      nextClients.push({
+        id: `${ddd}-${index + 1}`,
+        name: `Cliente ${index + 1}`,
+        ddd,
+        region: dddRegions[ddd],
+        territory,
+        week,
+        day,
+        vehicle,
+        priority,
+        curva: ['A', 'B', 'C'][randomInt(0, 2)],
+        serviceTime,
+        distance,
+        lat,
+        lon,
+        fixedLat: lat,
+        fixedLon: lon,
+        window: windows[randomInt(0, windows.length - 1)],
+        address: `Corredor ${territory} ${index + 1}`,
+        status: randomInt(0, 10) > 7 ? 'atencao' : 'ok',
+        driverName: driver.name,
+        sequence: index + 1
+      });
+    }
+  });
+
+  clients = nextClients;
+}
+
+function distanceKm(lat1, lon1, lat2, lon2) {
+  const toRad = (value) => value * Math.PI / 180;
+  const radius = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function colorForVehicle(vehicle) {
+  if (vehicle === 'carro') return '#52d0ff';
+  if (vehicle === 'moto') return '#ffb347';
+  if (vehicle === 'pickup') return '#28c58b';
+  if (vehicle === 'pesado') return '#ff6f61';
+  if (vehicle === 'eletrico') return '#9de88b';
+  return '#8fa7c4';
+}
+
+function getFilteredClients() {
+  return clients.filter((client) => {
+    const dddMatches = state.selectedDDD === 'all' || client.ddd === Number(state.selectedDDD);
+    const vehicleMatches = state.vehicleFilter === 'all' || client.vehicle === state.vehicleFilter;
+    const territoryMatches = state.territoryFilter === 'all' || client.territory === state.territoryFilter;
+    return dddMatches && vehicleMatches && territoryMatches && state.activeWeeks.has(client.week) && state.activeDays.has(client.day);
+  });
+}
+
+function createRouteId(ddd, week, day) {
+  return `${ddd}-${week}-${day}`;
+}
+
+function buildRouteGroups(filteredClients) {
+  const groups = new Map();
+
+  filteredClients.forEach((client) => {
+    const routeId = createRouteId(client.ddd, client.week, client.day);
+    if (!groups.has(routeId)) {
+      groups.set(routeId, {
+        routeId,
+        ddd: client.ddd,
+        week: client.week,
+        day: client.day,
+        region: client.region,
+        driver: drivers[client.ddd],
+        clients: [],
+        totalDistance: 0,
+        totalTime: 0,
+        totalServiceTime: 0,
+        riskCount: 0,
+        uniqueVehicles: new Set(),
+        territories: new Set()
+      });
+    }
+
+    const route = groups.get(routeId);
+    route.clients.push(client);
+    route.totalServiceTime += client.serviceTime;
+    route.uniqueVehicles.add(client.vehicle);
+    route.territories.add(client.territory);
+    if (client.status === 'atencao' || client.priority === 'Alta') {
+      route.riskCount += 1;
+    }
+  });
+
+  return Array.from(groups.values()).map((route) => {
+    const orderedClients = [...route.clients].sort((first, second) => first.sequence - second.sequence || first.id.localeCompare(second.id));
+    let totalDistance = 0;
+    let lastLat = route.driver.lat;
+    let lastLon = route.driver.lon;
+
+    orderedClients.forEach((client) => {
+      totalDistance += distanceKm(lastLat, lastLon, client.lat, client.lon);
+      lastLat = client.lat;
+      lastLon = client.lon;
+    });
+
+    totalDistance += distanceKm(lastLat, lastLon, route.driver.lat, route.driver.lon);
+    const roadTime = totalDistance / 42 * 60;
+
+    return {
+      ...route,
+      clients: orderedClients,
+      totalDistance,
+      totalTime: Math.round(roadTime + route.totalServiceTime),
+      uniqueVehicles: Array.from(route.uniqueVehicles),
+      territories: Array.from(route.territories),
+      routeLoad: orderedClients.length
+    };
+  }).sort((first, second) => first.week - second.week || second.routeLoad - first.routeLoad || first.ddd - second.ddd || first.day.localeCompare(second.day));
+}
+
+function ensureSelections(routeGroups) {
+  const selectedRouteExists = routeGroups.some((route) => route.routeId === state.selectedRouteId);
+  if (!selectedRouteExists) {
+    state.selectedRouteId = routeGroups[0] ? routeGroups[0].routeId : null;
+  }
+
+  const activeRoute = routeGroups.find((route) => route.routeId === state.selectedRouteId);
+  const stopExists = activeRoute && activeRoute.clients.some((client) => client.id === state.selectedStopId);
+  if (!stopExists) {
+    state.selectedStopId = activeRoute && activeRoute.clients[0] ? activeRoute.clients[0].id : null;
+  }
+}
+
+function renderWeekButtons() {
+  const container = document.getElementById('week-buttons');
+  container.innerHTML = '';
+  for (let week = 1; week <= 4; week += 1) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `chip-button ${state.activeWeeks.has(week) ? 'is-active' : 'is-muted'}`;
+    button.textContent = `S${week}`;
+    button.dataset.week = String(week);
+    button.title = `Semana ${week}`;
+    button.onclick = () => {
+      if (state.activeWeeks.has(week)) {
+        state.activeWeeks.delete(week);
+      } else {
+        state.activeWeeks.add(week);
+      }
+      applyFilters();
+    };
+    container.appendChild(button);
+  }
+}
+
+function renderDayButtons() {
+  const classMap = {
+    SEG: 'day-seg',
+    TER: 'day-ter',
+    QUA: 'day-qua',
+    QUI: 'day-qui',
+    SEX: 'day-sex',
+    SAB: 'day-sab',
+    DOM: 'day-dom'
+  };
+  const container = document.getElementById('day-buttons');
+  container.innerHTML = '';
+  days.forEach((day) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `chip-button ${classMap[day]} ${state.activeDays.has(day) ? 'is-active' : 'is-muted'}`;
+    button.textContent = day;
+    button.dataset.day = day;
+    button.title = `Dia ${day}`;
+    button.onclick = () => {
+      if (state.activeDays.has(day)) {
+        state.activeDays.delete(day);
+      } else {
+        state.activeDays.add(day);
+      }
+      applyFilters();
+    };
+    container.appendChild(button);
+  });
+}
+
+function updatePlannerHint(message) {
+  document.getElementById('planner-hint').textContent = message || 'Arraste um PDV para semana e dia. A localizacao do cliente permanece fixa.';
+}
+
+function syncPlannerDropState() {
+  const weekButtons = Array.from(document.querySelectorAll('#week-buttons .chip-button'));
+  const dayButtons = Array.from(document.querySelectorAll('#day-buttons .chip-button'));
+
+  weekButtons.forEach((button) => {
+    const week = Number(button.dataset.week);
+    button.classList.toggle('is-drop-hover', week === state.dragHoverWeek);
+    button.classList.toggle('is-drop-target', state.dragClientId !== null && week === state.dragTargetWeek);
+  });
+
+  dayButtons.forEach((button) => {
+    const day = button.dataset.day;
+    button.classList.toggle('is-drop-hover', day === state.dragHoverDay);
+    button.classList.toggle('is-drop-target', state.dragClientId !== null && day === state.dragTargetDay);
+  });
+}
+
+function clearManualRebalanceState(message) {
+  state.dragClientId = null;
+  state.dragTargetWeek = null;
+  state.dragTargetDay = null;
+  state.dragHoverWeek = null;
+  state.dragHoverDay = null;
+  syncPlannerDropState();
+  updatePlannerHint(message);
+}
+
+function getDropTargetsFromPoint(containerPoint) {
+  const mapRect = map.getContainer().getBoundingClientRect();
+  let hoveredWeek = null;
+  let hoveredDay = null;
+
+  document.querySelectorAll('#week-buttons .chip-button').forEach((button) => {
+    const rect = button.getBoundingClientRect();
+    const left = rect.left - mapRect.left;
+    const right = rect.right - mapRect.left;
+    const top = rect.top - mapRect.top;
+    const bottom = rect.bottom - mapRect.top;
+    if (containerPoint.x >= left && containerPoint.x <= right && containerPoint.y >= top && containerPoint.y <= bottom) {
+      hoveredWeek = Number(button.dataset.week);
+    }
+  });
+
+  document.querySelectorAll('#day-buttons .chip-button').forEach((button) => {
+    const rect = button.getBoundingClientRect();
+    const left = rect.left - mapRect.left;
+    const right = rect.right - mapRect.left;
+    const top = rect.top - mapRect.top;
+    const bottom = rect.bottom - mapRect.top;
+    if (containerPoint.x >= left && containerPoint.x <= right && containerPoint.y >= top && containerPoint.y <= bottom) {
+      hoveredDay = button.dataset.day;
+    }
+  });
+
+  return { hoveredWeek, hoveredDay };
+}
+
+function getNextSequenceForRoute(clientId, ddd, week, day) {
+  return clients
+    .filter((client) => client.id !== clientId && client.ddd === ddd && client.week === week && client.day === day)
+    .reduce((maxSequence, client) => Math.max(maxSequence, client.sequence || 0), 0) + 1;
+}
+
+function pointSegmentDistance(point, start, end) {
+  const x = point.x;
+  const y = point.y;
+  const x1 = start.x;
+  const y1 = start.y;
+  const x2 = end.x;
+  const y2 = end.y;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+
+  if (dx === 0 && dy === 0) {
+    return point.distanceTo(start);
+  }
+
+  const t = ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy);
+  if (t <= 0) {
+    return point.distanceTo(start);
+  }
+  if (t >= 1) {
+    return point.distanceTo(end);
+  }
+
+  const projection = L.point(x1 + t * dx, y1 + t * dy);
+  return point.distanceTo(projection);
+}
+
+function getClosestRouteTarget(latlng, sourceClient) {
+  if (!routeLines.length) {
+    return null;
+  }
+
+  const point = map.latLngToLayerPoint(latlng);
+  let bestMatch = null;
+  let bestDistance = Infinity;
+
+  routeLines.forEach((routeLine) => {
+    if (routeLine.ddd !== sourceClient.ddd) {
+      return;
+    }
+
+    const latlngs = routeLine.polyline.getLatLngs();
+    for (let index = 0; index < latlngs.length - 1; index += 1) {
+      const start = map.latLngToLayerPoint(latlngs[index]);
+      const end = map.latLngToLayerPoint(latlngs[index + 1]);
+      const distance = pointSegmentDistance(point, start, end);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestMatch = {
+          routeId: routeLine.routeId,
+          week: routeLine.week,
+          day: routeLine.day,
+          ddd: routeLine.ddd,
+          pixelDistance: distance
+        };
+      }
+    }
+  });
+
+  if (!bestMatch || bestMatch.pixelDistance > 26) {
+    return null;
+  }
+
+  return bestMatch;
+}
+
+const _simCollaborators = ['Ana Lima','Carlos Souza','Fernanda Dias','Rafael Melo','Patricia Rocha','Lucas Andrade','Juliana Costa','Diego Ferreira'];
+const _simCities = { 61: 'Brasília - DF', 62: 'Goiânia - GO', 64: 'Rio Verde - GO', 65: 'Cuiabá - MT', 66: 'Rondonópolis - MT' };
+const _simNeighborhoods = ['Centro','Vila Nova','Setor Sul','Jardim América','Parque Industrial','Bairro Alto','Setor Leste','Vila Operaria'];
+
+function generateSimPhone(ddd, seed) {
+  const n = String(Math.abs(Math.floor(seed * 9973 + 12000)) % 90000 + 10000);
+  return `(${ddd}) 9${n.slice(0,4)}-${n.slice(4)}`;
+}
+
+function visitPattern(curva) {
+  if (curva === 'A') return 'Quinzenal';
+  if (curva === 'B') return 'Semanal';
+  return 'Mensal';
+}
+
+function openClientPopup(client, latlng) {
+  closeClientPopup();
+  const seed = parseInt(String(client.id).replace(/\D/g, '')) || 1;
+  const curvaClass = `curva-${client.curva.toLowerCase()}`;
+  const pattern = visitPattern(client.curva);
+  const phone = generateSimPhone(client.ddd, seed);
+  state._popupClientId = client.id;
+  state._popupLatlng = latlng;
+  const email = `pdv${String(client.id).replace(/\D/g,'').replace(/^0+/,'')}@clientes.com.br`;
+  const colaborador = _simCollaborators[(seed + client.ddd) % _simCollaborators.length];
+  const cidade = _simCities[client.ddd] || `DDD ${client.ddd}`;
+  const bairro = _simNeighborhoods[seed % _simNeighborhoods.length];
+  const endDisplay = `${client.address}, ${bairro}`;
+
+  const allWeeks = [1, 2, 3, 4];
+  const weekBtns = allWeeks.map(w => {
+    const isCur = w === client.week ? ' is-current' : '';
+    return `<button class="pdv-day-btn${isCur}" onclick="changePdvWeek('${client.id}',${w})">S${w}</button>`;
+  }).join('');
+
+  const allDays = ['SEG','TER','QUA','QUI','SEX','SAB','DOM'];
+  const dayBtns = allDays.map(d => {
+    const isCur = d === client.day ? ' is-current' : '';
+    return `<button class="pdv-day-btn${isCur}" onclick="changePdvDay('${client.id}','${d}')">${d}</button>`;
+  }).join('');
+
+  const row = (label, value) =>
+    `<div class="pdv-popup-row"><span class="pdr-label">${label}</span><span class="pdr-value">${value}</span></div>`;
+
+  const popup = document.createElement('div');
+  popup.className = 'pdv-popup';
+  popup.id = 'pdv-detail-popup';
+  popup.innerHTML = `
+    <div class="pdv-popup-header">
+      <div class="pdv-popup-header-title">
+        <strong>Parada selecionada</strong>
+        <span>S${client.week} / ${client.day} &bull; ${client.ddd}</span>
+      </div>
+      <div class="pdv-popup-header-right">
+        <span class="pdv-popup-badge ${curvaClass}">Curva ${client.curva}</span>
+        <button class="pdv-popup-close" onclick="closeClientPopup()" title="Fechar">&times;</button>
+      </div>
+    </div>
+    <div class="pdv-popup-rows">
+      ${row('Cliente', client.name)}
+      ${row('Código ID', client.id)}
+      ${row('Endereço', endDisplay)}
+      ${row('Cidade / Bairro', cidade)}
+      ${row('Telefone', phone)}
+      ${row('E-mail', email)}
+      ${row('Colaborador', colaborador)}
+      ${row('Curva / Prioridade', `${pattern} &mdash; Curva ${client.curva} / ${client.priority}`)}
+      ${row('Janela', client.window)}
+      ${row('Atendimento', `${client.serviceTime} min`)}
+      ${row('Território', client.territory)}
+      ${row('Veículo sugerido', client.vehicle)}
+    </div>
+    <div class="pdv-popup-day-section">
+      <p>Semana de visita</p>
+      <div class="pdv-popup-days">${weekBtns}</div>
+    </div>
+    <div class="pdv-popup-day-section" style="padding-top:6px;">
+      <p>Dia de visita</p>
+      <div class="pdv-popup-days">${dayBtns}</div>
+    </div>
+    <div class="pdv-popup-crm-note">
+      <span class="pdv-popup-crm-tag">CRM</span>
+      Dados simulados &mdash; integração prevista para produção
+    </div>
+  `;
+
+  const container = document.querySelector('.map-stage') || document.querySelector('.map-panel');
+  container.appendChild(popup);
+
+  // Position popup above the marker using pixel coords
+  if (latlng) {
+    const pt = map.latLngToContainerPoint(latlng);
+    const cw = container.offsetWidth;
+    const popupH = 440;
+    let left = pt.x + 12;
+    let top = pt.y - popupH - 10;
+    if (left + 268 > cw - 8) left = pt.x - 268 - 12;
+    if (left < 8) left = 8;
+    if (top < 8) top = pt.y + 28;
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+  } else {
+    popup.style.top = '18px';
+    popup.style.right = '18px';
+  }
+
+  // Make popup draggable via its header
+  const header = popup.querySelector('.pdv-popup-header');
+  let dragOffsetX = 0, dragOffsetY = 0, isDragging = false;
+
+  header.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.pdv-popup-close')) return;
+    isDragging = true;
+    dragOffsetX = e.clientX - popup.getBoundingClientRect().left + container.getBoundingClientRect().left;
+    dragOffsetY = e.clientY - popup.getBoundingClientRect().top + container.getBoundingClientRect().top;
+    popup.style.transition = 'none';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const rect = container.getBoundingClientRect();
+    let newLeft = e.clientX - rect.left - (dragOffsetX - rect.left);
+    let newTop  = e.clientY - rect.top  - (dragOffsetY - rect.top);
+    // clamp inside container
+    newLeft = Math.max(0, Math.min(newLeft, container.offsetWidth  - popup.offsetWidth));
+    newTop  = Math.max(0, Math.min(newTop,  container.offsetHeight - popup.offsetHeight));
+    popup.style.left = newLeft + 'px';
+    popup.style.top  = newTop  + 'px';
+    popup.style.right = 'auto';
+  });
+
+  document.addEventListener('mouseup', () => { isDragging = false; });
+}
+
+function closeClientPopup() {
+  const existing = document.getElementById('pdv-detail-popup');
+  if (existing) existing.remove();
+}
+
+function changePdvDay(clientId, newDay) {
+  const client = clients.find(c => c.id === clientId);
+  if (!client) return;
+  client.day = newDay;
+  state.activeDays.add(newDay);
+  const latlng = state._popupLatlng;
+  applyFilters({ skipFitBounds: true });
+  setTimeout(() => openClientPopup(client, latlng), 30);
+}
+
+function changePdvWeek(clientId, newWeek) {
+  const client = clients.find(c => c.id === clientId);
+  if (!client) return;
+  client.week = newWeek;
+  state.activeWeeks.add(newWeek);
+  const latlng = state._popupLatlng;
+  applyFilters({ skipFitBounds: true });
+  setTimeout(() => openClientPopup(client, latlng), 30);
+}
+
+function handleMarkerDragStart(client) {
+  state.dragClientId = client.id;
+  state.dragTargetWeek = client.week;
+  state.dragTargetDay = client.day;
+  state.dragHoverWeek = null;
+  state.dragHoverDay = null;
+  state.dragRouteTarget = null;
+  syncPlannerDropState();
+  updatePlannerHint(`Rebalanceando ${client.name}. Arraste para a semana e o dia desejados sem mover a geolocalizacao.`);
+}
+
+function handleMarkerDrag(event, client) {
+  if (state.dragClientId === null) {
+    return;
+  }
+
+  const point = map.latLngToContainerPoint(event.target.getLatLng());
+  const { hoveredWeek, hoveredDay } = getDropTargetsFromPoint(point);
+  const closestRoute = getClosestRouteTarget(event.target.getLatLng(), client);
+
+  state.dragHoverWeek = hoveredWeek;
+  state.dragHoverDay = hoveredDay;
+  state.dragRouteTarget = closestRoute;
+
+  // Priority 1: explicit dock buttons. Priority 2: closest route line.
+  if (hoveredWeek !== null) {
+    state.dragTargetWeek = hoveredWeek;
+  } else if (closestRoute) {
+    state.dragTargetWeek = closestRoute.week;
+  }
+
+  if (hoveredDay !== null) {
+    state.dragTargetDay = hoveredDay;
+  } else if (closestRoute) {
+    state.dragTargetDay = closestRoute.day;
+  }
+
+  syncPlannerDropState();
+  const weekLabel = state.dragTargetWeek ? `S${state.dragTargetWeek}` : 'semana atual';
+  const dayLabel = state.dragTargetDay || 'dia atual';
+
+  if (closestRoute && hoveredWeek === null && hoveredDay === null) {
+    updatePlannerHint(`Rota mais proxima detectada: S${closestRoute.week} | ${closestRoute.day}. Solte para reprogramar o PDV sem alterar latitude/longitude.`);
+    return;
+  }
+
+  updatePlannerHint(`Destino manual: ${weekLabel} | ${dayLabel}. Solte para reprogramar a visita mantendo o mesmo ponto no mapa.`);
+}
+
+function handleMarkerDragEnd(event, client) {
+  event.target.setLatLng([client.fixedLat, client.fixedLon]);
+
+  const targetWeek = state.dragTargetWeek || client.week;
+  const targetDay = state.dragTargetDay || client.day;
+  const changed = targetWeek !== client.week || targetDay !== client.day;
+
+  if (changed) {
+    client.week = targetWeek;
+    client.day = targetDay;
+    client.sequence = getNextSequenceForRoute(client.id, client.ddd, targetWeek, targetDay);
+    state.activeWeeks.add(targetWeek);
+    state.activeDays.add(targetDay);
+    state.selectedRouteId = createRouteId(client.ddd, targetWeek, targetDay);
+    state.selectedStopId = client.id;
+    state.plannerStatus = 'draft';
+    clearManualRebalanceState(`${client.name} reprogramado para S${targetWeek} | ${targetDay}. A latitude e longitude foram preservadas.`);
+    applyFilters({ skipFitBounds: true });
+    return;
+  }
+
+  clearManualRebalanceState(`Nenhuma alteracao aplicada em ${client.name}. A visita permaneceu em S${client.week} | ${client.day}.`);
+  applyFilters({ skipFitBounds: true });
+}
+
+function renderKpis(filteredClients, routeGroups) {
+  const grid = document.getElementById('kpi-grid');
+  const totalDistance = routeGroups.reduce((sum, route) => sum + route.totalDistance, 0);
+  const totalTime = routeGroups.reduce((sum, route) => sum + route.totalTime, 0);
+  const riskCount = filteredClients.filter((client) => client.status === 'atencao' || client.priority === 'Alta').length;
+  const electricCount = filteredClients.filter((client) => client.vehicle === 'eletrico').length;
+
+  const items = [
+    { label: 'Stops ativos', value: filteredClients.length, helper: `${routeGroups.length} rotas no recorte` },
+    { label: 'Km previstos', value: `${totalDistance.toFixed(0)} km`, helper: `media ${routeGroups.length ? (totalDistance / routeGroups.length).toFixed(0) : 0} km/rota` },
+    { label: 'Tempo operacional', value: `${totalTime.toFixed(0)} min`, helper: `${(totalTime / 60).toFixed(1)} h totais` },
+    { label: 'Atencoes', value: riskCount, helper: `${electricCount} stops com veiculo eletrico` }
+  ];
+
+  grid.innerHTML = items.map((item) => `
+    <div class="kpi-card">
+      <span>${item.label}</span>
+      <strong>${item.value}</strong>
+      <small>${item.helper}</small>
+    </div>
+  `).join('');
+
+  document.getElementById('header-route-count').textContent = String(routeGroups.length);
+  document.getElementById('header-stop-count').textContent = String(filteredClients.length);
+}
+
+function renderCharts(filteredClients) {
+  const kmChart = document.getElementById('km-chart');
+  const dayChart = document.getElementById('day-chart');
+  const vehicleTypes = ['carro', 'moto', 'pickup', 'pesado', 'eletrico'];
+  const kmByVehicle = { carro: 0, moto: 0, pickup: 0, pesado: 0, eletrico: 0 };
+  filteredClients.forEach((client) => {
+    kmByVehicle[client.vehicle] += client.distance;
+  });
+
+  const maxKm = Math.max(1, ...Object.values(kmByVehicle));
+  const kmMarkup = vehicleTypes.map((vehicle) => `
+    <div class="bar-row">
+      <span>${vehicle}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round((kmByVehicle[vehicle] / maxKm) * 100)}%; background:${colorForVehicle(vehicle)};"></div></div>
+      <strong>${kmByVehicle[vehicle].toFixed(0)}</strong>
+    </div>
+  `).join('');
+  kmChart.innerHTML = kmMarkup;
+  document.getElementById('manual-km-chart').innerHTML = kmMarkup;
+
+  const volumeByDay = { SEG: 0, TER: 0, QUA: 0, QUI: 0, SEX: 0, SAB: 0, DOM: 0 };
+  filteredClients.forEach((client) => {
+    volumeByDay[client.day] += 1;
+  });
+
+  const maxDay = Math.max(1, ...Object.values(volumeByDay));
+  const dayMarkup = days.map((day) => `
+    <div class="bar-row">
+      <span>${day}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round((volumeByDay[day] / maxDay) * 100)}%; background:${dayColors[day]};"></div></div>
+      <strong>${volumeByDay[day]}</strong>
+    </div>
+  `).join('');
+  dayChart.innerHTML = dayMarkup;
+  document.getElementById('manual-day-chart').innerHTML = dayMarkup;
+}
+
+function renderManualPlanningPanel(filteredClients, routeGroups, selectedRoute) {
+  const summary = document.getElementById('manual-summary-grid');
+  const routeInfo = document.getElementById('manual-route-info');
+  const selectedStop = selectedRoute ? selectedRoute.clients.find((client) => client.id === state.selectedStopId) : null;
+  const totalDistance = routeGroups.reduce((sum, route) => sum + route.totalDistance, 0);
+  const totalVisits = filteredClients.length;
+  const totalRoutes = routeGroups.length;
+  const avgDistance = totalRoutes ? totalDistance / totalRoutes : 0;
+
+  summary.innerHTML = `
+    <div class="manual-kpi-card">
+      <span>Rotas visiveis</span>
+      <strong>${totalRoutes}</strong>
+      <small>${totalVisits} stops no recorte</small>
+    </div>
+    <div class="manual-kpi-card">
+      <span>Distancia total</span>
+      <strong>${totalDistance.toFixed(0)} km</strong>
+      <small>media ${avgDistance.toFixed(0)} km por rota</small>
+    </div>
+    <div class="manual-kpi-card">
+      <span>Rota em foco</span>
+      <strong>${selectedRoute ? `S${selectedRoute.week} | ${selectedRoute.day}` : 'Sem foco'}</strong>
+      <small>${selectedRoute ? `${selectedRoute.routeLoad} stops` : 'Selecione uma rota'}</small>
+    </div>
+    <div class="manual-kpi-card">
+      <span>Parada em foco</span>
+      <strong>${selectedStop ? selectedStop.name : 'Nenhuma'}</strong>
+      <small>${selectedStop ? `${selectedStop.window} | ${selectedStop.priority}` : 'Clique no PDV'}</small>
+    </div>
+  `;
+
+  if (!selectedRoute) {
+    routeInfo.innerHTML = '<div class="empty-state">Expanda o mapa, selecione uma rota e arraste os PDVs para balancear semana e dia.</div>';
+    return;
+  }
+
+  routeInfo.innerHTML = `
+    <div class="detail-line"><span>Rota</span><strong>S${selectedRoute.week} | ${selectedRoute.ddd} | ${selectedRoute.day}</strong></div>
+    <div class="detail-line"><span>Distancia prevista</span><strong>${selectedRoute.totalDistance.toFixed(0)} km</strong></div>
+    <div class="detail-line"><span>Tempo estimado</span><strong>${selectedRoute.totalTime} min</strong></div>
+    <div class="detail-line"><span>Motorista base</span><strong>${selectedRoute.driver.name}</strong></div>
+    <div class="detail-line"><span>Territorios</span><strong>${selectedRoute.territories.join(', ')}</strong></div>
+    <div class="detail-line"><span>Stop selecionado</span><strong>${selectedStop ? selectedStop.name : 'Nenhum'}</strong></div>
+  `;
+}
+
+function renderAlerts(filteredClients, routeGroups) {
+  const container = document.getElementById('alert-list');
+  const longRoutes = routeGroups.filter((route) => route.totalDistance > 140).length;
+  const highPriority = filteredClients.filter((client) => client.priority === 'Alta').length;
+  const frontierCount = filteredClients.filter((client) => client.territory === 'fronteira').length;
+  const electricCount = filteredClients.filter((client) => client.vehicle === 'eletrico').length;
+
+  const alerts = [
+    { title: 'Rotas extensas', text: `${longRoutes} rotas acima de 140 km no recorte atual.` },
+    { title: 'Prioridade alta', text: `${highPriority} stops exigem atencao comercial imediata.` },
+    { title: 'Cobertura de fronteira', text: `${frontierCount} visitas em territorio sensivel para acompanhamento.` },
+    { title: 'Frota eletrica', text: `${electricCount} paradas precisam validar autonomia antes da publicacao.` }
+  ];
+
+  container.innerHTML = alerts.map((alert) => `
+    <div class="alert-item">
+      <strong>${alert.title}</strong>
+      <span>${alert.text}</span>
+    </div>
+  `).join('');
+}
+
+function renderRouteList(routeGroups) {
+  const container = document.getElementById('route-list');
+  document.getElementById('route-list-count').textContent = `${routeGroups.length} rotas`;
+
+  if (!routeGroups.length) {
+    container.innerHTML = '<div class="empty-state">Nenhuma rota disponivel para os filtros atuais.</div>';
+    return;
+  }
+
+  container.innerHTML = routeGroups.map((route) => `
+    <div class="route-item ${route.routeId === state.selectedRouteId ? 'is-selected' : ''}" data-route-id="${route.routeId}">
+      <strong>S${route.week} | ${route.ddd} | ${route.region} | ${route.day}</strong>
+      <div class="route-meta">
+        <span>${route.driver.name}</span>
+        <span>${route.routeLoad} stops</span>
+        <span>${route.totalDistance.toFixed(0)} km</span>
+        <span>${route.totalTime} min</span>
+      </div>
+      <div class="inline-meta">
+        ${route.uniqueVehicles.map((vehicle) => `<span class="inline-pill">${vehicle}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  Array.from(container.querySelectorAll('.route-item')).forEach((element) => {
+    element.onclick = () => {
+      state.selectedRouteId = element.dataset.routeId;
+      const selectedRoute = routeGroups.find((route) => route.routeId === state.selectedRouteId);
+      state.selectedStopId = selectedRoute && selectedRoute.clients[0] ? selectedRoute.clients[0].id : null;
+      applyFilters({ skipFitBounds: true });
+    };
+  });
+}
+
+function renderRouteDetail(selectedRoute) {
+  const container = document.getElementById('route-detail');
+  if (!selectedRoute) {
+    container.innerHTML = '<div class="empty-state">Selecione uma rota para ver distribuicao, condutor e territorio.</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="detail-line"><span>Motorista base</span><strong>${selectedRoute.driver.name}</strong></div>
+    <div class="detail-line"><span>Ciclo de visita</span><strong>Semana ${selectedRoute.week} | ${selectedRoute.day}</strong></div>
+    <div class="detail-line"><span>DDD / regiao</span><strong>${selectedRoute.ddd} - ${selectedRoute.region}</strong></div>
+    <div class="detail-line"><span>Volume da rota</span><strong>${selectedRoute.routeLoad} stops</strong></div>
+    <div class="detail-line"><span>Territorios</span><strong>${selectedRoute.territories.join(', ')}</strong></div>
+    <div class="detail-line"><span>Frota alocada</span><strong>${selectedRoute.uniqueVehicles.join(', ')}</strong></div>
+    <div class="detail-line"><span>Risco operacional</span><strong>${selectedRoute.riskCount} pontos</strong></div>
+  `;
+}
+
+function renderTimeline(selectedRoute) {
+  const container = document.getElementById('timeline-list');
+  const label = document.getElementById('timeline-label');
+  if (!selectedRoute) {
+    label.textContent = 'Selecione uma rota';
+    container.innerHTML = '<div class="empty-state">A timeline aparece quando uma rota entra em foco.</div>';
+    return;
+  }
+
+  label.textContent = `S${selectedRoute.week} | ${selectedRoute.ddd} | ${selectedRoute.day} | ${selectedRoute.routeLoad} stops`;
+  container.innerHTML = selectedRoute.clients.map((client, index) => `
+    <div class="timeline-item ${client.id === state.selectedStopId ? 'is-selected' : ''}" data-stop-id="${client.id}">
+      <strong>${index + 1}. ${client.name}</strong>
+      <div class="route-meta">
+        <span>${client.window}</span>
+        <span>${client.vehicle}</span>
+        <span>${client.priority}</span>
+      </div>
+    </div>
+  `).join('');
+
+  Array.from(container.querySelectorAll('.timeline-item')).forEach((element) => {
+    element.onclick = () => {
+      state.selectedStopId = element.dataset.stopId;
+      applyFilters({ skipFitBounds: true });
+    };
+  });
+}
+
+function renderStopDetail(selectedRoute) {
+  const container = document.getElementById('stop-detail');
+  const stop = selectedRoute ? selectedRoute.clients.find((client) => client.id === state.selectedStopId) : null;
+
+  if (!stop) {
+    container.innerHTML = '<div class="empty-state">Clique em um marcador ou item da timeline para ver o detalhe da parada.</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="detail-line"><span>Cliente</span><strong>${stop.name}</strong></div>
+    <div class="detail-line"><span>Endereco</span><strong>${stop.address}</strong></div>
+    <div class="detail-line"><span>Curva / prioridade</span><strong>${stop.curva} / ${stop.priority}</strong></div>
+    <div class="detail-line"><span>Janela</span><strong>${stop.window}</strong></div>
+    <div class="detail-line"><span>Tempo de atendimento</span><strong>${stop.serviceTime} min</strong></div>
+    <div class="detail-line"><span>Territorio</span><strong>${stop.territory}</strong></div>
+    <div class="detail-line"><span>Veiculo sugerido</span><strong>${stop.vehicle}</strong></div>
+  `;
+}
+
+function renderOperationalStatus(filteredClients, routeGroups) {
+  const activeCoverage = clients.length ? Math.round((filteredClients.length / clients.length) * 100) : 0;
+  const routeCoverage = routeGroups.length ? Math.min(100, Math.round((routeGroups.filter((route) => route.routeLoad > 0).length / routeGroups.length) * 100)) : 0;
+  const coverage = Math.max(activeCoverage, routeCoverage);
+  const labelMap = {
+    draft: 'Pronto para otimizar',
+    optimized: 'Plano otimizado para revisao',
+    published: 'Plano publicado para operacao'
+  };
+  const textMap = {
+    draft: 'Rascunho',
+    optimized: 'Otimizado',
+    published: 'Publicado'
+  };
+
+  const plannerPill = document.getElementById('planner-status-pill');
+  plannerPill.className = `inline-pill status-${state.plannerStatus}`;
+  plannerPill.textContent = textMap[state.plannerStatus];
+  document.getElementById('header-plan-status').textContent = textMap[state.plannerStatus];
+  document.getElementById('readiness-label').textContent = labelMap[state.plannerStatus];
+  document.getElementById('coverage-label').textContent = `${coverage}%`;
+  document.getElementById('coverage-bar').style.width = `${coverage}%`;
+}
+
+function updateFocusCards(selectedRoute) {
+  const selectedStop = selectedRoute ? selectedRoute.clients.find((client) => client.id === state.selectedStopId) : null;
+  document.getElementById('focus-route-title').textContent = selectedRoute ? `S${selectedRoute.week} | ${selectedRoute.ddd} | ${selectedRoute.region} | ${selectedRoute.day}` : 'Nenhuma rota selecionada';
+  document.getElementById('focus-route-distance').textContent = selectedRoute ? `${selectedRoute.totalDistance.toFixed(0)} km` : '0 km';
+  document.getElementById('focus-route-time').textContent = selectedRoute ? `${selectedRoute.totalTime} min` : '0 min';
+  document.getElementById('focus-stop-title').textContent = selectedStop ? selectedStop.name : 'Nenhuma parada selecionada';
+  document.getElementById('toolbar-title').textContent = selectedRoute ? `Mapa da rota S${selectedRoute.week} | ${selectedRoute.ddd} | ${selectedRoute.day}` : 'Mapa de execucao';
+  document.getElementById('toolbar-subtitle').textContent = selectedRoute
+    ? `${selectedRoute.routeLoad} stops, ${selectedRoute.uniqueVehicles.join(', ')} e ${selectedRoute.totalDistance.toFixed(0)} km previstos.`
+    : 'Visualize cobertura, densidade e sequencia das visitas por rota.';
+}
+
+function fitMapToFilteredClients(filteredClients, selectedRoute) {
+  if (selectedRoute && selectedRoute.clients.length) {
+    const points = [[selectedRoute.driver.lat, selectedRoute.driver.lon], ...selectedRoute.clients.map((client) => [client.lat, client.lon])];
+    map.fitBounds(points, { padding: [60, 60] });
+    return;
+  }
+
+  if (filteredClients.length) {
+    map.fitBounds(filteredClients.map((client) => [client.lat, client.lon]), { padding: [60, 60] });
+    return;
+  }
+
+  map.setView([-15.9, -54.8], 6);
+}
+
+function createMarkerIcon(number, color, active) {
+  return L.divIcon({
+    className: 'route-marker-icon',
+    html: `<div class="route-marker-circle" style="background:${color}; transform:${active ? 'scale(1.14)' : 'scale(1)'}; opacity:${active ? '1' : '0.88'};">${number}</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14]
+  });
+}
+
+function createDriverIcon() {
+  return L.divIcon({
+    className: 'route-marker-icon',
+    html: '<div class="driver-marker">B</div>',
+    iconSize: [34, 34],
+    iconAnchor: [17, 17]
+  });
+}
+
+function renderMap(filteredClients, routeGroups) {
+  markers.forEach((marker) => map.removeLayer(marker));
+  routeLines.forEach((line) => map.removeLayer(line.polyline));
+  driverMarkers.forEach((marker) => map.removeLayer(marker));
+  markers = [];
+  routeLines = [];
+  driverMarkers = [];
+
+  routeGroups.forEach((route) => {
+    const lineColor = dayColors[route.day] || '#52d0ff';
+    const points = [[route.driver.lat, route.driver.lon], ...route.clients.map((client) => [client.lat, client.lon]), [route.driver.lat, route.driver.lon]];
+    const polyline = L.polyline(points, {
+      color: lineColor,
+      weight: route.routeId === state.selectedRouteId ? 6 : 4,
+      opacity: route.routeId === state.selectedRouteId ? 0.95 : 0.55
+    }).addTo(map);
+
+    polyline.on('click', () => {
+      state.selectedRouteId = route.routeId;
+      state.selectedStopId = route.clients[0] ? route.clients[0].id : null;
+      applyFilters({ skipFitBounds: true });
+    });
+
+    routeLines.push({ routeId: route.routeId, week: route.week, day: route.day, ddd: route.ddd, polyline });
+
+    const baseMarker = L.marker([route.driver.lat, route.driver.lon], { icon: createDriverIcon() }).addTo(map);
+    baseMarker.bindPopup(`<strong>${route.driver.name}</strong><br>Base da rota S${route.week} | ${route.ddd} | ${route.day}`);
+    driverMarkers.push(baseMarker);
+
+    route.clients.forEach((client, index) => {
+      const marker = L.marker([client.lat, client.lon], {
+        icon: createMarkerIcon(index + 1, lineColor, client.id === state.selectedStopId),
+        draggable: true,
+        autoPan: true
+      }).addTo(map);
+      marker.bindPopup(`
+        <strong>${client.name}</strong><br>
+        S${route.week} | ${route.ddd} | ${route.day} | ${client.vehicle}<br>
+        ${client.window} | ${client.territory} | ${client.priority}
+      `);
+      marker.on('click', () => {
+        const now = Date.now();
+        const latlng = marker.getLatLng();
+        const isDouble = state._lastClickId === client.id && (now - (state._lastClickTs || 0)) < 400;
+        state._lastClickId = client.id;
+        state._lastClickTs = now;
+        state._lastClickLatlng = latlng;
+        state.selectedRouteId = route.routeId;
+        state.selectedStopId = client.id;
+        if (isDouble) {
+          openClientPopup(client, latlng);
+          return;
+        }
+        closeClientPopup();
+        applyFilters({ skipFitBounds: true });
+      });
+      marker.on('dragstart', () => handleMarkerDragStart(client));
+      marker.on('drag', (event) => handleMarkerDrag(event, client));
+      marker.on('dragend', (event) => handleMarkerDragEnd(event, client));
+      markers.push(marker);
+    });
+  });
+
+  if (!state.selectedRouteId) {
+    fitMapToFilteredClients(filteredClients, null);
+  }
+}
+
+function renderFilterSummary(filteredClients) {
+  const dddLabel = state.selectedDDD === 'all' ? 'todos os DDDs' : `DDD ${state.selectedDDD}`;
+  const territoryLabel = state.territoryFilter === 'all' ? 'todos os territorios' : state.territoryFilter;
+  const vehicleLabel = state.vehicleFilter === 'all' ? 'toda a frota' : state.vehicleFilter;
+  document.getElementById('filter-summary-label').textContent = `${dddLabel}, ${territoryLabel}, ${vehicleLabel} e ${filteredClients.length} stops.`;
+}
+
+function applyFilters(options = {}) {
+  const filteredClients = getFilteredClients();
+  const routeGroups = buildRouteGroups(filteredClients);
+  ensureSelections(routeGroups);
+  const selectedRoute = routeGroups.find((route) => route.routeId === state.selectedRouteId) || null;
+
+  renderWeekButtons();
+  renderDayButtons();
+  renderKpis(filteredClients, routeGroups);
+  renderCharts(filteredClients);
+  renderAlerts(filteredClients, routeGroups);
+  renderRouteList(routeGroups);
+  renderRouteDetail(selectedRoute);
+  renderTimeline(selectedRoute);
+  renderStopDetail(selectedRoute);
+  renderOperationalStatus(filteredClients, routeGroups);
+  updateFocusCards(selectedRoute);
+  renderFilterSummary(filteredClients);
+  renderManualPlanningPanel(filteredClients, routeGroups, selectedRoute);
+  renderMap(filteredClients, routeGroups);
+
+  if (!options.skipFitBounds) {
+    fitMapToFilteredClients(filteredClients, selectedRoute);
+  }
+}
+
+function syncManualPlanningModeUI() {
+  document.body.classList.toggle('manual-planning-mode', state.manualPlanningMode);
+  const button = document.getElementById('toggle-manual-mode-btn');
+  button.textContent = state.manualPlanningMode ? 'Fechar expandido' : 'Expandir planejamento';
+  button.classList.toggle('is-active', state.manualPlanningMode);
+  document.getElementById('manual-planning-panel').setAttribute('aria-hidden', String(!state.manualPlanningMode));
+  if (!state.manualPlanningMode) {
+    state.mapMenuCollapsed = false;
+  }
+  syncMapMenuVisibility();
+  setTimeout(() => map.invalidateSize(), 80);
+}
+
+function syncMapMenuVisibility() {
+  const mapPanel = document.querySelector('.map-panel');
+  mapPanel.classList.toggle('map-menu-collapsed', state.mapMenuCollapsed);
+  document.getElementById('toggle-map-menu-btn').textContent = state.mapMenuCollapsed ? 'Mostrar menu' : 'Ocultar menu';
+}
+
+function toggleMapMenuVisibility() {
+  state.mapMenuCollapsed = !state.mapMenuCollapsed;
+  syncMapMenuVisibility();
+}
+
+function toggleManualPlanningMode() {
+  state.manualPlanningMode = !state.manualPlanningMode;
+  syncManualPlanningModeUI();
+}
+
+function optimizeSelectedRoutes() {
+  const filteredClients = getFilteredClients();
+  const groupedByRoute = new Map();
+
+  filteredClients.forEach((client) => {
+    const routeId = createRouteId(client.ddd, client.week, client.day);
+    if (!groupedByRoute.has(routeId)) {
+      groupedByRoute.set(routeId, []);
+    }
+    groupedByRoute.get(routeId).push(client);
+  });
+
+  groupedByRoute.forEach((routeClients, routeId) => {
+    const ddd = Number(routeId.split('-')[0]);
+    const driver = drivers[ddd];
+    routeClients
+      .sort((first, second) => distanceKm(driver.lat, driver.lon, first.lat, first.lon) - distanceKm(driver.lat, driver.lon, second.lat, second.lon))
+      .forEach((client, index) => {
+        client.sequence = index + 1;
+      });
+  });
+
+  state.plannerStatus = 'optimized';
+  applyFilters({ skipFitBounds: true });
+}
+
+function regenerateScenario() {
+  generateClients();
+  state.plannerStatus = 'draft';
+  state.selectedRouteId = null;
+  state.selectedStopId = null;
+  applyFilters();
+}
+
+function publishPlan() {
+  state.plannerStatus = 'published';
+  applyFilters({ skipFitBounds: true });
+}
+
+function clearSelection() {
+  state.selectedRouteId = null;
+  state.selectedStopId = null;
+  applyFilters();
+}
+
+function centerCurrentRoute() {
+  const routeGroups = buildRouteGroups(getFilteredClients());
+  const selectedRoute = routeGroups.find((route) => route.routeId === state.selectedRouteId) || null;
+  fitMapToFilteredClients(getFilteredClients(), selectedRoute);
+}
+
+function togglePanel(panelId, stateKey) {
+  state[stateKey] = !state[stateKey];
+  document.getElementById(panelId).classList.toggle('is-collapsed', !state[stateKey]);
+}
+
+document.getElementById('session-select').onchange = (event) => {
+  state.selectedDDD = event.target.value;
+  applyFilters();
+};
+
+document.getElementById('territory-filter').onchange = (event) => {
+  state.territoryFilter = event.target.value;
+  applyFilters();
+};
+
+document.getElementById('vehicle-filter').onchange = (event) => {
+  state.vehicleFilter = event.target.value;
+  applyFilters();
+};
+
+document.getElementById('density-select').onchange = (event) => {
+  state.densityProfile = event.target.value;
+  applyFilters({ skipFitBounds: true });
+};
+
+document.getElementById('optimize-plan-btn').onclick = optimizeSelectedRoutes;
+document.getElementById('regenerate-data-btn').onclick = regenerateScenario;
+document.getElementById('publish-plan-btn').onclick = publishPlan;
+document.getElementById('toggle-manual-mode-btn').onclick = toggleManualPlanningMode;
+document.getElementById('toggle-map-menu-btn').onclick = toggleMapMenuVisibility;
+document.getElementById('show-map-menu-btn').onclick = () => {
+  state.mapMenuCollapsed = false;
+  syncMapMenuVisibility();
+};
+document.getElementById('center-route-btn').onclick = centerCurrentRoute;
+document.getElementById('clear-selection-btn').onclick = clearSelection;
+document.getElementById('toggle-left').onclick = () => togglePanel('left-panel', 'panelLeftOpen');
+document.getElementById('toggle-right').onclick = () => togglePanel('right-panel', 'panelRightOpen');
+
+generateClients();
+syncManualPlanningModeUI();
+syncMapMenuVisibility();
+applyFilters();
+</script>
+</body>
+</html>
