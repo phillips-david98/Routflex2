@@ -4578,6 +4578,11 @@ function getClientMapColor(client, route) {
   return dayColors[route.day] || '#52d0ff';
 }
 
+function isActiveEquivalentClientType(clientType) {
+  const ct = String(clientType || 'ativo').toLowerCase();
+  return ct === 'ativo' || ct === 'validado' || ct === 'credenciado';
+}
+
 function getFilteredClients() {
   return clients.filter((client) => {
     const ct = client.clientType || 'ativo';
@@ -4597,7 +4602,7 @@ function getFilteredClients() {
 function getSpecialVisibleClients() {
   return clients.filter((client) => {
     const ct = client.clientType || 'ativo';
-    if (ct === 'ativo') return false;
+    if (isActiveEquivalentClientType(ct)) return false;
     if (ct === 'sem_coordenada' || !hasValidCoordinate(client)) return false;
     if (ct === 'inativo' && client.manualRouteInclude) return false;
     if (ct === 'novo' && client.eligibleForRouting) return false;
@@ -5928,10 +5933,10 @@ function openClientPopup(client, latlng, options = {}) {
     state._lassoPopupIndex = queueIndex;
   }
 
-  const ct = client.clientType || 'ativo';
-  const visitLabel = (ct === 'ativo' && client.week && client.day)
+  const ct = String(client.clientType || 'ativo').toLowerCase();
+  const visitLabel = (isActiveEquivalentClientType(ct) && client.week && client.day)
     ? `S${client.week} / ${client.day} &bull; ${client.ddd}`
-    : `${client.ddd} &bull; ${ct === 'inativo' ? 'INATIVO' : ct === 'sem_coordenada' ? 'SEM COORDENADA' : 'NOVO'}`;
+    : `${client.ddd} &bull; ${ct === 'inativo' ? 'INATIVO' : ct === 'sem_coordenada' ? 'SEM COORDENADA' : ct === 'novo' ? 'NOVO' : 'ATIVO'}`;
 
   const statusBanner = ct === 'inativo'
     ? `<div class="pdv-status-banner pdv-status-inativo">&#9888; Cliente INATIVO — não entra em roteirização automática. Inclusão manual requer confirmação.</div>`
@@ -8808,6 +8813,7 @@ const AI_KB = [
   { tags:['ddd','sessao','sessão','regiao','região'], resp:'DDDs disponíveis:\n**61** Brasília • **62** Anápolis • **64** Rio Verde\n**65** Cuiabá • **66** Tangará da Serra\n\nSelecione no painel esquerdo para alternar regiões.' },
   { tags:['territorio','território'], resp:'Tipos de território: **Urbano** • **Interior** • **Rodovia** • **Fronteira**.\n\nFiltre pelo campo "Território" no painel esquerdo.' },
   { tags:['dividir clientes','balancear motoristas','inteligente','proximidade base','50 50'], resp:'Posso dividir clientes de forma inteligente entre **2 motoristas** do DDD ativo.\n\nUse: *"dividir clientes inteligente"* ou *"balancear entre dois motoristas"*.\nA divisão fica 50/50 (ou 1 cliente a mais para um lado quando ímpar) com base na proximidade da base de cada motorista, preservando dia e ciclo.' },
+  { tags:['clientes novos','novos','alocar novos','sugerir novos','novo motorista dia','alocacao novo'], resp:'Posso sugerir alocação para clientes NOVOS por proximidade geográfica (motorista + dia), sem aplicar automaticamente.\n\nUse: *"sugerir alocação dos clientes novos"*.' },
   { tags:['manual','planejamento manual','expandir'], resp:'O botão **"Expandir planejamento"** ativa o modo tela cheia do mapa.\n\nOs painéis laterais somem e um painel de KPIs aparece à direita. Arrastar e atalhos funcionam normalmente.' },
   { tags:['ola','olá','oi','hello','hey','bom dia','boa tarde','boa noite'], resp:'Olá! Sou o **ROUTEX AI**, assistente do ROUTflex. 👋\n\nDigite *ajuda* para ver tudo que posso fazer.' },
   { tags:['ajuda','help','funcionalidades','comandos','o que pode'], resp:'**Dúvidas que respondo:**\nCurva ABC • Arrastar PDV • Atalhos • Motoristas • Semanas/dias • OSRM • Clustering • Territórios\n\n**Ações que executo:**\n→ *"otimizar"* — sequencia PDVs\n→ *"exportar csv"* — baixa planilha\n→ *"publicar plano"* — muda status\n→ *"centralizar"* — foca o mapa\n→ *"limpar foco"* — deseleciona\n→ *"novo cenário"* — regenera dados\n→ *"coloque todos os clientes na quarta da semana 1"* — move em lote para dia/semana\n\n**Território no comando:**\nUse formatos como *65-02*, *65_02*, *65 02* ou *6502*.' },
@@ -8817,6 +8823,7 @@ const AI_QUICK = [
   { label:'⌨️ Atalhos',      q:'atalhos' },
   { label:'⚡ Otimizar',     q:'otimizar' },
   { label:'📥 Exportar CSV', q:'exportar csv' },
+  { label:'🧭 Sugerir NOVOS', q:'sugerir alocação dos clientes novos' },
 ];
 const aiUI = { open:false, ready:false, busy:false };
 const AI_DAY_ALIASES = {
@@ -9231,6 +9238,145 @@ function _aiBalanceTwoDriversByBaseProximity() {
   };
 }
 
+function _aiCollectRoutedClientsForSuggestion() {
+  return clients.filter((client) => {
+    if (client.ddd !== Number(state.selectedDDD)) return false;
+    if (!hasValidCoordinate(client)) return false;
+    const ct = String(client.clientType || 'ativo').toLowerCase();
+    if (!isActiveEquivalentClientType(ct)) return false;
+    if (!client.driverId || !client.day) return false;
+    return true;
+  });
+}
+
+function _aiCollectNewClientsForSuggestion() {
+  return clients.filter((client) => {
+    if (client.ddd !== Number(state.selectedDDD)) return false;
+    const ct = String(client.clientType || 'ativo').toLowerCase();
+    if (ct !== 'novo') return false;
+    if (!hasValidCoordinate(client)) return false;
+    return true;
+  });
+}
+
+function _aiFindBestDriverForNewClient(client, dddDrivers, routedClients) {
+  let best = null;
+
+  dddDrivers.forEach((driver) => {
+    const baseDistance = distanceKm(client.lat, client.lon, driver.lat, driver.lon);
+    const sameDriverClients = routedClients.filter((entry) => entry.driverId === driver.id);
+    const routeDistance = sameDriverClients.length
+      ? Math.min(...sameDriverClients.map((entry) => distanceKm(client.lat, client.lon, entry.lat, entry.lon)))
+      : Infinity;
+    const score = Math.min(baseDistance, routeDistance);
+
+    if (!best || score < best.score) {
+      best = {
+        driver,
+        score,
+        baseDistance,
+        routeDistance,
+      };
+    }
+  });
+
+  return best;
+}
+
+function _aiFindBestDayForNewClient(client, driverId, routedClients) {
+  const sameDriverClients = routedClients.filter((entry) => entry.driverId === driverId);
+  const byDay = new Map();
+
+  sameDriverClients.forEach((entry) => {
+    const day = entry.day;
+    if (!byDay.has(day)) byDay.set(day, []);
+    byDay.get(day).push(entry);
+  });
+
+  // Se o motorista ainda não tem rota, sugere SEG por padrão operacional.
+  if (!byDay.size) {
+    return { day: 'SEG', dayScore: Infinity };
+  }
+
+  let bestDay = null;
+  byDay.forEach((dayClients, day) => {
+    const minDistance = Math.min(...dayClients.map((entry) => distanceKm(client.lat, client.lon, entry.lat, entry.lon)));
+    if (!bestDay || minDistance < bestDay.dayScore) {
+      bestDay = { day, dayScore: minDistance };
+    }
+  });
+
+  return bestDay || { day: 'SEG', dayScore: Infinity };
+}
+
+function _aiSuggestNewClientsAllocation() {
+  const ddd = Number(state.selectedDDD);
+  const dddDrivers = getDriversByDDD(ddd);
+  if (!dddDrivers.length) {
+    return {
+      ok: false,
+      processed: 0,
+      suggestions: [],
+      message: `Nenhum motorista disponível no DDD ${state.selectedDDD} para sugerir alocação de clientes NOVOS.`
+    };
+  }
+
+  const newClients = _aiCollectNewClientsForSuggestion();
+  if (!newClients.length) {
+    return {
+      ok: true,
+      processed: 0,
+      suggestions: [],
+      message: `Nenhum cliente NOVO com coordenada válida encontrado no DDD ${state.selectedDDD}.`
+    };
+  }
+
+  const routedClients = _aiCollectRoutedClientsForSuggestion();
+  const suggestions = newClients.map((client) => {
+    const bestDriver = _aiFindBestDriverForNewClient(client, dddDrivers, routedClients);
+    const bestDay = _aiFindBestDayForNewClient(client, bestDriver.driver.id, routedClients);
+    return {
+      clientId: client.id,
+      nome: client.nomeFantasia || client.tradeName || client.name || client.id,
+      suggestedDriverId: bestDriver.driver.id,
+      suggestedDriverName: bestDriver.driver.name,
+      suggestedDay: bestDay.day,
+      driverDistanceKm: Number(bestDriver.score).toFixed(2),
+      dayDistanceKm: Number(bestDay.dayScore).toFixed(2),
+    };
+  });
+
+  const previewLines = suggestions.slice(0, 8).map((item) => (
+    `• ${item.nome} (${item.clientId}) → ${item.suggestedDriverName} | ${item.suggestedDay}`
+  ));
+  const hiddenCount = Math.max(0, suggestions.length - previewLines.length);
+  const preview = hiddenCount > 0
+    ? `${previewLines.join('\n')}\n• ... e mais ${hiddenCount} cliente(s)`
+    : previewLines.join('\n');
+
+  return {
+    ok: true,
+    processed: suggestions.length,
+    suggestions,
+    message: `Sugestão concluída para ${suggestions.length} cliente(s) NOVOS no DDD ${state.selectedDDD}.\n\n${preview}\n\nObservação: nenhuma alteração foi aplicada automaticamente.`
+  };
+}
+
+function _aiTrySuggestNewClientsCommand(query) {
+  const q = _aiNorm(query);
+  const hasNew = /(novo|novos)/.test(q);
+  const hasIntent = /(suger|sugest|aloc|roteir|distribu|motorista|dia|proxim)/.test(q);
+  if (!(hasNew && hasIntent)) {
+    return null;
+  }
+
+  return {
+    handled: true,
+    response: `Vou analisar clientes NOVOS do DDD ${state.selectedDDD} com coordenadas válidas e sugerir motorista + dia por proximidade geográfica.`,
+    run: () => _aiSuggestNewClientsAllocation()
+  };
+}
+
 function _aiTrySmartSplitCommand(query) {
   const q = _aiNorm(query);
   const hasIntent = /(divid|balance|redistribu|metade|50\s*50|inteligent|proxim|base)/.test(q);
@@ -9302,12 +9448,22 @@ function aiSend(query) {
   const btn = document.getElementById('ai-send');
   inp.value = ''; inp.disabled = true; btn.disabled = true;
   _aiShowTyping();
+  const suggestNewCommand = _aiTrySuggestNewClientsCommand(query);
   const smartSplitCommand = _aiTrySmartSplitCommand(query);
   const smartCommand = _aiTryBulkScheduleCommand(query);
   const entry = _aiFind(query);
   setTimeout(() => {
     _aiHideTyping();
-    if (smartSplitCommand && smartSplitCommand.handled) {
+    if (suggestNewCommand && suggestNewCommand.handled) {
+      _aiPush('ai', suggestNewCommand.response);
+      if (suggestNewCommand.run) {
+        const result = suggestNewCommand.run();
+        if (result && result.message) {
+          _aiPush('ai', result.message);
+          updatePlannerHint(`Sugestão IA para NOVOS: ${result.processed || 0} cliente(s) processado(s).`);
+        }
+      }
+    } else if (smartSplitCommand && smartSplitCommand.handled) {
       _aiPush('ai', smartSplitCommand.response);
       if (smartSplitCommand.run) {
         if (smartSplitCommand.confirm && !window.confirm(smartSplitCommand.confirm)) {

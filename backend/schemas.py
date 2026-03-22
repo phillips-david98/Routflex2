@@ -5,6 +5,8 @@ from typing import Dict, List, Optional
 
 class ClientStatus(str, Enum):
     ATIVO = "ATIVO"
+    VALIDADO = "VALIDADO"
+    CREDENCIADO = "CREDENCIADO"
     NOVO = "NOVO"
     INATIVO = "INATIVO"
     SEM_COORDENADA = "SEM_COORDENADA"
