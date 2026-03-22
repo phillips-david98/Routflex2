@@ -2795,6 +2795,11 @@ body.login-active .routex-ai-panel { display:none !important; }
               </select>
             </div>
             <div class="field">
+              <label for="planning-session-select">Sessao de planejamento</label>
+              <select id="planning-session-select"></select>
+              <button class="action-button slim" id="create-simulation-btn" type="button" style="margin-top:8px; width:100%;">Criar simulacao</button>
+            </div>
+            <div class="field">
               <label for="territory-filter">Territorio</label>
               <select id="territory-filter">
                 <option value="all" selected>Todos</option>
@@ -3458,6 +3463,8 @@ const state = {
   curvFilters: new Set(['A', 'B', 'C']),
   densityProfile: 'balanced',
   selectedDDD: '65',
+  activePlanningSessionId: 'DDD_65',
+  activePlanningSessionByDDD: {},
   selectedRouteId: null,
   selectedStopId: null,
   plannerStatus: 'draft',
@@ -3531,6 +3538,8 @@ let lassoDrawLayer = null;
 let lassoSelectionLayer = null;
 let lassoDrawPoints = [];
 let lassoPendingMove = null;
+const planningSessionRegistry = new Map();
+const planningSessionSnapshots = new Map();
 
 const appShell = document.getElementById('app-shell');
 const entryScreen = document.getElementById('entry-screen');
@@ -3654,6 +3663,150 @@ function getDriversByDDD(ddd) {
 
 function getDriverById(driverId) {
   return drivers.find((driver) => driver.id === driverId) || null;
+}
+
+function getRealSessionIdForDDD(ddd) {
+  return `DDD_${ddd}`;
+}
+
+function buildPlanningSnapshotFromCurrentClients(ddd) {
+  return clients
+    .filter((client) => client.ddd === Number(ddd))
+    .map((client) => ({
+      id: client.id,
+      week: client.week,
+      day: client.day,
+      driverId: client.driverId,
+      sequence: client.sequence,
+    }));
+}
+
+function applyPlanningSnapshotToCurrentClients(snapshot, ddd) {
+  const byId = new Map((snapshot || []).map((item) => [item.id, item]));
+  clients.forEach((client) => {
+    if (client.ddd !== Number(ddd)) return;
+    const item = byId.get(client.id);
+    if (!item) return;
+    if (typeof item.week === 'number') client.week = item.week;
+    if (typeof item.day === 'string') client.day = item.day;
+    if (typeof item.driverId === 'string' && getDriverById(item.driverId)) {
+      client.driverId = item.driverId;
+      client.driverName = (getDriverById(item.driverId) || {}).name || client.driverName;
+    }
+    if (typeof item.sequence === 'number') client.sequence = item.sequence;
+  });
+}
+
+function captureActivePlanningSessionSnapshot() {
+  const sessionId = state.activePlanningSessionId;
+  if (!sessionId) return;
+  const meta = planningSessionRegistry.get(sessionId);
+  if (!meta) return;
+  planningSessionSnapshots.set(sessionId, buildPlanningSnapshotFromCurrentClients(meta.ddd));
+}
+
+function getPlanningSessionsForDDD(ddd) {
+  return Array.from(planningSessionRegistry.values())
+    .filter((item) => String(item.ddd) === String(ddd))
+    .sort((a, b) => {
+      if (a.tipo_sessao !== b.tipo_sessao) return a.tipo_sessao === 'REAL' ? -1 : 1;
+      return String(a.id).localeCompare(String(b.id));
+    });
+}
+
+function renderPlanningSessionSelector() {
+  const select = document.getElementById('planning-session-select');
+  if (!select) return;
+  const sessions = getPlanningSessionsForDDD(state.selectedDDD);
+  if (!sessions.length) {
+    select.innerHTML = '';
+    return;
+  }
+  select.innerHTML = sessions.map((session) => {
+    const label = session.tipo_sessao === 'REAL'
+      ? `REAL_${session.ddd}`
+      : session.id;
+    return `<option value="${session.id}">${label}</option>`;
+  }).join('');
+
+  const wanted = state.activePlanningSessionByDDD[state.selectedDDD] || getRealSessionIdForDDD(state.selectedDDD);
+  const exists = sessions.some((item) => item.id === wanted);
+  const selected = exists ? wanted : sessions[0].id;
+  select.value = selected;
+  state.activePlanningSessionByDDD[state.selectedDDD] = selected;
+  state.activePlanningSessionId = selected;
+}
+
+function switchPlanningSession(sessionId, options = {}) {
+  const target = planningSessionRegistry.get(sessionId);
+  if (!target) return;
+
+  const skipCapture = Boolean(options.skipCapture);
+  if (!skipCapture) {
+    captureActivePlanningSessionSnapshot();
+  }
+
+  const snapshot = planningSessionSnapshots.get(sessionId) || [];
+  applyPlanningSnapshotToCurrentClients(snapshot, target.ddd);
+  normalizeAllCurveSchedules();
+
+  state.activePlanningSessionId = sessionId;
+  state.activePlanningSessionByDDD[target.ddd] = sessionId;
+  applyFilters({ skipFitBounds: true });
+  updatePlannerHint(`Sessão ativa: ${sessionId} (DDD ${target.ddd}).`);
+}
+
+function initializePlanningSessions() {
+  planningSessionRegistry.clear();
+  planningSessionSnapshots.clear();
+  const ddds = Array.from(new Set(clients.map((client) => String(client.ddd))));
+  ddds.forEach((ddd) => {
+    const id = getRealSessionIdForDDD(ddd);
+    planningSessionRegistry.set(id, {
+      id,
+      ddd,
+      tipo_sessao: 'REAL',
+      createdAt: new Date().toISOString(),
+      sourceSessionId: null,
+    });
+    planningSessionSnapshots.set(id, buildPlanningSnapshotFromCurrentClients(ddd));
+    if (!state.activePlanningSessionByDDD[ddd]) {
+      state.activePlanningSessionByDDD[ddd] = id;
+    }
+  });
+  state.activePlanningSessionId = state.activePlanningSessionByDDD[state.selectedDDD] || getRealSessionIdForDDD(state.selectedDDD);
+  renderPlanningSessionSelector();
+}
+
+function createSimulationSessionForActiveDDD() {
+  captureActivePlanningSessionSnapshot();
+
+  const ddd = String(state.selectedDDD);
+  const sourceSessionId = state.activePlanningSessionByDDD[ddd] || getRealSessionIdForDDD(ddd);
+  const versionPattern = new RegExp(`^SIMULACAO_DDD_${ddd}_V(\\d+)$`);
+  const nextVersion = Array.from(planningSessionRegistry.keys())
+    .map((id) => {
+      const match = id.match(versionPattern);
+      return match ? Number(match[1]) : 0;
+    })
+    .reduce((maxV, current) => Math.max(maxV, current), 0) + 1;
+
+  const simulationId = `SIMULACAO_DDD_${ddd}_V${nextVersion}`;
+  const sourceSnapshot = planningSessionSnapshots.get(sourceSessionId) || buildPlanningSnapshotFromCurrentClients(ddd);
+
+  planningSessionRegistry.set(simulationId, {
+    id: simulationId,
+    ddd,
+    tipo_sessao: 'SIMULACAO',
+    createdAt: new Date().toISOString(),
+    sourceSessionId,
+  });
+  planningSessionSnapshots.set(simulationId, sourceSnapshot.map((item) => ({ ...item })));
+
+  state.activePlanningSessionByDDD[ddd] = simulationId;
+  renderPlanningSessionSelector();
+  switchPlanningSession(simulationId, { skipCapture: true });
+  updatePlannerHint(`Sessão de simulação criada: ${simulationId}. Nenhum cliente foi duplicado; apenas referências de planejamento foram copiadas.`);
 }
 
 function hslToHex(hue, saturation, lightness) {
@@ -3859,6 +4012,31 @@ async function savePlanningAdjustments() {
   if (!state.hasUnsavedPlanChanges) {
     updatePlannerHint('Nenhum ajuste pendente para salvar.');
     return;
+  }
+
+  captureActivePlanningSessionSnapshot();
+
+  const activeSessionMeta = planningSessionRegistry.get(state.activePlanningSessionId);
+  const isSimulationSession = activeSessionMeta && activeSessionMeta.tipo_sessao === 'SIMULACAO';
+  if (isSimulationSession) {
+    try {
+      localStorage.setItem(
+        `${PLAN_SAVE_STORAGE_KEY}:sim:${state.activePlanningSessionId}`,
+        JSON.stringify({
+          version: 1,
+          savedAt: new Date().toISOString(),
+          sessionId: state.activePlanningSessionId,
+          clients: planningSessionSnapshots.get(state.activePlanningSessionId) || []
+        })
+      );
+      markPlanAsSaved();
+      updatePlannerHint(`Ajustes salvos apenas na simulação ${state.activePlanningSessionId}. Sessão real não foi alterada.`);
+      applyFilters({ skipFitBounds: true });
+      return;
+    } catch (storageError) {
+      updatePlannerHint('Falha ao salvar ajustes da simulação no navegador.');
+      return;
+    }
   }
 
   const payload = {
@@ -7479,7 +7657,8 @@ function updateFocusCards(selectedRoute, filteredClients, routeGroups) {
   document.getElementById('focus-driver-name').textContent = activeDriverName;
   document.getElementById('focus-driver-summary-extra').textContent = `${driverClients.length} clientes | ${driverKm.toFixed(0)} km | veiculo: ${activeVehicle}`;
   document.getElementById('toolbar-title').textContent = 'Mapa de execucao';
-  document.getElementById('toolbar-subtitle').textContent = `Sessao planejamento | DDD ${state.selectedDDD} | ${dddClients.length} clientes | ${dddTotalDistance.toFixed(0)} km`;
+  const activeSessionLabel = state.activePlanningSessionId || getRealSessionIdForDDD(state.selectedDDD);
+  document.getElementById('toolbar-subtitle').textContent = `Sessao planejamento ${activeSessionLabel} | DDD ${state.selectedDDD} | ${dddClients.length} clientes | ${dddTotalDistance.toFixed(0)} km`;
 }
 
 function fitMapToFilteredClients(filteredClients, selectedRoute) {
@@ -8584,9 +8763,12 @@ function togglePanel(panelId, stateKey) {
 }
 
 document.getElementById('session-select').onchange = (event) => {
+  captureActivePlanningSessionSnapshot();
   closeLassoConfirmModal();
   clearLassoSelection({ skipRender: true });
   state.selectedDDD = event.target.value;
+  renderPlanningSessionSelector();
+  switchPlanningSession(state.activePlanningSessionByDDD[state.selectedDDD] || getRealSessionIdForDDD(state.selectedDDD), { skipCapture: true });
   state.manualAdjustedDriverIds.clear();
   state.selectedDriverId = 'all';
   state.focusDriverId = null;
@@ -8594,6 +8776,14 @@ document.getElementById('session-select').onchange = (event) => {
   closeDriverManagerModal();
   closeDriverModal();
   applyFilters();
+};
+
+document.getElementById('planning-session-select').onchange = (event) => {
+  switchPlanningSession(event.target.value);
+};
+
+document.getElementById('create-simulation-btn').onclick = () => {
+  createSimulationSessionForActiveDDD();
 };
 
 document.getElementById('driver-manager-trigger').onclick = () => {
@@ -8873,7 +9063,9 @@ document.addEventListener('keydown', (event) => {
 async function bootstrapApp() {
   initializeDrivers();
   generateClients();
+  initializePlanningSessions();
   await loadSavedPlanningAdjustments();
+  initializePlanningSessions();
   await loadAdvancedHistory();
   setLassoButtonState();
   syncManualPlanningModeUI();
