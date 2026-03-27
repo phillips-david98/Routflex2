@@ -385,6 +385,16 @@ body.login-active .app-shell {
   min-width: min(100%, 420px);
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.header-actions .route-action {
+  min-width: 168px;
+}
+
 .status-tile {
   padding: 10px 12px;
   border-radius: 16px;
@@ -474,6 +484,875 @@ body.login-active .app-shell {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.planning-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.planning-session-section {
+  margin-bottom: 14px;
+  padding: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(74, 143, 214, 0.42);
+  background:
+    radial-gradient(150% 120% at 0% 0%, rgba(58, 164, 255, 0.14), rgba(16, 33, 62, 0) 48%),
+    radial-gradient(140% 180% at 100% 0%, rgba(0, 244, 189, 0.11), rgba(7, 19, 37, 0) 56%),
+    linear-gradient(165deg, rgba(8, 19, 38, 0.98), rgba(6, 14, 29, 0.98));
+  box-shadow:
+    inset 0 1px 0 rgba(140, 201, 255, 0.18),
+    0 0 0 1px rgba(0, 194, 255, 0.1),
+    0 22px 34px rgba(3, 10, 22, 0.5);
+  animation: planningSectionReveal 0.5s cubic-bezier(0.2, 0.78, 0.24, 1);
+}
+
+@keyframes planningSectionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.planning-session-section .section-header {
+  margin: 0;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid rgba(105, 166, 229, 0.22);
+}
+
+.planning-session-section .section-header h2 {
+  font-size: 0.92rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #dff1ff;
+  text-shadow: 0 0 18px rgba(86, 173, 255, 0.32);
+}
+
+.planning-session-section #planning-range-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #93bedf;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.planning-session-section #planning-range-label::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #00d7a8;
+  box-shadow: 0 0 0 4px rgba(0, 215, 168, 0.2);
+}
+
+.planning-session-section .planning-main-grid {
+  padding: 13px;
+  border-bottom: 1px solid rgba(100, 162, 228, 0.2);
+  gap: 11px;
+}
+
+.planning-main-field label {
+  display: none;
+}
+
+.planning-action-field {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.planning-action-field .action-button {
+  width: 100%;
+}
+
+.planning-session-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.planning-session-actions .planning-action-btn {
+  justify-content: flex-start;
+  gap: 9px;
+  min-height: 44px;
+  border-radius: 13px;
+  font-size: 0.76rem;
+  letter-spacing: 0.01em;
+  border-width: 1px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  animation: planningActionIn 0.4s ease both;
+}
+
+@keyframes planningActionIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.planning-session-actions .planning-action-btn:nth-child(1) { animation-delay: 0.03s; }
+.planning-session-actions .planning-action-btn:nth-child(2) { animation-delay: 0.06s; }
+.planning-session-actions .planning-action-btn:nth-child(3) { animation-delay: 0.09s; }
+.planning-session-actions .planning-action-btn:nth-child(4) { animation-delay: 0.12s; }
+.planning-session-actions .planning-action-btn:nth-child(5) { animation-delay: 0.15s; }
+.planning-session-actions .planning-action-btn:nth-child(6) { animation-delay: 0.18s; }
+
+.planning-session-actions .planning-action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.planning-session-actions .planning-action-btn .action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  opacity: 0.96;
+  font-size: 0.95rem;
+}
+
+.planning-session-actions .planning-action-btn .action-text {
+  white-space: normal;
+  line-height: 1.15;
+}
+
+.planning-session-actions .planning-action-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.planning-session-actions .planning-action-btn:disabled:hover {
+  transform: none;
+}
+
+.planning-session-actions #create-planning-session-btn {
+  border-color: rgba(62, 209, 155, 0.46);
+  background: linear-gradient(140deg, rgba(27, 119, 90, 0.48), rgba(18, 83, 62, 0.42));
+  color: #c7ffe8;
+}
+
+.planning-session-actions #create-planning-session-btn:hover {
+  border-color: rgba(88, 235, 182, 0.7);
+  background: linear-gradient(140deg, rgba(36, 144, 109, 0.55), rgba(26, 104, 79, 0.49));
+  box-shadow: 0 0 18px rgba(49, 215, 158, 0.3);
+}
+
+.planning-session-actions #create-simulation-btn,
+.planning-session-actions #promote-simulation-btn {
+  border-color: rgba(90, 170, 255, 0.45);
+  background: linear-gradient(140deg, rgba(36, 92, 156, 0.5), rgba(24, 64, 121, 0.44));
+  color: #cde5ff;
+}
+
+.planning-session-actions #create-simulation-btn:hover,
+.planning-session-actions #promote-simulation-btn:hover {
+  border-color: rgba(127, 196, 255, 0.65);
+  background: linear-gradient(140deg, rgba(46, 115, 189, 0.58), rgba(31, 80, 153, 0.5));
+  box-shadow: 0 0 18px rgba(89, 166, 255, 0.3);
+}
+
+.planning-session-actions #promote-simulation-btn {
+  border-color: rgba(83, 194, 255, 0.54);
+  box-shadow: inset 0 0 0 1px rgba(65, 228, 162, 0.42);
+}
+
+.planning-session-actions #delete-planning-session-btn,
+.planning-session-actions #delete-simulation-btn {
+  border-color: rgba(223, 112, 112, 0.48);
+  background: linear-gradient(140deg, rgba(122, 35, 47, 0.54), rgba(88, 24, 35, 0.48));
+  color: #ffd6d6;
+}
+
+.planning-session-actions #delete-planning-session-btn:hover,
+.planning-session-actions #delete-simulation-btn:hover {
+  border-color: rgba(243, 142, 142, 0.66);
+  background: linear-gradient(140deg, rgba(147, 42, 57, 0.6), rgba(104, 28, 42, 0.54));
+  box-shadow: 0 0 18px rgba(255, 102, 126, 0.24);
+}
+
+.planning-session-actions #revert-planning-session-btn {
+  border-color: rgba(138, 177, 228, 0.44);
+  background: linear-gradient(140deg, rgba(48, 70, 108, 0.56), rgba(36, 54, 88, 0.48));
+  color: #dbe8f7;
+}
+
+.planning-session-actions #revert-planning-session-btn:hover {
+  border-color: rgba(173, 209, 255, 0.64);
+  background: linear-gradient(140deg, rgba(58, 84, 128, 0.62), rgba(42, 64, 101, 0.56));
+  box-shadow: 0 0 16px rgba(146, 189, 249, 0.24);
+}
+
+.planning-session-active-card {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 42px;
+  padding: 10px 12px;
+  border-radius: 13px;
+  border: 1px solid rgba(120, 182, 237, 0.28);
+  background: linear-gradient(180deg, rgba(29, 54, 90, 0.56), rgba(21, 39, 67, 0.5));
+}
+
+.active-session-kicker {
+  font-size: 0.67rem;
+  color: #9fc0e3;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.active-session-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.active-session-main strong {
+  font-size: 0.8rem;
+  color: #e5f4ff;
+  letter-spacing: 0.02em;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.active-session-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(91, 223, 171, 0.36);
+  background: rgba(38, 130, 99, 0.22);
+  color: #cffff0;
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.planning-session-section.is-simulation-active .active-session-mode {
+  border-color: rgba(120, 187, 255, 0.38);
+  background: rgba(52, 104, 176, 0.3);
+  color: #d8ebff;
+}
+
+.planning-session-status {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  min-height: 36px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.planning-status-label {
+  color: #9db9d9;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+.planning-status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  font-size: 0.84rem;
+}
+
+.planning-session-status strong {
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
+  color: #dff0ff;
+}
+
+.planning-session-status small {
+  margin-left: 6px;
+  color: #8eb0d6;
+  font-size: 0.75rem;
+}
+
+.planning-session-status small:empty {
+  display: none;
+}
+
+.session-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #30d18f;
+  box-shadow: 0 0 0 4px rgba(48, 209, 143, 0.14);
+}
+
+.session-status-dot.is-simulation {
+  background: #f2b84b;
+  box-shadow: 0 0 0 4px rgba(242, 184, 75, 0.14);
+}
+
+.planning-filters {
+  margin-top: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 12px 12px;
+}
+
+.planning-filters > summary {
+  list-style: none;
+  cursor: pointer;
+  color: #a9c0dd;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  user-select: none;
+  border-top: 1px solid rgba(97, 141, 197, 0.2);
+  padding-top: 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.planning-filters > summary::-webkit-details-marker {
+  display: none;
+}
+
+.planning-filters > summary::after {
+  content: none;
+}
+
+.planning-filters > summary::before {
+  content: '▾';
+  color: #88add3;
+  font-size: 0.75rem;
+  transition: transform 0.18s ease;
+}
+
+.planning-filters:not([open]) > summary::before {
+  transform: rotate(-90deg);
+}
+
+.planning-filters .grid-2 {
+  margin-top: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.planning-filters .field {
+  border: 1px solid rgba(114, 169, 224, 0.22);
+  border-radius: 12px;
+  padding: 9px 10px;
+  background: linear-gradient(180deg, rgba(22, 43, 74, 0.46), rgba(16, 31, 56, 0.38));
+}
+
+.planning-session-section .field label {
+  color: #a7bfdc;
+  font-size: 0.74rem;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.planning-session-section .field .filter-label-icon {
+  width: 14px;
+  text-align: center;
+  color: #89b9e6;
+  font-size: 0.78rem;
+}
+
+.planning-session-section .field select,
+.planning-session-section .driver-manager-trigger {
+  min-height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(117, 163, 221, 0.3);
+  background: linear-gradient(180deg, rgba(28, 51, 86, 0.6), rgba(20, 38, 68, 0.56));
+  color: #d3e6fb;
+  padding: 10px 12px;
+}
+
+.planning-session-section .driver-manager-trigger small {
+  color: #99badb;
+}
+
+.planning-session-section .driver-manager-caption {
+  display: none;
+}
+
+@media (max-width: 1180px) {
+  .planning-session-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-session-actions .planning-action-btn {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 860px) {
+  .planning-session-section .section-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .planning-session-section .section-header h2 {
+    width: 100%;
+  }
+
+  .planning-session-section #planning-range-label {
+    font-size: 0.66rem;
+  }
+
+  .planning-session-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-filters .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.planning-session-section {
+  font-family: 'Segoe UI', 'Roboto', 'Space Grotesk', sans-serif;
+}
+
+.planning-legacy-selects {
+  display: none !important;
+}
+
+.planning-session-section .planning-main-grid {
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 10px;
+}
+
+.planning-current-session-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(103, 153, 212, 0.22);
+  background: linear-gradient(180deg, rgba(12, 26, 47, 0.82), rgba(9, 19, 35, 0.8));
+}
+
+.planning-current-session-btn {
+  flex: 1 1 220px;
+  min-height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(110, 170, 232, 0.24);
+  background: rgba(18, 38, 67, 0.72);
+  color: #deefff;
+  padding: 8px 11px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: left;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.planning-current-session-btn:hover {
+  border-color: rgba(152, 203, 255, 0.42);
+  box-shadow: 0 0 0 1px rgba(89, 171, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.planning-current-session-pill {
+  min-height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(82, 220, 166, 0.28);
+  background: rgba(33, 131, 98, 0.18);
+  color: #d4fff0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.planning-session-kind-chip {
+  min-height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(82, 220, 166, 0.28);
+  background: rgba(21, 95, 72, 0.18);
+  color: #d4fff0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.planning-session-kind-dot {
+  font-size: 0.9rem;
+}
+
+.planning-session-section.is-simulation-active .planning-current-session-pill {
+  border-color: rgba(206, 186, 92, 0.5);
+  background: rgba(141, 120, 34, 0.3);
+  color: #fff4c7;
+}
+
+.planning-session-section.is-simulation-active .planning-session-kind-chip {
+  border-color: rgba(206, 186, 92, 0.5);
+  background: rgba(141, 120, 34, 0.3);
+  color: #fff4c7;
+}
+
+.planning-simulation-warning {
+  margin: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(217, 190, 81, 0.28);
+  background: rgba(128, 100, 28, 0.18);
+  color: #ffe9a2;
+  font-size: 0.73rem;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 7px 10px;
+}
+
+.planning-session-dropdown-wrap {
+  position: static;
+  width: 100%;
+}
+
+.planning-sessions-popover {
+  position: static;
+  z-index: auto;
+  margin-top: 2px;
+  padding: 9px;
+  border-radius: 14px;
+  border: 1px solid rgba(102, 164, 228, 0.24);
+  background:
+    radial-gradient(120% 140% at 50% 0%, rgba(46, 115, 189, 0.14), rgba(13, 26, 49, 0) 54%),
+    linear-gradient(180deg, rgba(7, 18, 37, 0.9), rgba(7, 15, 30, 0.9));
+  box-shadow: inset 0 0 0 1px rgba(136, 197, 255, 0.03);
+  animation: sessionPopoverIn 0.22s ease;
+  max-height: 44vh;
+  overflow: auto;
+}
+
+@keyframes sessionPopoverIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.planning-sessions-popover .popover-head {
+  display: grid;
+  gap: 2px;
+  padding: 4px 4px 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(93, 146, 201, 0.2);
+}
+
+.planning-sessions-popover .popover-head strong {
+  font-size: 0.8rem;
+  color: #dff2ff;
+}
+
+.planning-sessions-popover .popover-head span {
+  font-size: 0.7rem;
+  color: #97bde0;
+}
+
+.planning-sessions-list {
+  display: grid;
+  gap: 10px;
+}
+
+.planning-session-group {
+  display: grid;
+  gap: 6px;
+}
+
+.planning-session-group + .planning-session-group {
+  padding-top: 10px;
+  border-top: 1px solid rgba(93, 146, 201, 0.24);
+}
+
+.planning-session-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #a7caeb;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.planning-session-items {
+  display: grid;
+  gap: 6px;
+}
+
+.planning-session-item {
+  width: 100%;
+  border: 1px solid rgba(102, 155, 214, 0.18);
+  border-radius: 10px;
+  padding: 7px 9px;
+  background: rgba(19, 36, 64, 0.54);
+  color: #dff2ff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.planning-session-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(131, 197, 255, 0.62);
+}
+
+.planning-session-item.is-active {
+  border-color: rgba(131, 197, 255, 0.52);
+  box-shadow: 0 0 0 1px rgba(89, 173, 255, 0.14);
+}
+
+.planning-session-item-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.planning-session-item-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 3px 8px;
+  border: 1px solid rgba(72, 200, 149, 0.44);
+  color: #cffff1;
+  background: rgba(27, 130, 97, 0.26);
+}
+
+.planning-session-item-badge.is-simulation {
+  border-color: rgba(206, 186, 92, 0.5);
+  color: #fff4c7;
+  background: rgba(141, 120, 34, 0.3);
+}
+
+.planning-session-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.planning-toolbar-btn {
+  min-height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(115, 170, 226, 0.22);
+  background: rgba(23, 49, 84, 0.42);
+  color: #d6ebff;
+  font-size: 0.71rem;
+  font-weight: 700;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 11px;
+  letter-spacing: 0.02em;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.planning-toolbar-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(145, 199, 255, 0.38);
+}
+
+.planning-toolbar-btn.is-create {
+  border-color: rgba(72, 213, 160, 0.3);
+  background: rgba(22, 101, 75, 0.42);
+}
+
+.planning-toolbar-btn.is-delete {
+  border-color: rgba(229, 118, 118, 0.28);
+  background: rgba(99, 37, 47, 0.3);
+  color: #ffdce1;
+}
+
+.planning-toolbar-btn.is-main {
+  min-width: 118px;
+}
+
+.planning-toolbar-btn.is-secondary {
+  background: rgba(35, 61, 95, 0.34);
+}
+
+.planning-toolbar-btn.is-quiet {
+  background: transparent;
+}
+
+.planning-toolbar-btn.is-ghost {
+  background: transparent;
+  color: #9ec3e4;
+}
+
+.planning-toolbar-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.planning-toolbar-btn:disabled:hover {
+  transform: none;
+}
+
+.planning-create-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(3, 10, 20, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.planning-create-modal[hidden] {
+  display: none !important;
+}
+
+.planning-create-modal-card {
+  width: min(440px, 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(112, 167, 226, 0.18);
+  background: linear-gradient(180deg, rgba(11, 26, 48, 0.82), rgba(10, 22, 40, 0.82));
+  box-shadow: 0 18px 34px rgba(3, 9, 20, 0.45), inset 0 0 0 1px rgba(136, 197, 255, 0.05);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.planning-create-header {
+  display: grid;
+  gap: 2px;
+}
+
+.planning-create-modal-card h4 {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #e4f3ff;
+}
+
+.planning-create-header p {
+  margin: 0;
+  color: #87add0;
+  font-size: 0.71rem;
+  line-height: 1.35;
+}
+
+.planning-create-type-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.planning-create-type-option {
+  min-height: 34px;
+  border: 1px solid rgba(112, 167, 226, 0.2);
+  border-radius: 10px;
+  background: rgba(25, 52, 87, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  color: #cbe4fc;
+  font-size: 0.73rem;
+  font-weight: 600;
+}
+
+.planning-create-type-option input {
+  accent-color: #65b7ff;
+}
+
+.planning-create-quick-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: end;
+}
+
+.planning-create-sim-hint {
+  border-radius: 10px;
+  border: 1px solid rgba(93, 146, 201, 0.24);
+  background: rgba(19, 39, 67, 0.35);
+  color: #b9d8f5;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding: 8px 10px;
+}
+
+.planning-create-modal-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+@media (max-width: 860px) {
+  .planning-current-session-strip {
+    align-items: flex-start;
+  }
+
+  .planning-current-session-btn {
+    flex-basis: 100%;
+  }
+
+  .planning-session-toolbar {
+    width: 100%;
+  }
+
+  .planning-create-type-options {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-create-quick-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .field {
@@ -2353,6 +3232,10 @@ body.manual-planning-mode .manual-planning-panel {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .header-actions {
+    justify-content: flex-start;
+  }
+
   .workspace {
     grid-template-columns: 1fr;
     height: auto;
@@ -2418,6 +3301,15 @@ body.manual-planning-mode .manual-planning-panel {
   #driver-manager-modal {
     padding-left: 232px;
   }
+
+  .planning-main-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .planning-action-field {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
 }
 
 @media (max-width: 680px) {
@@ -2431,6 +3323,19 @@ body.manual-planning-mode .manual-planning-panel {
   .grid-2,
   .kpi-grid {
     grid-template-columns: 1fr;
+  }
+
+  .header-actions .route-action {
+    width: 100%;
+  }
+
+  .planning-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-session-status {
+    flex-wrap: wrap;
+    row-gap: 4px;
   }
 
   .map-overlay {
@@ -2773,70 +3678,144 @@ body.login-active .routex-ai-panel { display:none !important; }
         <strong id="header-stop-count">0</strong>
       </div>
     </div>
+    <div class="header-actions">
+      <button class="route-action primary" id="open-crm-btn" type="button">Abrir CRM</button>
+    </div>
   </header>
 
   <main class="workspace">
     <aside class="panel left-panel" id="left-panel">
       <div class="panel-scroll">
-        <section class="section">
+        <section class="section planning-session-section">
           <div class="section-header">
-            <h2>Janela de planejamento</h2>
-            <span id="planning-range-label">Ciclo comercial em andamento</span>
+            <h2>Sessão de planejamento</h2>
+            <span id="planning-range-label">Contexto ativo da operação</span>
           </div>
-          <div class="grid-2">
-            <div class="field">
-              <label for="session-select">Sessao / DDD</label>
+          <div class="planning-main-grid">
+            <div class="field planning-main-field planning-legacy-selects" aria-hidden="true">
+              <label for="session-select">DDD</label>
               <select id="session-select">
-                <option value="61">61 - Brasilia</option>
-                <option value="62">62 - Anapolis</option>
-                <option value="64">64 - Rio Verde</option>
-                <option value="65" selected>65 - Cuiaba</option>
-                <option value="66">66 - Tangara da Serra</option>
+                <option value="61">DDD: 61 - Brasília</option>
+                <option value="62">DDD: 62 - Anápolis</option>
+                <option value="64">DDD: 64 - Rio Verde</option>
+                <option value="65" selected>DDD: 65 - Cuiabá</option>
+                <option value="66">DDD: 66 - Tangará da Serra</option>
               </select>
             </div>
-            <div class="field">
-              <label for="planning-session-select">Sessao de planejamento</label>
+            <div class="field planning-main-field planning-legacy-selects" aria-hidden="true">
+              <label for="planning-session-select">Sessão</label>
               <select id="planning-session-select"></select>
-              <button class="action-button slim" id="create-simulation-btn" type="button" style="margin-top:8px; width:100%;">Criar simulacao</button>
             </div>
-            <div class="field">
-              <label for="territory-filter">Territorio</label>
-              <select id="territory-filter">
-                <option value="all" selected>Todos</option>
-                <option value="urbano">Urbano</option>
-                <option value="interior">Interior</option>
-                <option value="rodovia">Rodovia</option>
-                <option value="fronteira">Fronteira</option>
-              </select>
-            </div>
-            <div class="field" id="driver-manager-field">
-              <label for="driver-manager-trigger">Motorista</label>
-              <button class="driver-manager-trigger" id="driver-manager-trigger" type="button">
-                <span id="driver-manager-trigger-label">Todos</span>
-                <small>›</small>
+
+            <div class="planning-current-session-strip" id="planning-current-session-strip">
+              <button class="planning-current-session-btn" id="planning-current-session-btn" type="button" aria-controls="planning-sessions-popover" aria-expanded="false">
+                <span id="planning-current-session-label">DDD 65 ▼</span>
               </button>
-              <span class="driver-manager-caption" id="driver-manager-label">Todos os motoristas do DDD 65</span>
+              <span class="planning-current-session-pill" id="planning-current-session-pill">(ATIVO)</span>
+              <span class="planning-session-kind-chip" id="planning-session-kind-chip">
+                <span class="planning-session-kind-dot" id="planning-session-kind-dot" aria-hidden="true">🟢</span>
+                <strong id="planning-session-kind-text">PRODUÇÃO</strong>
+              </span>
             </div>
-            <div class="field">
-              <label for="vehicle-filter">Tipo de veiculo</label>
-              <select id="vehicle-filter">
-                <option value="all" selected>Todos</option>
-                <option value="carro">Carro</option>
-                <option value="moto">Moto</option>
-                <option value="pickup">Pickup</option>
-                <option value="pesado">Pesado</option>
-                <option value="eletrico">Eletrico</option>
-              </select>
+
+            <p class="planning-simulation-warning" id="planning-simulation-warning" hidden>
+              Modo simulação ativo. Nenhum dado será salvo ou enviado ao CRM.
+            </p>
+
+            <div class="planning-session-dropdown-wrap">
+              <div class="planning-sessions-popover" id="planning-sessions-popover" hidden>
+                <div class="popover-head">
+                  <strong>Sessões de Planejamento</strong>
+                  <span>Selecione uma sessão para ativar</span>
+                </div>
+                <div class="planning-sessions-list" id="planning-sessions-list"></div>
+              </div>
             </div>
-            <div class="field">
-              <label for="density-select">Perfil do plano</label>
-              <select id="density-select">
-                <option value="balanced" selected>Balanceado</option>
-                <option value="aggressive">Agressivo</option>
-                <option value="economic">Economico</option>
-              </select>
+
+            <div class="planning-session-toolbar">
+              <button class="planning-toolbar-btn is-create is-main" id="planning-create-session-btn" type="button">Nova Sessão</button>
+              <button class="planning-toolbar-btn is-delete is-quiet" id="planning-delete-session-btn" type="button">Apagar</button>
+            </div>
+
+            <div class="planning-create-modal" id="planning-create-modal" hidden>
+              <div class="planning-create-modal-card" role="dialog" aria-modal="true" aria-labelledby="planning-create-modal-title">
+                <div class="planning-create-header">
+                  <h4 id="planning-create-modal-title">Criar sessão de planejamento ou simulação</h4>
+                  <p>Escolha o tipo de sessão e confirme.</p>
+                </div>
+
+                <div class="planning-create-type-options" role="radiogroup" aria-label="Tipo de sessão">
+                  <label class="planning-create-type-option" for="planning-create-type-production">
+                    <input id="planning-create-type-production" type="radio" name="planning-create-type" value="production" checked>
+                    <span>Sessão de planejamento</span>
+                  </label>
+                  <label class="planning-create-type-option" for="planning-create-type-simulation">
+                    <input id="planning-create-type-simulation" type="radio" name="planning-create-type" value="simulation">
+                    <span>Simulação</span>
+                  </label>
+                </div>
+
+                <div class="planning-create-quick-grid" id="planning-create-ddd-field">
+                  <div class="field">
+                    <label for="planning-create-ddd-input">Número do DDD</label>
+                    <input class="pill-input" id="planning-create-ddd-input" type="text" inputmode="numeric" maxlength="3" placeholder="Ex: 44 ou 96">
+                  </div>
+                </div>
+
+                <div class="planning-create-sim-hint" id="planning-create-sim-hint" hidden>
+                  A simulação será criada automaticamente para o DDD atual: <strong id="planning-create-sim-ddd">DDD 65</strong>.
+                </div>
+
+                <div class="planning-create-modal-actions">
+                  <button class="planning-toolbar-btn is-create is-main" id="planning-create-confirm-btn" type="button">Criar</button>
+                  <button class="planning-toolbar-btn is-ghost" id="planning-create-cancel-btn" type="button">Fechar</button>
+                </div>
+              </div>
             </div>
           </div>
+
+          <details class="planning-filters" open>
+            <summary>Filtros</summary>
+            <div class="grid-2">
+              <div class="field">
+                <label for="territory-filter"><span class="filter-label-icon" aria-hidden="true">◈</span>Território</label>
+                <select id="territory-filter">
+                  <option value="all" selected>Todos</option>
+                  <option value="urbano">Urbano</option>
+                  <option value="interior">Interior</option>
+                  <option value="rodovia">Rodovia</option>
+                  <option value="fronteira">Fronteira</option>
+                </select>
+              </div>
+              <div class="field" id="driver-manager-field">
+                <label for="driver-manager-trigger"><span class="filter-label-icon" aria-hidden="true">⌁</span>Motorista</label>
+                <button class="driver-manager-trigger" id="driver-manager-trigger" type="button">
+                  <span id="driver-manager-trigger-label">Todos</span>
+                  <small>›</small>
+                </button>
+                <span class="driver-manager-caption" id="driver-manager-label">Todos os motoristas do DDD 65</span>
+              </div>
+              <div class="field">
+                <label for="vehicle-filter"><span class="filter-label-icon" aria-hidden="true">◩</span>Tipo de Veículo</label>
+                <select id="vehicle-filter">
+                  <option value="all" selected>Todos</option>
+                  <option value="carro">Carro</option>
+                  <option value="moto">Moto</option>
+                  <option value="pickup">Pickup</option>
+                  <option value="pesado">Pesado</option>
+                  <option value="eletrico">Eletrico</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="density-select"><span class="filter-label-icon" aria-hidden="true">◉</span>Perfil do Plano</label>
+                <select id="density-select">
+                  <option value="balanced" selected>Balanceado</option>
+                  <option value="aggressive">Agressivo</option>
+                  <option value="economic">Economico</option>
+                </select>
+              </div>
+            </div>
+          </details>
         </section>
 
         <section class="section">
@@ -3423,6 +4402,137 @@ const dddStates = {
   65: 'MT',
   66: 'MT'
 };
+const dddSpecificReferenceBases = {
+  31: { city: 'Belo Horizonte', neighborhood: 'Centro', address: 'Base Referência DDD 31', lat: -19.9167, lon: -43.9345, vehicle: 'carro' },
+  38: { city: 'Montes Claros', neighborhood: 'Centro', address: 'Base Referência DDD 38', lat: -16.7364, lon: -43.8617, vehicle: 'carro' },
+  62: { city: 'Goiania', neighborhood: 'Setor Sul', address: 'Base Referência DDD 62', lat: -16.6869, lon: -49.2648, vehicle: 'pickup' },
+  91: { city: 'Belem', neighborhood: 'Nazare', address: 'Base Referência DDD 91', lat: -1.4558, lon: -48.5039, vehicle: 'carro' },
+  93: { city: 'Santarem', neighborhood: 'Centro', address: 'Base Referência DDD 93', lat: -2.4385, lon: -54.6996, vehicle: 'carro' },
+  94: { city: 'Maraba', neighborhood: 'Cidade Nova', address: 'Base Referência DDD 94', lat: -5.3817, lon: -49.1322, vehicle: 'carro' },
+  95: { city: 'Boa Vista', neighborhood: 'Centro', address: 'Base Referência DDD 95', lat: 2.8235, lon: -60.6758, vehicle: 'carro' },
+  96: { city: 'Macapa', neighborhood: 'Centro', address: 'Base Referência DDD 96', lat: 0.0349, lon: -51.0694, vehicle: 'carro' }
+};
+const stateCapitalBases = {
+  AC: { city: 'Rio Branco', neighborhood: 'Centro', lat: -9.97499, lon: -67.8243, vehicle: 'carro' },
+  AL: { city: 'Maceio', neighborhood: 'Centro', lat: -9.64985, lon: -35.7089, vehicle: 'carro' },
+  AP: { city: 'Macapa', neighborhood: 'Centro', lat: 0.0349, lon: -51.0694, vehicle: 'carro' },
+  AM: { city: 'Manaus', neighborhood: 'Centro', lat: -3.11903, lon: -60.0217, vehicle: 'carro' },
+  BA: { city: 'Salvador', neighborhood: 'Centro', lat: -12.9714, lon: -38.5014, vehicle: 'carro' },
+  CE: { city: 'Fortaleza', neighborhood: 'Centro', lat: -3.73186, lon: -38.5267, vehicle: 'carro' },
+  DF: { city: 'Brasilia', neighborhood: 'Plano Piloto', lat: -15.7939, lon: -47.8828, vehicle: 'carro' },
+  ES: { city: 'Vitoria', neighborhood: 'Centro', lat: -20.3155, lon: -40.3128, vehicle: 'carro' },
+  GO: { city: 'Goiania', neighborhood: 'Setor Central', lat: -16.6869, lon: -49.2648, vehicle: 'carro' },
+  MA: { city: 'Sao Luis', neighborhood: 'Centro', lat: -2.53073, lon: -44.3068, vehicle: 'carro' },
+  MG: { city: 'Belo Horizonte', neighborhood: 'Centro', lat: -19.9167, lon: -43.9345, vehicle: 'carro' },
+  MS: { city: 'Campo Grande', neighborhood: 'Centro', lat: -20.4697, lon: -54.6201, vehicle: 'carro' },
+  MT: { city: 'Cuiaba', neighborhood: 'Centro', lat: -15.6014, lon: -56.0979, vehicle: 'carro' },
+  PA: { city: 'Belem', neighborhood: 'Nazare', lat: -1.4558, lon: -48.5039, vehicle: 'carro' },
+  PB: { city: 'Joao Pessoa', neighborhood: 'Centro', lat: -7.1195, lon: -34.845, vehicle: 'carro' },
+  PE: { city: 'Recife', neighborhood: 'Centro', lat: -8.04756, lon: -34.877, vehicle: 'carro' },
+  PI: { city: 'Teresina', neighborhood: 'Centro', lat: -5.08921, lon: -42.8016, vehicle: 'carro' },
+  PR: { city: 'Curitiba', neighborhood: 'Centro', lat: -25.4284, lon: -49.2733, vehicle: 'carro' },
+  RJ: { city: 'Rio de Janeiro', neighborhood: 'Centro', lat: -22.9068, lon: -43.1729, vehicle: 'carro' },
+  RN: { city: 'Natal', neighborhood: 'Centro', lat: -5.79448, lon: -35.211, vehicle: 'carro' },
+  RO: { city: 'Porto Velho', neighborhood: 'Centro', lat: -8.76194, lon: -63.9039, vehicle: 'carro' },
+  RR: { city: 'Boa Vista', neighborhood: 'Centro', lat: 2.8235, lon: -60.6758, vehicle: 'carro' },
+  RS: { city: 'Porto Alegre', neighborhood: 'Centro', lat: -30.0346, lon: -51.2177, vehicle: 'carro' },
+  SC: { city: 'Florianopolis', neighborhood: 'Centro', lat: -27.5949, lon: -48.5482, vehicle: 'carro' },
+  SE: { city: 'Aracaju', neighborhood: 'Centro', lat: -10.9472, lon: -37.0731, vehicle: 'carro' },
+  SP: { city: 'Sao Paulo', neighborhood: 'Centro', lat: -23.5505, lon: -46.6333, vehicle: 'carro' },
+  TO: { city: 'Palmas', neighborhood: 'Plano Diretor', lat: -10.2491, lon: -48.3243, vehicle: 'carro' }
+};
+
+function getReferenceBaseByDDD(ddd) {
+  const code = Number(ddd);
+  if (!Number.isFinite(code)) return null;
+
+  const specific = dddSpecificReferenceBases[code];
+  if (specific) {
+    return { ...specific };
+  }
+
+  const uf = inferStateCodeByDDD(code);
+  const capitalBase = stateCapitalBases[uf];
+  if (!capitalBase) return null;
+
+  return {
+    city: capitalBase.city,
+    neighborhood: capitalBase.neighborhood,
+    address: `Base Referência DDD ${code}`,
+    lat: capitalBase.lat,
+    lon: capitalBase.lon,
+    vehicle: capitalBase.vehicle || 'carro'
+  };
+}
+const stateLabels = {
+  AC: 'Acre',
+  AL: 'Alagoas',
+  AP: 'Amapa',
+  AM: 'Amazonas',
+  BA: 'Bahia',
+  CE: 'Ceara',
+  DF: 'Brasilia',
+  ES: 'Espirito Santo',
+  GO: 'Goias',
+  MA: 'Maranhao',
+  MT: 'Mato Grosso',
+  MS: 'Mato Grosso do Sul',
+  MG: 'Minas Gerais',
+  PA: 'Para',
+  PB: 'Paraiba',
+  PR: 'Parana',
+  PE: 'Pernambuco',
+  PI: 'Piaui',
+  RJ: 'Rio de Janeiro',
+  RN: 'Rio Grande do Norte',
+  RS: 'Rio Grande do Sul',
+  RO: 'Rondonia',
+  RR: 'Roraima',
+  SC: 'Santa Catarina',
+  SP: 'Sao Paulo',
+  SE: 'Sergipe',
+  TO: 'Tocantins',
+  BR: 'Brasil'
+};
+
+function inferStateCodeByDDD(ddd) {
+  const code = Number(ddd);
+  if (!Number.isFinite(code)) return 'BR';
+
+  if (code >= 11 && code <= 19) return 'SP';
+  if ([21, 22, 24].includes(code)) return 'RJ';
+  if ([27, 28].includes(code)) return 'ES';
+  if (code >= 31 && code <= 38) return 'MG';
+  if (code >= 41 && code <= 46) return 'PR';
+  if (code >= 47 && code <= 49) return 'SC';
+  if ([51, 53, 54, 55].includes(code)) return 'RS';
+  if (code === 61) return 'DF';
+  if ([62, 64].includes(code)) return 'GO';
+  if (code === 63) return 'TO';
+  if ([65, 66].includes(code)) return 'MT';
+  if (code === 67) return 'MS';
+  if (code === 68) return 'AC';
+  if (code === 69) return 'RO';
+  if ([71, 73, 74, 75, 77].includes(code)) return 'BA';
+  if (code === 79) return 'SE';
+  if ([81, 87].includes(code)) return 'PE';
+  if (code === 82) return 'AL';
+  if (code === 83) return 'PB';
+  if (code === 84) return 'RN';
+  if ([85, 88].includes(code)) return 'CE';
+  if ([86, 89].includes(code)) return 'PI';
+  if ([91, 93, 94].includes(code)) return 'PA';
+  if ([92, 97].includes(code)) return 'AM';
+  if (code === 95) return 'RR';
+  if (code === 96) return 'AP';
+  if ([98, 99].includes(code)) return 'MA';
+  return 'BR';
+}
+
+function inferRegionLabelByDDD(ddd) {
+  const uf = inferStateCodeByDDD(ddd);
+  return stateLabels[uf] || 'Nova sessão';
+}
 const driverBases = {
   61: { city: 'Brasilia', neighborhood: 'Asa Sul', address: 'SQS Operacional 61', lat: -15.7801, lon: -47.9292, vehicle: 'carro' },
   62: { city: 'Anapolis', neighborhood: 'Jundiai', address: 'Rua dos Condutores 62', lat: -16.3265, lon: -48.9522, vehicle: 'pickup' },
@@ -3435,12 +4545,23 @@ const priorities = ['Alta', 'Media', 'Baixa'];
 const windows = ['08:00-10:00', '10:00-12:00', '13:00-15:00', '15:00-18:00'];
 const MAX_WEEKS = 8;
 const MAX_MAP_RENDER_POINTS = 3000;
+const LARGE_DATASET_THRESHOLD = 12000;
+const VIEWPORT_BOUNDS_PAD_FACTOR = 0.35;
+const VIEWPORT_REFRESH_DEBOUNCE_MS = 180;
 const LASSO_ROUTE_MAX_DISTANCE = 22;
 const LASSO_ROUTE_AMBIGUITY_GAP = 8;
 const PLAN_SAVE_STORAGE_KEY = 'ROUTflex:manual-plan:v1';
 const BACKEND_API_BASE = window.location.protocol === 'file:'
   ? 'http://127.0.0.1:8000'
   : `${window.location.protocol}//${window.location.hostname || '127.0.0.1'}:8000`;
+const pageSearchParams = new URLSearchParams(window.location.search);
+const CRM_DASHBOARD_OVERRIDE_URL = pageSearchParams.get('crm_url');
+const ROUTFLEX_RUNTIME_CONFIG = window.ROUTFLEX_RUNTIME_CONFIG || window.ROUTFLEX_CONFIG || {};
+const CRM_URL = CRM_DASHBOARD_OVERRIDE_URL
+  || ROUTFLEX_RUNTIME_CONFIG.crmDashboardUrl
+  || ROUTFLEX_RUNTIME_CONFIG.crmUrl
+  || window.__ROUTFLEX_CRM_URL__
+  || 'http://localhost:5173/';
 
 function postBackendEvent(path, payload) {
   fetch(`${BACKEND_API_BASE}${path}`, {
@@ -3465,6 +4586,7 @@ const state = {
   selectedDDD: '65',
   activePlanningSessionId: 'DDD_65',
   activePlanningSessionByDDD: {},
+  lastPromotionBackupByDDD: {},
   selectedRouteId: null,
   selectedStopId: null,
   plannerStatus: 'draft',
@@ -3538,6 +4660,8 @@ let lassoDrawLayer = null;
 let lassoSelectionLayer = null;
 let lassoDrawPoints = [];
 let lassoPendingMove = null;
+let lastFilterContext = null;
+let viewportRefreshTimer = null;
 const planningSessionRegistry = new Map();
 const planningSessionSnapshots = new Map();
 
@@ -3669,6 +4793,186 @@ function getRealSessionIdForDDD(ddd) {
   return `DDD_${ddd}`;
 }
 
+function getDDDOptionLabel(ddd) {
+  const dddText = String(ddd);
+  const region = dddRegions[dddText] || dddRegions[Number(dddText)] || 'Nova sessão';
+  return `DDD: ${dddText} - ${region}`;
+}
+
+function ensureDDDOperationalContext(ddd, seedDDD = state.selectedDDD) {
+  const dddText = String(ddd);
+  const dddNumber = Number(dddText);
+  if (!Number.isFinite(dddNumber)) return;
+
+  const seedKey = String(seedDDD || dddText);
+  const seedNumber = Number(seedKey);
+  const fallbackBase = driverBases[seedNumber] || driverBases[65] || {
+    city: `Cidade ${dddText}`,
+    neighborhood: 'Centro',
+    address: `Base Operacional ${dddText}`,
+    lat: -15.6014,
+    lon: -56.0979,
+    vehicle: 'carro'
+  };
+
+  const inferredState = inferStateCodeByDDD(dddNumber);
+  const inferredRegion = inferRegionLabelByDDD(dddNumber);
+  const referenceBase = getReferenceBaseByDDD(dddNumber);
+  const currentBase = driverBases[dddNumber] || null;
+
+  const currentRegion = String(dddRegions[dddNumber] || '').trim();
+  if (!currentRegion || /^Opera(c|ç)ão\s+\d{2,3}$/i.test(currentRegion) || /^Nova sess(ã|a)o$/i.test(currentRegion)) {
+    dddRegions[dddNumber] = inferredRegion;
+  }
+
+  dddStates[dddNumber] = inferredState || dddStates[seedNumber] || 'BR';
+
+  const hasCurrentCoords = Boolean(currentBase && Number.isFinite(Number(currentBase.lat)) && Number.isFinite(Number(currentBase.lon)));
+  const genericCurrentAddress = Boolean(currentBase && /^Base Operacional\s+\d{2,3}$/i.test(String(currentBase.address || '').trim()));
+  const isFarFromReference = Boolean(
+    referenceBase
+    && hasCurrentCoords
+    && (Math.abs(Number(currentBase.lat) - Number(referenceBase.lat)) > 1.2
+      || Math.abs(Number(currentBase.lon) - Number(referenceBase.lon)) > 1.2)
+  );
+  const shouldApplyReference = Boolean(referenceBase && (!currentBase || genericCurrentAddress || !hasCurrentCoords || isFarFromReference));
+
+  if (shouldApplyReference) {
+    driverBases[dddNumber] = {
+      city: referenceBase.city,
+      neighborhood: referenceBase.neighborhood,
+      address: referenceBase.address,
+      lat: Number(referenceBase.lat),
+      lon: Number(referenceBase.lon),
+      vehicle: (currentBase && currentBase.vehicle) || referenceBase.vehicle || fallbackBase.vehicle || 'carro'
+    };
+    return;
+  }
+
+  if (!driverBases[dddNumber]) {
+    const delta = (dddNumber - (Number.isFinite(seedNumber) ? seedNumber : dddNumber)) * 0.002;
+    driverBases[dddNumber] = {
+      city: fallbackBase.city || `Cidade ${dddText}`,
+      neighborhood: fallbackBase.neighborhood || 'Centro',
+      address: `Base Operacional ${dddText}`,
+      lat: Number((Number(fallbackBase.lat || -15.6014) + delta).toFixed(5)),
+      lon: Number((Number(fallbackBase.lon || -56.0979) - delta).toFixed(5)),
+      vehicle: fallbackBase.vehicle || 'carro'
+    };
+  }
+}
+
+function getSelectedRouteCrmContext() {
+  let regiao = String(state.selectedDDD || '');
+  let data = new Date().toISOString().slice(0, 10);
+
+  try {
+    const routeGroups = buildRouteGroups(getFilteredClients());
+    const selectedRoute = routeGroups.find((route) => route.routeId === state.selectedRouteId) || null;
+    if (!selectedRoute) {
+      return { regiao, data };
+    }
+
+    if (selectedRoute.ddd) {
+      regiao = String(selectedRoute.ddd);
+    }
+
+    const withDate = (selectedRoute.clients || []).find((client) => client.routeDate || client.date);
+    const rawDate = withDate ? String(withDate.routeDate || withDate.date || '') : '';
+    const isoDate = rawDate.match(/\d{4}-\d{2}-\d{2}/);
+    if (isoDate && isoDate[0]) {
+      data = isoDate[0];
+    }
+  } catch (_) {
+    // Keep safe defaults when route context is temporarily unavailable.
+  }
+
+  return { regiao, data };
+}
+
+function buildCrmDashboardUrl() {
+  const baseUrl = String(CRM_URL || '').trim();
+  if (!baseUrl) {
+    return '';
+  }
+
+  const context = getSelectedRouteCrmContext();
+  const url = new URL(baseUrl, window.location.href);
+  url.searchParams.set('session_id', state.activePlanningSessionId || getRealSessionIdForDDD(state.selectedDDD));
+  url.searchParams.set('regiao', context.regiao);
+  url.searchParams.set('data', context.data);
+  if (state.selectedRouteId) {
+    url.searchParams.set('rota_id', String(state.selectedRouteId));
+  }
+  return url.toString();
+}
+
+async function isCrmReachable(baseUrl) {
+  try {
+    const parsedUrl = new URL(baseUrl, window.location.href);
+    const probeUrl = `${parsedUrl.origin}/`;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 2200);
+    await fetch(probeUrl, {
+      method: 'GET',
+      mode: 'no-cors',
+      cache: 'no-store',
+      signal: controller.signal
+    });
+    window.clearTimeout(timeoutId);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+async function openCrmDashboard() {
+  const crmUrl = buildCrmDashboardUrl();
+  if (!crmUrl) {
+    updatePlannerHint('URL do CRM não configurada. Defina crmDashboardUrl em window.ROUTFLEX_RUNTIME_CONFIG.');
+    return;
+  }
+
+  const reachable = await isCrmReachable(crmUrl);
+  if (!reachable) {
+    window.alert('Não foi possível conectar ao CRM. Verifique se o frontend CRM está rodando em http://localhost:5173.');
+    updatePlannerHint('CRM indisponível no momento. Inicie o frontend CRM e tente novamente.');
+    return;
+  }
+
+  window.open(crmUrl, '_blank', 'noopener,noreferrer');
+  updatePlannerHint('Dashboard CRM aberto em nova aba com o contexto da sessão atual.');
+}
+
+function ensureDDDOptionExists(ddd) {
+  const select = document.getElementById('session-select');
+  if (!select) return;
+
+  const dddText = String(ddd);
+  ensureDDDOperationalContext(dddText);
+  const exists = Array.from(select.options).some((option) => option.value === dddText);
+  if (!exists) {
+    const option = document.createElement('option');
+    option.value = dddText;
+    option.textContent = getDDDOptionLabel(dddText);
+    select.appendChild(option);
+  }
+
+  const options = Array.from(select.options)
+    .sort((a, b) => Number(a.value) - Number(b.value));
+  select.innerHTML = '';
+  options.forEach((option) => select.appendChild(option));
+}
+
+function removeDDDOption(ddd) {
+  const select = document.getElementById('session-select');
+  if (!select) return;
+  const dddText = String(ddd);
+  Array.from(select.options)
+    .filter((option) => option.value === dddText)
+    .forEach((option) => option.remove());
+}
+
 function buildPlanningSnapshotFromCurrentClients(ddd) {
   return clients
     .filter((client) => client.ddd === Number(ddd))
@@ -3714,18 +5018,179 @@ function getPlanningSessionsForDDD(ddd) {
     });
 }
 
+function getSessionDisplayLabel(sessionMeta) {
+  if (!sessionMeta) return '';
+  if (sessionMeta.tipo_sessao === 'REAL') {
+    return `DDD ${sessionMeta.ddd}`;
+  }
+  const simulationId = String(sessionMeta.id || '');
+  const simMatch = simulationId.match(/^SIMULACAO_DDD_(\d+)_V(\d+)$/);
+  if (simMatch) {
+    const version = Number(simMatch[2]);
+    return version > 1
+      ? `Simulação DDD ${simMatch[1]} #${version}`
+      : `Simulação DDD ${simMatch[1]}`;
+  }
+  return `Simulação DDD ${sessionMeta.ddd}`;
+}
+
+function getSourceSessionDisplayLabel(sourceSessionId) {
+  if (!sourceSessionId) return '';
+  const sourceMeta = planningSessionRegistry.get(sourceSessionId);
+  if (sourceMeta) return getSessionDisplayLabel(sourceMeta);
+  const match = String(sourceSessionId).match(/^DDD_(\d+)$/);
+  return match ? `DDD ${match[1]}` : String(sourceSessionId);
+}
+
+function getSessionBadgeText(sessionMeta) {
+  return sessionMeta && sessionMeta.tipo_sessao === 'SIMULACAO' ? 'SIMULAÇÃO' : 'PRODUÇÃO';
+}
+
+function getSessionBadgeIcon(sessionMeta) {
+  return sessionMeta && sessionMeta.tipo_sessao === 'SIMULACAO' ? '🟡' : '🟢';
+}
+
+function renderPlanningSessionsPopover() {
+  const listEl = document.getElementById('planning-sessions-list');
+  if (!listEl) return;
+
+  const allSessions = Array.from(planningSessionRegistry.values()).sort((a, b) => {
+    const dddCmp = Number(a.ddd) - Number(b.ddd);
+    if (dddCmp !== 0) return dddCmp;
+    if (a.tipo_sessao !== b.tipo_sessao) return a.tipo_sessao === 'REAL' ? -1 : 1;
+    return String(a.id).localeCompare(String(b.id));
+  });
+
+  if (!allSessions.length) {
+    listEl.innerHTML = '<div class="planning-session-items"><span style="font-size:0.73rem;color:#9dc0e0;">Nenhuma sessão disponível.</span></div>';
+    return;
+  }
+
+  const buildGroup = (title, sessions, isSimulationGroup) => {
+    if (!sessions.length) {
+      return `
+        <div class="planning-session-group">
+          <div class="planning-session-group-title">${title}</div>
+          <div class="planning-session-items">
+            <span style="font-size:0.72rem;color:#8fb3d6;">Nenhuma sessão</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const itemsHtml = sessions.map((session) => {
+      const isActive = String(state.activePlanningSessionId) === String(session.id);
+      const displayLabel = getSessionDisplayLabel(session);
+      const badgeText = getSessionBadgeText(session);
+      const badgeIcon = getSessionBadgeIcon(session);
+      return `
+        <button
+          class="planning-session-item ${isActive ? 'is-active' : ''}"
+          type="button"
+          data-action="activate-session"
+          data-session-id="${session.id}"
+          data-session-ddd="${session.ddd}">
+          <span class="planning-session-item-label">${displayLabel}</span>
+          <span class="planning-session-item-badge ${isSimulationGroup ? 'is-simulation' : ''}">${badgeIcon} ${badgeText}</span>
+        </button>
+      `;
+    }).join('');
+
+    return `
+      <div class="planning-session-group">
+        <div class="planning-session-group-title">${title}</div>
+        <div class="planning-session-items">${itemsHtml}</div>
+      </div>
+    `;
+  };
+
+  const productionSessions = allSessions.filter((session) => session.tipo_sessao !== 'SIMULACAO');
+  const simulationSessions = allSessions.filter((session) => session.tipo_sessao === 'SIMULACAO');
+  listEl.innerHTML = `${buildGroup('PRODUÇÃO', productionSessions, false)}${buildGroup('SIMULAÇÃO', simulationSessions, true)}`;
+}
+
+function openPlanningSessionsPopover() {
+  const currentSessionBtn = document.getElementById('planning-current-session-btn');
+  const popover = document.getElementById('planning-sessions-popover');
+  if (!popover) return;
+  renderPlanningSessionsPopover();
+  popover.hidden = false;
+  if (currentSessionBtn) currentSessionBtn.setAttribute('aria-expanded', 'true');
+}
+
+function closePlanningSessionsPopover() {
+  const currentSessionBtn = document.getElementById('planning-current-session-btn');
+  const popover = document.getElementById('planning-sessions-popover');
+  if (!popover) return;
+  popover.hidden = true;
+  if (currentSessionBtn) currentSessionBtn.setAttribute('aria-expanded', 'false');
+}
+
+function togglePlanningSessionsPopover() {
+  const popover = document.getElementById('planning-sessions-popover');
+  if (!popover) return;
+  if (popover.hidden) {
+    openPlanningSessionsPopover();
+    return;
+  }
+  closePlanningSessionsPopover();
+}
+
+function updatePlanningSessionStatus(sessionId) {
+  const sectionEl = document.querySelector('.planning-session-section');
+  const currentSessionLabel = document.getElementById('planning-current-session-label');
+  const currentSessionPill = document.getElementById('planning-current-session-pill');
+  const sessionKindText = document.getElementById('planning-session-kind-text');
+  const sessionKindDot = document.getElementById('planning-session-kind-dot');
+  const simulationWarning = document.getElementById('planning-simulation-warning');
+  if (!currentSessionLabel || !currentSessionPill || !sessionKindText || !sessionKindDot) return;
+
+  const meta = planningSessionRegistry.get(sessionId);
+  const activeMeta = meta || {
+    id: getRealSessionIdForDDD(state.selectedDDD),
+    ddd: state.selectedDDD,
+    tipo_sessao: 'REAL'
+  };
+  const isSimulation = activeMeta.tipo_sessao === 'SIMULACAO';
+  const displayLabel = getSessionDisplayLabel(activeMeta);
+
+  if (sectionEl) {
+    sectionEl.classList.toggle('is-simulation-active', isSimulation);
+  }
+
+  currentSessionLabel.textContent = `${displayLabel} ▼`;
+  currentSessionPill.textContent = '(ATIVO)';
+  sessionKindText.textContent = isSimulation ? 'SIMULAÇÃO' : 'PRODUÇÃO';
+  sessionKindDot.textContent = isSimulation ? '🟡' : '🟢';
+  if (simulationWarning) {
+    simulationWarning.hidden = !isSimulation;
+  }
+
+  updatePlanningSessionActionButtons(sessionId);
+  renderPlanningSessionsPopover();
+}
+
+function updatePlanningSessionActionButtons(sessionId) {
+  const deleteSessionBtn = document.getElementById('planning-delete-session-btn');
+  if (!deleteSessionBtn) return;
+  const current = planningSessionRegistry.get(sessionId);
+  const isSimulation = Boolean(current && current.tipo_sessao === 'SIMULACAO');
+  deleteSessionBtn.title = isSimulation
+    ? 'Apagar simulação ativa.'
+    : 'Apagar sessão de produção ativa (com confirmação forte).';
+}
+
 function renderPlanningSessionSelector() {
   const select = document.getElementById('planning-session-select');
   if (!select) return;
   const sessions = getPlanningSessionsForDDD(state.selectedDDD);
   if (!sessions.length) {
     select.innerHTML = '';
+    updatePlanningSessionStatus(null);
     return;
   }
   select.innerHTML = sessions.map((session) => {
-    const label = session.tipo_sessao === 'REAL'
-      ? `REAL_${session.ddd}`
-      : session.id;
+    const label = getSessionDisplayLabel(session);
     return `<option value="${session.id}">${label}</option>`;
   }).join('');
 
@@ -3735,6 +5200,8 @@ function renderPlanningSessionSelector() {
   select.value = selected;
   state.activePlanningSessionByDDD[state.selectedDDD] = selected;
   state.activePlanningSessionId = selected;
+  updatePlanningSessionStatus(selected);
+  renderPlanningSessionsPopover();
 }
 
 function switchPlanningSession(sessionId, options = {}) {
@@ -3752,13 +5219,20 @@ function switchPlanningSession(sessionId, options = {}) {
 
   state.activePlanningSessionId = sessionId;
   state.activePlanningSessionByDDD[target.ddd] = sessionId;
+  state.selectedDDD = String(target.ddd);
+  const dddSelect = document.getElementById('session-select');
+  if (dddSelect) dddSelect.value = String(target.ddd);
+  const sessionSelect = document.getElementById('planning-session-select');
+  if (sessionSelect) sessionSelect.value = String(sessionId);
+  updatePlanningSessionStatus(sessionId);
   applyFilters({ skipFitBounds: true });
-  updatePlannerHint(`Sessão ativa: ${sessionId} (DDD ${target.ddd}).`);
+  updatePlannerHint(`Sessão ativa: ${getSessionDisplayLabel(target)}.`);
 }
 
 function initializePlanningSessions() {
   planningSessionRegistry.clear();
   planningSessionSnapshots.clear();
+  state.lastPromotionBackupByDDD = {};
   const ddds = Array.from(new Set(clients.map((client) => String(client.ddd))));
   ddds.forEach((ddd) => {
     const id = getRealSessionIdForDDD(ddd);
@@ -3778,35 +5252,358 @@ function initializePlanningSessions() {
   renderPlanningSessionSelector();
 }
 
-function createSimulationSessionForActiveDDD() {
-  captureActivePlanningSessionSnapshot();
+function clonePlanningSnapshot(snapshot) {
+  return (snapshot || []).map((item) => ({ ...item }));
+}
 
-  const ddd = String(state.selectedDDD);
-  const sourceSessionId = state.activePlanningSessionByDDD[ddd] || getRealSessionIdForDDD(ddd);
-  const versionPattern = new RegExp(`^SIMULACAO_DDD_${ddd}_V(\\d+)$`);
+function getNextSimulationIdForDDD(ddd) {
+  const pattern = new RegExp(`^SIMULACAO_DDD_${ddd}_V(\\d+)$`);
   const nextVersion = Array.from(planningSessionRegistry.keys())
     .map((id) => {
-      const match = id.match(versionPattern);
+      const match = id.match(pattern);
       return match ? Number(match[1]) : 0;
     })
     .reduce((maxV, current) => Math.max(maxV, current), 0) + 1;
 
-  const simulationId = `SIMULACAO_DDD_${ddd}_V${nextVersion}`;
-  const sourceSnapshot = planningSessionSnapshots.get(sourceSessionId) || buildPlanningSnapshotFromCurrentClients(ddd);
+  return `SIMULACAO_DDD_${ddd}_V${nextVersion}`;
+}
 
+function createSimulationSessionFromSnapshot(ddd, sourceSessionId, sourceSnapshot) {
+  const simulationId = getNextSimulationIdForDDD(ddd);
   planningSessionRegistry.set(simulationId, {
     id: simulationId,
     ddd,
     tipo_sessao: 'SIMULACAO',
     createdAt: new Date().toISOString(),
-    sourceSessionId,
+    sourceSessionId: sourceSessionId || getRealSessionIdForDDD(ddd),
   });
-  planningSessionSnapshots.set(simulationId, sourceSnapshot.map((item) => ({ ...item })));
+  planningSessionSnapshots.set(simulationId, clonePlanningSnapshot(sourceSnapshot));
+  return simulationId;
+}
 
+function createSimulationSessionForActiveDDD(targetDDD = state.selectedDDD, preferredSourceSessionId = null) {
+  captureActivePlanningSessionSnapshot();
+
+  const ddd = String(targetDDD);
+  const sourceSessionId = preferredSourceSessionId && planningSessionRegistry.has(preferredSourceSessionId)
+    ? preferredSourceSessionId
+    : (state.activePlanningSessionByDDD[ddd] || getRealSessionIdForDDD(ddd));
+  const sourceLabel = getSourceSessionDisplayLabel(sourceSessionId) || sourceSessionId;
+  const sourceSnapshot = planningSessionSnapshots.get(sourceSessionId) || buildPlanningSnapshotFromCurrentClients(ddd);
+  const simulationId = createSimulationSessionFromSnapshot(ddd, sourceSessionId, sourceSnapshot);
+
+  state.selectedDDD = ddd;
+  const dddSelect = document.getElementById('session-select');
+  if (dddSelect) dddSelect.value = ddd;
   state.activePlanningSessionByDDD[ddd] = simulationId;
   renderPlanningSessionSelector();
   switchPlanningSession(simulationId, { skipCapture: true });
-  updatePlannerHint(`Sessão de simulação criada: ${simulationId}. Nenhum cliente foi duplicado; apenas referências de planejamento foram copiadas.`);
+  const simulationLabel = getSessionDisplayLabel(planningSessionRegistry.get(simulationId));
+  updatePlannerHint(`${simulationLabel} criada a partir de ${sourceLabel}. Nenhum dado será enviado ao CRM ou banco.`);
+}
+
+function createPlanningSessionByDDD(targetDDD = state.selectedDDD) {
+  const ddd = String(targetDDD);
+
+  const realSessionId = getRealSessionIdForDDD(ddd);
+  const alreadyExists = planningSessionRegistry.has(realSessionId);
+
+  ensureDDDOperationalContext(ddd);
+  ensureDDDOptionExists(ddd);
+  state.selectedDDD = ddd;
+  const dddSelect = document.getElementById('session-select');
+  if (dddSelect) dddSelect.value = ddd;
+
+  if (!alreadyExists) {
+    planningSessionRegistry.set(realSessionId, {
+      id: realSessionId,
+      ddd,
+      tipo_sessao: 'REAL',
+      createdAt: new Date().toISOString(),
+      sourceSessionId: null,
+    });
+    planningSessionSnapshots.set(realSessionId, buildPlanningSnapshotFromCurrentClients(ddd));
+  }
+
+  state.activePlanningSessionByDDD[ddd] = realSessionId;
+  renderPlanningSessionSelector();
+  switchPlanningSession(realSessionId, { skipCapture: true });
+  focusMapOnDDD(ddd, { zoom: 8, animate: true });
+  postBackendEvent('/planning/sessions/create-real', {
+    sessionId: realSessionId,
+    ddd,
+    sessionType: 'REAL',
+    source: 'routing-control-tower',
+    integrateWith: ['db', 'crm'],
+    createdAt: new Date().toISOString()
+  });
+  updatePlannerHint(alreadyExists
+    ? `Sessão de produção DDD ${ddd} já existia.`
+    : `Sessão de produção DDD ${ddd} criada com integração de banco e CRM.`);
+}
+
+function deleteActiveSimulationSessionForDDD(options = {}) {
+  const skipConfirm = Boolean(options.skipConfirm);
+  const ddd = String(state.selectedDDD);
+  const sessionId = state.activePlanningSessionByDDD[ddd] || state.activePlanningSessionId;
+  const meta = planningSessionRegistry.get(sessionId);
+  if (!meta) return;
+
+  if (meta.tipo_sessao === 'REAL') {
+    updatePlannerHint('Selecione uma sessão de simulação para apagar.');
+    return;
+  }
+
+  const fallbackSessionId = meta.sourceSessionId && planningSessionRegistry.has(meta.sourceSessionId)
+    ? meta.sourceSessionId
+    : getRealSessionIdForDDD(ddd);
+  const fallbackLabel = getSourceSessionDisplayLabel(fallbackSessionId) || fallbackSessionId;
+  if (!skipConfirm) {
+    const confirmed = window.confirm(`Apagar a simulação ${meta.id}? Esta ação remove apenas o cenário de teste.`);
+    if (!confirmed) return;
+  }
+
+  planningSessionRegistry.forEach((item, itemId) => {
+    if (item.sourceSessionId === meta.id) {
+      planningSessionRegistry.set(itemId, {
+        ...item,
+        sourceSessionId: fallbackSessionId,
+      });
+    }
+  });
+
+  planningSessionRegistry.delete(meta.id);
+  planningSessionSnapshots.delete(meta.id);
+  if (state.lastPromotionBackupByDDD[ddd] === meta.id) {
+    delete state.lastPromotionBackupByDDD[ddd];
+  }
+  state.activePlanningSessionByDDD[ddd] = fallbackSessionId;
+  renderPlanningSessionSelector();
+  switchPlanningSession(fallbackSessionId, { skipCapture: true });
+  updatePlannerHint(`${getSessionDisplayLabel(meta)} apagada. Sessão ativa retornou para ${fallbackLabel}.`);
+}
+
+function deleteRealPlanningSessionForDDD(options = {}) {
+  const skipConfirm = Boolean(options.skipConfirm);
+  const ddd = String(state.selectedDDD);
+  const sessionId = state.activePlanningSessionByDDD[ddd] || state.activePlanningSessionId;
+  const meta = planningSessionRegistry.get(sessionId);
+
+  if (!meta) return;
+  if (meta.tipo_sessao !== 'REAL') {
+    updatePlannerHint('Selecione uma sessão de produção para apagar.');
+    return;
+  }
+
+  const allSessionsForDDD = getPlanningSessionsForDDD(ddd);
+  if (!skipConfirm) {
+    const confirmed = window.confirm(`Apagar a sessão de planejamento DDD ${ddd} e ${Math.max(0, allSessionsForDDD.length - 1)} simulação(ões) vinculada(s)?`);
+    if (!confirmed) return;
+  }
+
+  allSessionsForDDD.forEach((session) => {
+    planningSessionRegistry.delete(session.id);
+    planningSessionSnapshots.delete(session.id);
+  });
+  delete state.activePlanningSessionByDDD[ddd];
+  delete state.lastPromotionBackupByDDD[ddd];
+  removeDDDOption(ddd);
+
+  const availableDDD = Array.from(new Set(Array.from(planningSessionRegistry.values())
+    .map((session) => String(session.ddd))))
+    .sort((a, b) => Number(a) - Number(b));
+
+  if (!availableDDD.length) {
+    updatePlanningSessionStatus(null);
+    document.getElementById('planning-session-select').innerHTML = '';
+    updatePlannerHint(`Sessão de produção DDD ${ddd} apagada.`);
+    applyFilters({ skipFitBounds: true });
+    return;
+  }
+
+  const fallbackDDD = availableDDD.includes('65') ? '65' : availableDDD[0];
+  state.selectedDDD = fallbackDDD;
+  document.getElementById('session-select').value = fallbackDDD;
+  renderPlanningSessionSelector();
+  switchPlanningSession(state.activePlanningSessionByDDD[fallbackDDD] || getRealSessionIdForDDD(fallbackDDD), { skipCapture: true });
+  updatePlannerHint(`Sessão de produção DDD ${ddd} apagada.`);
+}
+
+function updatePlanningCreateSessionMode() {
+  const selectedType = document.querySelector('input[name="planning-create-type"]:checked')?.value || 'production';
+  const dddField = document.getElementById('planning-create-ddd-field');
+  const simHint = document.getElementById('planning-create-sim-hint');
+  const simDDD = document.getElementById('planning-create-sim-ddd');
+  const confirmBtn = document.getElementById('planning-create-confirm-btn');
+  const isSimulation = selectedType === 'simulation';
+
+  if (dddField) dddField.hidden = isSimulation;
+  if (simHint) simHint.hidden = !isSimulation;
+  if (simDDD) simDDD.textContent = `DDD ${state.selectedDDD}`;
+  if (confirmBtn) confirmBtn.textContent = isSimulation ? 'Criar Simulação' : 'Criar Sessão';
+}
+
+function openPlanningCreateSessionModal() {
+  const modal = document.getElementById('planning-create-modal');
+  const dddInput = document.getElementById('planning-create-ddd-input');
+  const productionOption = document.getElementById('planning-create-type-production');
+  if (!modal || !dddInput || !productionOption) return;
+
+  closePlanningSessionsPopover();
+  productionOption.checked = true;
+  dddInput.value = String(state.selectedDDD || '').replace(/\D/g, '').slice(0, 3);
+  updatePlanningCreateSessionMode();
+  modal.hidden = false;
+  dddInput.focus();
+}
+
+function closePlanningCreateSessionModal() {
+  const modal = document.getElementById('planning-create-modal');
+  if (!modal) return;
+  modal.hidden = true;
+}
+
+function confirmPlanningCreateSessionFromModal() {
+  const selectedType = document.querySelector('input[name="planning-create-type"]:checked')?.value || 'production';
+
+  if (selectedType === 'simulation') {
+    const currentDDD = String(state.selectedDDD);
+    const sourceSessionId = getRealSessionIdForDDD(currentDDD);
+    createSimulationSessionForActiveDDD(currentDDD, sourceSessionId);
+    closePlanningCreateSessionModal();
+    return;
+  }
+
+  const dddInput = document.getElementById('planning-create-ddd-input');
+  const rawDDD = String((dddInput && dddInput.value) || '').replace(/\D/g, '').slice(0, 3);
+  if (!/^\d{2,3}$/.test(rawDDD)) {
+    updatePlannerHint('Informe um DDD válido com 2 ou 3 dígitos.');
+    if (dddInput) dddInput.focus();
+    return;
+  }
+  createPlanningSessionByDDD(rawDDD);
+  closePlanningCreateSessionModal();
+}
+
+function deleteSelectedPlanningSession() {
+  const ddd = String(state.selectedDDD);
+  const activeSessionId = state.activePlanningSessionByDDD[ddd] || state.activePlanningSessionId;
+  const activeMeta = planningSessionRegistry.get(activeSessionId);
+  if (!activeMeta) return;
+
+  if (activeMeta.tipo_sessao === 'SIMULACAO') {
+    const confirmed = window.confirm(`Apagar ${getSessionDisplayLabel(activeMeta)}?`);
+    if (!confirmed) return;
+    deleteActiveSimulationSessionForDDD({ skipConfirm: true });
+    return;
+  }
+
+  const confirmed = window.confirm(`ATENÇÃO: esta ação removerá a sessão de produção DDD ${activeMeta.ddd} e todas as simulações vinculadas.`);
+  if (!confirmed) return;
+  const phrase = window.prompt('Digite APAGAR para confirmar:');
+  if (phrase !== 'APAGAR') {
+    updatePlannerHint('Operação cancelada. Confirmação não validada.');
+    return;
+  }
+  deleteRealPlanningSessionForDDD({ skipConfirm: true });
+}
+
+function promoteActiveSimulationToRealSession() {
+  captureActivePlanningSessionSnapshot();
+  const ddd = String(state.selectedDDD);
+  const activeSessionId = state.activePlanningSessionByDDD[ddd] || state.activePlanningSessionId;
+  const activeMeta = planningSessionRegistry.get(activeSessionId);
+
+  if (!activeMeta || activeMeta.tipo_sessao !== 'SIMULACAO') {
+    updatePlannerHint('Selecione uma simulação para promover para produção.');
+    return;
+  }
+
+  const realSessionId = getRealSessionIdForDDD(ddd);
+  if (!planningSessionRegistry.has(realSessionId)) {
+    planningSessionRegistry.set(realSessionId, {
+      id: realSessionId,
+      ddd,
+      tipo_sessao: 'REAL',
+      createdAt: new Date().toISOString(),
+      sourceSessionId: null,
+    });
+  }
+
+  const realSnapshotBefore = planningSessionSnapshots.get(realSessionId) || buildPlanningSnapshotFromCurrentClients(ddd);
+  const promotedSnapshot = planningSessionSnapshots.get(activeSessionId) || buildPlanningSnapshotFromCurrentClients(ddd);
+
+  const backupSimulationId = createSimulationSessionFromSnapshot(ddd, realSessionId, realSnapshotBefore);
+  planningSessionSnapshots.set(realSessionId, clonePlanningSnapshot(promotedSnapshot));
+  state.lastPromotionBackupByDDD[ddd] = backupSimulationId;
+
+  planningSessionRegistry.forEach((item, itemId) => {
+    if (item.sourceSessionId === activeSessionId) {
+      planningSessionRegistry.set(itemId, {
+        ...item,
+        sourceSessionId: realSessionId,
+      });
+    }
+  });
+
+  planningSessionRegistry.delete(activeSessionId);
+  planningSessionSnapshots.delete(activeSessionId);
+
+  state.activePlanningSessionByDDD[ddd] = realSessionId;
+  renderPlanningSessionSelector();
+  switchPlanningSession(realSessionId, { skipCapture: true });
+
+  postBackendEvent('/planning/sessions/promote-simulation', {
+    ddd,
+    promotedSimulationId: activeSessionId,
+    realSessionId,
+    previousRealSavedAs: backupSimulationId,
+    promotedAt: new Date().toISOString(),
+    source: 'routing-control-tower'
+  });
+
+  updatePlannerHint(`Simulação promovida para Produção DDD ${ddd}. O estado anterior foi preservado em ${backupSimulationId}.`);
+}
+
+function revertRealPlanningSession() {
+  captureActivePlanningSessionSnapshot();
+  const ddd = String(state.selectedDDD);
+  const realSessionId = getRealSessionIdForDDD(ddd);
+  const rollbackSimulationId = state.lastPromotionBackupByDDD[ddd];
+
+  if (!rollbackSimulationId || !planningSessionRegistry.has(rollbackSimulationId)) {
+    updatePlannerHint('Nenhum estado anterior de produção disponível para reverter.');
+    return;
+  }
+
+  const rollbackSnapshot = planningSessionSnapshots.get(rollbackSimulationId);
+  if (!rollbackSnapshot) {
+    updatePlannerHint('Não foi possível localizar os dados da sessão anterior para reverter.');
+    return;
+  }
+
+  const currentRealSnapshot = planningSessionSnapshots.get(realSessionId) || buildPlanningSnapshotFromCurrentClients(ddd);
+  const preservedCurrentRealSimulationId = createSimulationSessionFromSnapshot(ddd, realSessionId, currentRealSnapshot);
+
+  planningSessionSnapshots.set(realSessionId, clonePlanningSnapshot(rollbackSnapshot));
+  planningSessionRegistry.delete(rollbackSimulationId);
+  planningSessionSnapshots.delete(rollbackSimulationId);
+  state.lastPromotionBackupByDDD[ddd] = preservedCurrentRealSimulationId;
+
+  state.activePlanningSessionByDDD[ddd] = realSessionId;
+  renderPlanningSessionSelector();
+  switchPlanningSession(realSessionId, { skipCapture: true });
+
+  postBackendEvent('/planning/sessions/revert-real', {
+    ddd,
+    realSessionId,
+    restoredFromSimulationId: rollbackSimulationId,
+    currentRealSavedAs: preservedCurrentRealSimulationId,
+    revertedAt: new Date().toISOString(),
+    source: 'routing-control-tower'
+  });
+
+  updatePlannerHint(`Produção DDD ${ddd} revertida. O estado atual foi preservado em ${preservedCurrentRealSimulationId}.`);
 }
 
 function hslToHex(hue, saturation, lightness) {
@@ -4030,7 +5827,7 @@ async function savePlanningAdjustments() {
         })
       );
       markPlanAsSaved();
-      updatePlannerHint(`Ajustes salvos apenas na simulação ${state.activePlanningSessionId}. Sessão real não foi alterada.`);
+      updatePlannerHint(`Ajustes salvos apenas na simulação ${state.activePlanningSessionId}. Produção não foi alterada.`);
       applyFilters({ skipFitBounds: true });
       return;
     } catch (storageError) {
@@ -4089,7 +5886,8 @@ function getNextDriverDisplayName(ddd) {
     const match = driver.name.match(/-\s*(\d{2})$/);
     return Math.max(maxValue, match ? Number(match[1]) : 0);
   }, 0);
-  return `${dddStates[ddd]} ${ddd} - ${String(currentMax + 1).padStart(2, '0')}`;
+  const stateCode = dddStates[ddd] || 'BR';
+  return `${stateCode} ${ddd} - ${String(currentMax + 1).padStart(2, '0')}`;
 }
 
 function createDriverRecord({ ddd, name, phone, city, neighborhood, address, responsavel, vehicle, lat, lon }) {
@@ -4217,20 +6015,46 @@ function renderDriverManagerPanel() {
 
 function renderDriverModalDDDOptions() {
   const select = document.getElementById('driver-ddd-input');
-  select.innerHTML = Object.keys(driverBases)
-    .map((ddd) => `<option value="${ddd}">${ddd} - ${dddRegions[ddd]}</option>`)
+  if (!select) return;
+
+  const sessionSelect = document.getElementById('session-select');
+  const knownDDDs = new Set(Object.keys(driverBases).map(String));
+  if (sessionSelect) {
+    Array.from(sessionSelect.options).forEach((option) => knownDDDs.add(String(option.value)));
+  }
+
+  if (!knownDDDs.size) {
+    knownDDDs.add(String(state.selectedDDD));
+  }
+
+  const ordered = Array.from(knownDDDs)
+    .filter((ddd) => /^\d{2,3}$/.test(String(ddd)))
+    .sort((a, b) => Number(a) - Number(b));
+
+  ordered.forEach((ddd) => ensureDDDOperationalContext(ddd));
+  select.innerHTML = ordered
+    .map((ddd) => `<option value="${ddd}">${ddd} - ${dddRegions[ddd] || `Operação ${ddd}`}</option>`)
     .join('');
 }
 
 function updateDriverFormDefaults() {
   const ddd = Number(document.getElementById('driver-ddd-input').value);
+  ensureDDDOperationalContext(ddd);
   const base = driverBases[ddd];
+  const stateCode = dddStates[ddd] || 'BR';
+  const city = base && base.city ? base.city : `Cidade ${ddd}`;
+  const neighborhood = base && base.neighborhood ? base.neighborhood : 'Centro';
+  const address = base && base.address ? base.address : `Base Operacional ${ddd}`;
+  const vehicle = base && base.vehicle ? base.vehicle : 'carro';
   document.getElementById('driver-name-input').value = getNextDriverDisplayName(ddd);
-  document.getElementById('driver-manager-input').value = `Supervisor ${dddStates[ddd]}`;
+  document.getElementById('driver-manager-input').value = `Supervisor ${stateCode}`;
   document.getElementById('driver-phone-input').value = generateSimPhone(ddd, getDriversByDDD(ddd).length + 1);
-  document.getElementById('driver-city-input').value = base.city;
-  document.getElementById('driver-neighborhood-input').value = base.neighborhood;
-  document.getElementById('driver-address-input').value = `${base.address} - Residencial`;
+  document.getElementById('driver-city-input').value = city;
+  document.getElementById('driver-neighborhood-input').value = neighborhood;
+  document.getElementById('driver-address-input').value = `${address} - Residencial`;
+  if (base) {
+    base.vehicle = vehicle;
+  }
 }
 
 function closeDriverModal() {
@@ -4385,6 +6209,7 @@ function createDriver(event) {
   }
 
   const ddd = Number(document.getElementById('driver-ddd-input').value);
+  ensureDDDOperationalContext(ddd);
   const base = driverBases[ddd];
   const currentCount = getDriversByDDD(ddd).length;
   const spread = (currentCount + 1) * 0.025;
@@ -4861,6 +6686,100 @@ function getSpecialVisibleClients() {
     const driverMatches = state.selectedDriverId === 'all' || client.driverId === state.selectedDriverId;
     return dddMatches && driverMatches;
   });
+}
+
+function isLargeDatasetMode(filteredClients) {
+  return Array.isArray(filteredClients) && filteredClients.length > LARGE_DATASET_THRESHOLD;
+}
+
+function getExpandedCurrentMapBounds() {
+  try {
+    return map.getBounds().pad(VIEWPORT_BOUNDS_PAD_FACTOR);
+  } catch (_) {
+    return null;
+  }
+}
+
+function selectClientsForMapRender(filteredClients) {
+  if (!Array.isArray(filteredClients) || !filteredClients.length) {
+    return {
+      activeClientsForMap: [],
+      activeClientRenderSet: new Set(),
+      activeRenderLimited: false,
+      viewportMode: false
+    };
+  }
+
+  if (filteredClients.length <= MAX_MAP_RENDER_POINTS) {
+    return {
+      activeClientsForMap: filteredClients,
+      activeClientRenderSet: new Set(filteredClients.map((client) => client.id)),
+      activeRenderLimited: false,
+      viewportMode: false
+    };
+  }
+
+  if (!isLargeDatasetMode(filteredClients)) {
+    const sliced = filteredClients.slice(0, MAX_MAP_RENDER_POINTS);
+    return {
+      activeClientsForMap: sliced,
+      activeClientRenderSet: new Set(sliced.map((client) => client.id)),
+      activeRenderLimited: true,
+      viewportMode: false
+    };
+  }
+
+  const paddedBounds = getExpandedCurrentMapBounds();
+  if (!paddedBounds) {
+    const sliced = filteredClients.slice(0, MAX_MAP_RENDER_POINTS);
+    return {
+      activeClientsForMap: sliced,
+      activeClientRenderSet: new Set(sliced.map((client) => client.id)),
+      activeRenderLimited: true,
+      viewportMode: false
+    };
+  }
+
+  const visible = [];
+  const overflow = [];
+  filteredClients.forEach((client) => {
+    if (paddedBounds.contains([client.lat, client.lon])) {
+      visible.push(client);
+      return;
+    }
+    overflow.push(client);
+  });
+
+  const selected = visible.slice(0, MAX_MAP_RENDER_POINTS);
+  if (selected.length < MAX_MAP_RENDER_POINTS) {
+    const missing = MAX_MAP_RENDER_POINTS - selected.length;
+    selected.push(...overflow.slice(0, missing));
+  }
+
+  return {
+    activeClientsForMap: selected,
+    activeClientRenderSet: new Set(selected.map((client) => client.id)),
+    activeRenderLimited: filteredClients.length > selected.length,
+    viewportMode: true
+  };
+}
+
+function scheduleViewportMapRefresh() {
+  if (!lastFilterContext || !isLargeDatasetMode(lastFilterContext.filteredClients)) {
+    return;
+  }
+
+  if (viewportRefreshTimer) {
+    window.clearTimeout(viewportRefreshTimer);
+  }
+
+  viewportRefreshTimer = window.setTimeout(() => {
+    viewportRefreshTimer = null;
+    if (!lastFilterContext) {
+      return;
+    }
+    renderMap(lastFilterContext.filteredClients, lastFilterContext.routeGroups);
+  }, VIEWPORT_REFRESH_DEBOUNCE_MS);
 }
 
 function getTerritoryScopeClients() {
@@ -7673,6 +9592,29 @@ function fitMapToFilteredClients(filteredClients, selectedRoute) {
     return;
   }
 
+  focusMapOnDDD(state.selectedDDD, { zoom: 8, animate: true });
+}
+
+function focusMapOnDDD(ddd, options = {}) {
+  if (!map) return;
+
+  const dddText = String(ddd || state.selectedDDD || '65');
+  ensureDDDOperationalContext(dddText);
+  const base = driverBases[Number(dddText)];
+  const lat = Number(base && base.lat);
+  const lon = Number(base && base.lon);
+  const zoom = Number(options.zoom || 8);
+  const animate = options.animate !== false;
+
+  if (Number.isFinite(lat) && Number.isFinite(lon)) {
+    if (animate && typeof map.flyTo === 'function') {
+      map.flyTo([lat, lon], zoom, { duration: 0.75, easeLinearity: 0.25 });
+      return;
+    }
+    map.setView([lat, lon], zoom);
+    return;
+  }
+
   map.setView([-15.9, -54.8], 6);
 }
 
@@ -7965,9 +9907,12 @@ function renderMap(filteredClients, routeGroups) {
     }
   });
 
-  const activeClientsForMap = filteredClients.slice(0, MAX_MAP_RENDER_POINTS);
-  const activeClientRenderSet = new Set(activeClientsForMap.map((client) => client.id));
-  const activeRenderLimited = filteredClients.length > activeClientsForMap.length;
+  const {
+    activeClientsForMap,
+    activeClientRenderSet,
+    activeRenderLimited,
+    viewportMode
+  } = selectClientsForMapRender(filteredClients);
 
   routeGroups.forEach((route) => {
     const lineColor = state.territoryViewEnabled
@@ -8117,7 +10062,10 @@ function renderMap(filteredClients, routeGroups) {
 
   const mapRenderLimited = activeRenderLimited || allSpecialVisible.length > specialClientsForMap.length;
   if (mapRenderLimited && !state._renderLimitHintShown) {
-    updatePlannerHint(`Visualização limitada para performance: exibindo até ${MAX_MAP_RENDER_POINTS} clientes no mapa.`);
+    const viewportLabel = viewportMode
+      ? 'priorizando os clientes da área visível do mapa'
+      : 'priorizando o recorte filtrado atual';
+    updatePlannerHint(`Visualização limitada para performance: exibindo até ${MAX_MAP_RENDER_POINTS} clientes no mapa e ${viewportLabel}.`);
     state._renderLimitHintShown = true;
   } else if (!mapRenderLimited) {
     state._renderLimitHintShown = false;
@@ -8150,6 +10098,12 @@ function applyFilters(options = {}) {
   ensureSelections(routeGroups);
   const selectedRoute = routeGroups.find((route) => route.routeId === state.selectedRouteId) || null;
 
+  lastFilterContext = {
+    filteredClients,
+    routeGroups,
+    selectedRoute
+  };
+
   renderWeekButtons();
   renderDayButtons();
   renderKpis(filteredClients, routeGroups);
@@ -8171,6 +10125,9 @@ function applyFilters(options = {}) {
     fitMapToFilteredClients(filteredClients, selectedRoute);
   }
 }
+
+map.on('moveend', scheduleViewportMapRefresh);
+map.on('zoomend', scheduleViewportMapRefresh);
 
 function syncManualPlanningModeUI() {
   document.body.classList.toggle('manual-planning-mode', state.manualPlanningMode);
@@ -8762,13 +10719,21 @@ function togglePanel(panelId, stateKey) {
   setTimeout(() => map.invalidateSize(), 60);
 }
 
-document.getElementById('session-select').onchange = (event) => {
+function activatePlanningSessionScope(ddd, sessionId = null) {
+  const dddText = String(ddd);
   captureActivePlanningSessionSnapshot();
   closeLassoConfirmModal();
   clearLassoSelection({ skipRender: true });
-  state.selectedDDD = event.target.value;
+  state.selectedDDD = dddText;
+  const dddSelect = document.getElementById('session-select');
+  if (dddSelect) dddSelect.value = dddText;
   renderPlanningSessionSelector();
-  switchPlanningSession(state.activePlanningSessionByDDD[state.selectedDDD] || getRealSessionIdForDDD(state.selectedDDD), { skipCapture: true });
+
+  const targetSessionId = sessionId
+    || state.activePlanningSessionByDDD[dddText]
+    || getRealSessionIdForDDD(dddText);
+
+  switchPlanningSession(targetSessionId, { skipCapture: true });
   state.manualAdjustedDriverIds.clear();
   state.selectedDriverId = 'all';
   state.focusDriverId = null;
@@ -8776,15 +10741,107 @@ document.getElementById('session-select').onchange = (event) => {
   closeDriverManagerModal();
   closeDriverModal();
   applyFilters();
+}
+
+function handlePlanningSessionRowAction(action, sessionId, ddd) {
+  const sessionMeta = planningSessionRegistry.get(sessionId);
+  const targetDDD = String(ddd || (sessionMeta && sessionMeta.ddd) || state.selectedDDD);
+  const targetSessionId = sessionMeta ? sessionMeta.id : (state.activePlanningSessionByDDD[targetDDD] || getRealSessionIdForDDD(targetDDD));
+
+  if (action !== 'activate-session') return;
+  activatePlanningSessionScope(targetDDD, targetSessionId);
+  closePlanningSessionsPopover();
+}
+
+document.getElementById('session-select').onchange = (event) => {
+  activatePlanningSessionScope(event.target.value);
 };
 
 document.getElementById('planning-session-select').onchange = (event) => {
   switchPlanningSession(event.target.value);
 };
 
-document.getElementById('create-simulation-btn').onclick = () => {
-  createSimulationSessionForActiveDDD();
-};
+const planningCurrentSessionBtn = document.getElementById('planning-current-session-btn');
+if (planningCurrentSessionBtn) {
+  planningCurrentSessionBtn.onclick = () => {
+    togglePlanningSessionsPopover();
+  };
+}
+
+const planningSessionsList = document.getElementById('planning-sessions-list');
+if (planningSessionsList) {
+  planningSessionsList.onclick = (event) => {
+    const actionButton = event.target.closest('[data-action]');
+    if (!actionButton) return;
+    const action = actionButton.getAttribute('data-action');
+    const sessionId = actionButton.getAttribute('data-session-id');
+    const ddd = actionButton.getAttribute('data-session-ddd');
+    if (!action || !sessionId) return;
+    handlePlanningSessionRowAction(action, sessionId, ddd);
+  };
+}
+
+const planningCreateSessionBtn = document.getElementById('planning-create-session-btn');
+if (planningCreateSessionBtn) {
+  planningCreateSessionBtn.onclick = () => {
+    const panel = document.getElementById('planning-create-modal');
+    if (panel && !panel.hidden) {
+      closePlanningCreateSessionModal();
+      return;
+    }
+    openPlanningCreateSessionModal();
+  };
+}
+
+const planningDeleteSessionBtn = document.getElementById('planning-delete-session-btn');
+if (planningDeleteSessionBtn) {
+  planningDeleteSessionBtn.onclick = () => {
+    deleteSelectedPlanningSession();
+  };
+}
+
+const planningCreateCancelBtn = document.getElementById('planning-create-cancel-btn');
+if (planningCreateCancelBtn) {
+  planningCreateCancelBtn.onclick = () => {
+    closePlanningCreateSessionModal();
+  };
+}
+
+const planningCreateConfirmBtn = document.getElementById('planning-create-confirm-btn');
+if (planningCreateConfirmBtn) {
+  planningCreateConfirmBtn.onclick = () => {
+    confirmPlanningCreateSessionFromModal();
+  };
+}
+
+const planningCreateModal = document.getElementById('planning-create-modal');
+if (planningCreateModal) {
+  planningCreateModal.onclick = (event) => {
+    if (event.target.id === 'planning-create-modal') {
+      closePlanningCreateSessionModal();
+    }
+  };
+}
+
+document.querySelectorAll('input[name="planning-create-type"]').forEach((radio) => {
+  radio.addEventListener('change', updatePlanningCreateSessionMode);
+});
+
+const planningCreateDDDInput = document.getElementById('planning-create-ddd-input');
+if (planningCreateDDDInput) {
+  planningCreateDDDInput.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    confirmPlanningCreateSessionFromModal();
+  });
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  const modal = document.getElementById('planning-create-modal');
+  if (!modal || modal.hidden) return;
+  closePlanningCreateSessionModal();
+});
 
 document.getElementById('driver-manager-trigger').onclick = () => {
   openDriverManagerModal();
@@ -9013,6 +11070,7 @@ document.getElementById('show-map-menu-btn').onclick = () => {
 };
 document.getElementById('center-route-btn').onclick = centerCurrentRoute;
 document.getElementById('clear-selection-btn').onclick = clearSelection;
+document.getElementById('open-crm-btn').onclick = openCrmDashboard;
 document.getElementById('toggle-left').onclick = () => togglePanel('left-panel', 'panelLeftOpen');
 document.getElementById('toggle-right').onclick = () => togglePanel('right-panel', 'panelRightOpen');
 
