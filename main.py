@@ -1,8 +1,10 @@
+import logging
 from fastapi import FastAPI
 
 app = FastAPI()
 
-print("Sistema Routflex iniciado")
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+logging.getLogger(__name__).info("Sistema Routflex iniciado")
 
 @app.get("/")
 def home():

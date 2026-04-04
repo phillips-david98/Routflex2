@@ -4,21 +4,17 @@ MVP: Nominatim (OpenStreetMap) - Gratuito
 Futuro: Abstraído para trocar por Google Maps, Mapbox, etc.
 """
 
-import requests
-import time
 import asyncio
+import time
+import requests
 from typing import Optional, Dict, Tuple, List
 from datetime import datetime
 from collections import deque
 from event_logger import append_event
+from coordinate_rules import is_within_expected_bounds
+from logging_manager import setup_logger
 
-# Bounding box para validação geográfica (Brasil)
-BRAZIL_BOUNDS = {
-    "min_lat": -25.5,   # Sul (RS)
-    "max_lat": -8.0,    # Norte (Roraima)
-    "min_lon": -62.5,   # Oeste (Amazonas)
-    "max_lon": -42.0,   # Leste (Atlântico)
-}
+_logger = setup_logger("geocoding")
 
 # Coordenadas conhecidas como inválidas
 KNOWN_INVALID_COORDS = {
@@ -29,6 +25,10 @@ KNOWN_INVALID_COORDS = {
 # Configuração de rate limiting
 RATE_LIMIT_DELAY = 1.0  # minutos entre requisições (1 req/seg)
 MAX_BATCH_SIZE = 20     # máximo de clientes por lote
+
+# Configuração de retry para Nominatim
+MAX_GEOCODE_RETRIES = 3
+GEOCODE_BACKOFF_FACTOR = 2  # exponential: 1s, 2s, 4s
 
 
 class GeocodingQueue:
@@ -102,11 +102,9 @@ class GeocodingService:
         return ", ".join(filter(None, parts))
     
     def is_within_bounds(self, lat: float, lon: float) -> bool:
-        """Valida se coordenadas estão dentro de Brasil."""
-        return (
-            BRAZIL_BOUNDS["min_lat"] <= lat <= BRAZIL_BOUNDS["max_lat"]
-            and BRAZIL_BOUNDS["min_lon"] <= lon <= BRAZIL_BOUNDS["max_lon"]
-        )
+        """Valida se coordenadas estão dentro do limite geografico configurado."""
+        # Reusa regra central para manter consistencia com o restante da API.
+        return is_within_expected_bounds(lat, lon)
     
     def is_known_invalid(self, lat: float, lon: float) -> bool:
         """Verifica se é coordenada conhecida como inválida."""
@@ -127,66 +125,114 @@ class GeocodingService:
         
         return True, "OK"
     
-    def geocode_nominatim(self, address: str) -> Optional[Dict]:
+    async def geocode_nominatim(self, address: str) -> Optional[Dict]:
         """
-        Geocodifica usando Nominatim (OpenStreetMap).
-        
+        Geocodifica usando Nominatim com retry e backoff exponencial.
+
+        Não bloqueante: HTTP executado em thread pool (asyncio.to_thread),
+        backoff via asyncio.sleep — nenhuma thread fica parada durante esperas.
+
         Retorna:
-            {'lat': float, 'lon': float, 'display_name': str} ou None se falhar
+            {'lat': float, 'lon': float, 'display_name': str} ou None após retries esgotados.
         """
-        try:
-            headers = {
-                "User-Agent": f"{self.app_name}/1.0"
-            }
-            
-            params = {
-                "q": address,
-                "format": "json",
-                "limit": 1,
-            }
-            
-            response = requests.get(
-                "https://nominatim.openstreetmap.org/search",
-                params=params,
-                headers=headers,
-                timeout=5
-            )
-            response.raise_for_status()
-            
-            results = response.json()
-            if not results:
+        headers = {"User-Agent": f"{self.app_name}/1.0"}
+        params = {"q": address, "format": "json", "limit": 1}
+
+        for attempt in range(1, MAX_GEOCODE_RETRIES + 1):
+            try:
+                # O requests.get é síncrono; executá-lo em thread pool libera o event loop
+                # durante toda a duração da chamada HTTP sem bloquear outros coroutines.
+                response = await asyncio.to_thread(
+                    requests.get,
+                    "https://nominatim.openstreetmap.org/search",
+                    params=params,
+                    headers=headers,
+                    timeout=5,
+                )
+
+                # Rate limit (429): backoff e retry
+                if response.status_code == 429:
+                    if attempt < MAX_GEOCODE_RETRIES:
+                        wait_time = GEOCODE_BACKOFF_FACTOR ** (attempt - 1)
+                        _logger.warning(
+                            "Rate limit Nominatim; backoff %.0fs (attempt %d/%d)",
+                            wait_time, attempt, MAX_GEOCODE_RETRIES,
+                        )
+                        await asyncio.sleep(wait_time)
+                        continue
+                    _logger.warning("Rate limit Nominatim; tentativas esgotadas")
+                    return None
+
+                # Erros de servidor (5xx): backoff e retry
+                if response.status_code >= 500:
+                    if attempt < MAX_GEOCODE_RETRIES:
+                        wait_time = GEOCODE_BACKOFF_FACTOR ** (attempt - 1)
+                        _logger.warning(
+                            "Erro servidor Nominatim (%d); backoff %.0fs (attempt %d/%d)",
+                            response.status_code, wait_time, attempt, MAX_GEOCODE_RETRIES,
+                        )
+                        await asyncio.sleep(wait_time)
+                        continue
+                    _logger.warning(
+                        "Erro servidor Nominatim (%d); tentativas esgotadas",
+                        response.status_code,
+                    )
+                    return None
+
+                # Outros erros HTTP não recuperáveis (4xx)
+                response.raise_for_status()
+
+                results = response.json()
+                if not results:
+                    return None
+
+                result = results[0]
+                lat = float(result.get("lat"))
+                lon = float(result.get("lon"))
+
+                is_valid, _ = self.validate_coordinates(lat, lon)
+                if not is_valid:
+                    return None
+
+                return {
+                    "lat": lat,
+                    "lon": lon,
+                    "display_name": result.get("display_name", address),
+                }
+
+            except (requests.ConnectionError, requests.Timeout) as e:
+                if attempt < MAX_GEOCODE_RETRIES:
+                    wait_time = GEOCODE_BACKOFF_FACTOR ** (attempt - 1)
+                    _logger.warning(
+                        "Conexão Nominatim falhou: %s; backoff %.0fs (attempt %d/%d)",
+                        e, wait_time, attempt, MAX_GEOCODE_RETRIES,
+                    )
+                    await asyncio.sleep(wait_time)
+                    continue
+                _logger.error(
+                    "Conexão Nominatim falhou após %d tentativas: %s",
+                    MAX_GEOCODE_RETRIES, e,
+                )
                 return None
-            
-            result = results[0]
-            lat = float(result.get("lat"))
-            lon = float(result.get("lon"))
-            
-            # Valida coordenadas retornadas
-            is_valid, msg = self.validate_coordinates(lat, lon)
-            if not is_valid:
+
+            except requests.RequestException as e:
+                _logger.error("Erro HTTP Nominatim não recuperável: %s", e)
                 return None
-            
-            return {
-                "lat": lat,
-                "lon": lon,
-                "display_name": result.get("display_name", address),
-            }
-        
-        except requests.RequestException as e:
-            print(f"Erro ao conectar Nominatim: {e}")
-            return None
-        except (ValueError, KeyError) as e:
-            print(f"Erro ao parsear resposta Nominatim: {e}")
-            return None
+
+            except (ValueError, KeyError) as e:
+                _logger.error("Erro ao parsear resposta Nominatim: %s", e)
+                return None
+
+        return None
     
-    def geocode(self, 
-                customer_id: int,
-                address: Optional[str],
-                number: Optional[str],
-                neighborhood: Optional[str],
-                city: Optional[str],
-                state: Optional[str],
-                user: str = "system") -> Optional[Dict]:
+    async def geocode(self,
+                      customer_id: int,
+                      address: Optional[str],
+                      number: Optional[str],
+                      neighborhood: Optional[str],
+                      city: Optional[str],
+                      state: Optional[str],
+                      user: str = "system") -> Optional[Dict]:
         """
         Geocodifica endereço e retorna resultado validado.
         
@@ -204,14 +250,14 @@ class GeocodingService:
         address_full = self.build_address(address, number, neighborhood, city, state)
         
         result_obj = {
-            "customer_id": customer_id,
+            "customer_id": str(customer_id),
             "address_built": address_full,
             "timestamp": datetime.now().isoformat(),
             "user": user,
         }
         
         # Geocodifica
-        result = self.geocode_nominatim(address_full)
+        result = await self.geocode_nominatim(address_full)
         
         if result:
             result_obj.update({

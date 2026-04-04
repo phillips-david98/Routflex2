@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel, Field
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 class ClientStatus(str, Enum):
@@ -88,7 +88,7 @@ class ManualPlanClientSnapshot(BaseModel):
 
 class ManualPlanSnapshot(BaseModel):
     version: int = 1
-    savedAt: str
+    savedAt: Optional[str] = None
     clients: List[ManualPlanClientSnapshot]
 
 
@@ -135,10 +135,19 @@ class AdvancedPlanRequest(BaseModel):
     depot: AdvancedDepot
     vehicles: List[AdvancedVehicle]
     customers: List[AdvancedCustomer]
-    options: AdvancedPlannerOptions = AdvancedPlannerOptions()
+    options: AdvancedPlannerOptions = Field(default_factory=AdvancedPlannerOptions)
     scenario_name: Optional[str] = None
     selected_ddd: Optional[str] = None
     persist_history: bool = True
+
+
+class AdvancedPlanDiagnostics(BaseModel):
+    routing_status: Optional[str] = None
+    search_time_limit_sec: Optional[int] = None
+    return_to_depot: Optional[bool] = None
+    allow_drop_nodes: Optional[bool] = None
+    clusters: Optional[int] = None
+    reason: Optional[str] = None
 
 
 class VehicleRouteReport(BaseModel):
@@ -169,7 +178,7 @@ class AdvancedPlanResponse(BaseModel):
     routes: List[VehicleRouteReport]
     dropped_customers: List[str]
     summary: AdvancedPlanSummary
-    diagnostics: Dict[str, str]
+    diagnostics: AdvancedPlanDiagnostics
 
 
 class AdvancedPlanHistoryItem(BaseModel):
@@ -198,8 +207,8 @@ class AdvancedPlanHistoryDetailResponse(BaseModel):
     customers_count: int
     vehicles_count: int
     created_at: str
-    payload: Dict
-    result: Dict
+    payload: Dict[str, Any]
+    result: Dict[str, Any]
 
 
 class BatchRoutingCustomer(BaseModel):
@@ -230,8 +239,8 @@ class BatchRoutingOptions(BaseModel):
 
 class BatchRoutingRequest(BaseModel):
     customers: List[BatchRoutingCustomer]
-    depots: List[BatchRoutingDepot] = []
-    options: BatchRoutingOptions = BatchRoutingOptions()
+    depots: List[BatchRoutingDepot] = Field(default_factory=list)
+    options: BatchRoutingOptions = Field(default_factory=BatchRoutingOptions)
 
 
 class BatchRoutingGroupResult(BaseModel):
@@ -294,7 +303,7 @@ class EventLogRecord(BaseModel):
     action: str
     user: str
     timestamp: str
-    metadata: Dict = {}
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class CustomerCoordinateUpdateRequest(BaseModel):
@@ -320,7 +329,7 @@ class CustomerGeocodingRequest(BaseModel):
 
 
 class CustomerGeocodingResponse(BaseModel):
-    customer_id: int
+    customer_id: str
     success: bool
     message: str
     lat: Optional[float] = None
@@ -339,3 +348,74 @@ class ExportCustomersResponse(BaseModel):
     status: str
     rows: int
     generated_at: str
+
+
+class HealthResponse(BaseModel):
+    status: str
+    db_enabled: bool
+
+
+class GenericStatusResponse(BaseModel):
+    status: str
+
+
+class ManualPlanSaveResponse(BaseModel):
+    status: str
+    savedAt: str
+    count: int
+
+
+class CustomerStatusEventResponse(BaseModel):
+    status: str
+    customer_id: str
+    new_status: str
+
+
+class CustomerVisitDayEventResponse(BaseModel):
+    status: str
+    customer_id: str
+    day: str
+    week: int
+
+
+class SimulationScenarioResponse(BaseModel):
+    status: str
+    clients: Dict[str, int]
+    checks: List[str]
+
+
+# ── Route Versioning ────────────────────────────────────────────────────────────
+
+class RouteVersionItem(BaseModel):
+    id: int
+    session_id: Optional[int]
+    version: int
+    route_type: str
+    driver_id: Optional[str]
+    total_distance_km: Optional[float]
+    total_time_min: Optional[float]
+    total_cost: Optional[float]
+    created_at: str
+    label: Optional[str]
+
+
+class RouteVersionListResponse(BaseModel):
+    items: List[RouteVersionItem]
+
+
+class RouteVersionDetailResponse(RouteVersionItem):
+    customers: List[Dict[str, Any]]
+    route_order: List[Any]
+    result: Dict[str, Any]
+
+
+class RouteVersionCompareResponse(BaseModel):
+    version_a: RouteVersionDetailResponse
+    version_b: RouteVersionDetailResponse
+    diff: Dict[str, Any]
+
+
+class RouteVersionRestoreResponse(BaseModel):
+    status: str
+    restored_version_id: int
+    new_version_id: int

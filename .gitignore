@@ -1,11 +1,63 @@
-# Python cache
+# -----------------------------
+# Python
+# -----------------------------
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+dist/
+build/
+site/
+*.egg-info/
 
 # Virtual environments
 .venv/
 venv/
+env/
+ENV/
 
-# OS / editor noise
+# -----------------------------
+# Node / React / Vite
+# -----------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+coverage/
+.vite/
+*.tsbuildinfo
+
+# -----------------------------
+# Environment and secrets
+# -----------------------------
+.env
+.env.*
+!.env.example
+
+# -----------------------------
+# IDE / OS
+# -----------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
 .DS_Store
 Thumbs.db
+
+# -----------------------------
+# CRM simulation / backtesting (do not version)
+# -----------------------------
+crm/backend/src/data/mockStore.js
+crm/backend/seeds/mock_data.sql
+crm/**/mock*/
+crm/**/*mock*.js
+crm/**/*mock*.sql
+crm/**/*backtest*

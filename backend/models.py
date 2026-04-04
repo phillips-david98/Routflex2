@@ -3,13 +3,14 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, Text, DateTime
 from sqlalchemy.orm import relationship
-from geoalchemy2 import Geometry
 
 from db import Base
+from db_adapter import is_sqlite
 
+USE_SPATIAL_COLUMNS = not is_sqlite()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./routflex.db").lower()
-USE_SPATIAL_COLUMNS = not DATABASE_URL.startswith("sqlite")
+if USE_SPATIAL_COLUMNS:
+    from geoalchemy2 import Geometry
 
 
 def geometry_or_text_column(geometry_type: str, srid: int = 4326):
@@ -81,3 +82,20 @@ class AdvancedPlanHistory(Base):
     payload_json = Column(Text, nullable=False)
     result_json = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class RouteVersion(Base):
+    __tablename__ = "route_versions"
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("sessions.id"), nullable=True, index=True)
+    version = Column(Integer, nullable=False, default=1)
+    route_type = Column(String, nullable=False, index=True)
+    driver_id = Column(String, nullable=True, index=True)
+    customers_json = Column(Text, nullable=False)
+    route_order_json = Column(Text, nullable=False)
+    result_json = Column(Text, nullable=False)
+    total_distance_km = Column(Float, nullable=True)
+    total_time_min = Column(Float, nullable=True)
+    total_cost = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    label = Column(String, nullable=True)

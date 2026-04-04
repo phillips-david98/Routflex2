@@ -1041,6 +1041,12 @@ body.login-active .app-shell {
   font-weight: 600;
   line-height: 1.4;
   padding: 7px 10px;
+
+#data-mode-toggle-btn.is-simulation-mode {
+  border-color: rgba(255, 179, 71, 0.6);
+  background: rgba(141, 88, 10, 0.28);
+  color: #ffd080;
+}
 }
 
 .planning-session-dropdown-wrap {
@@ -1196,6 +1202,7 @@ body.login-active .app-shell {
   gap: 8px;
   padding: 0 11px;
   letter-spacing: 0.02em;
+  cursor: pointer;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
 }
 
@@ -1245,7 +1252,7 @@ body.login-active .app-shell {
 .planning-create-modal {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 1200;
   display: grid;
   place-items: center;
   padding: 16px;
@@ -2048,7 +2055,10 @@ body.login-active .app-shell {
 #map {
   position: absolute;
   inset: 0;
+  touch-action: none;
+  cursor: grab;
 }
+#map:active { cursor: grabbing; }
 
 .map-overlay {
   position: absolute;
@@ -3410,6 +3420,21 @@ body.manual-planning-mode .manual-planning-panel {
   font-size: 0.72rem;
   font-weight: 700;
   font-family: 'Space Grotesk', sans-serif;
+  transition: transform 0.15s ease;
+}
+.cluster-icon.cluster-medium {
+  width: 32px;
+  height: 32px;
+  font-size: 0.78rem;
+  border-color: rgba(255, 179, 71, 0.5);
+  color: #ffb347;
+}
+.cluster-icon.cluster-large {
+  width: 38px;
+  height: 38px;
+  font-size: 0.84rem;
+  border-color: rgba(255, 111, 97, 0.5);
+  color: #ff6f61;
 }
 
 /* ── ROUTEX AI ──────────────────────────────────────────── */
@@ -3695,11 +3720,13 @@ body.login-active .routex-ai-panel { display:none !important; }
             <div class="field planning-main-field planning-legacy-selects" aria-hidden="true">
               <label for="session-select">DDD</label>
               <select id="session-select">
+                <option value="38">DDD: 38 - Montes Claros</option>
                 <option value="61">DDD: 61 - Brasília</option>
                 <option value="62">DDD: 62 - Anápolis</option>
                 <option value="64">DDD: 64 - Rio Verde</option>
                 <option value="65" selected>DDD: 65 - Cuiabá</option>
                 <option value="66">DDD: 66 - Tangará da Serra</option>
+                <option value="93">DDD: 93 - Santarém</option>
               </select>
             </div>
             <div class="field planning-main-field planning-legacy-selects" aria-hidden="true">
@@ -3716,6 +3743,14 @@ body.login-active .routex-ai-panel { display:none !important; }
                 <span class="planning-session-kind-dot" id="planning-session-kind-dot" aria-hidden="true">🟢</span>
                 <strong id="planning-session-kind-text">PRODUÇÃO</strong>
               </span>
+              <button
+                id="data-mode-toggle-btn"
+                type="button"
+                onclick="toggleDataMode()"
+                title="Modo REAL (backend). Clique para forçar SIMULAÇÃO offline."
+                style="font-size:0.6rem;font-family:'IBM Plex Sans',sans-serif;font-weight:700;letter-spacing:0.1em;padding:2px 8px;border-radius:3px;border:1px solid rgba(82,208,255,0.35);background:rgba(82,208,255,0.07);color:rgba(82,208,255,0.8);cursor:pointer;text-transform:uppercase;white-space:nowrap;">
+                FONTE: <span id="data-mode-label">REAL</span>
+              </button>
             </div>
 
             <p class="planning-simulation-warning" id="planning-simulation-warning" hidden>
@@ -4387,20 +4422,34 @@ const dayColors = {
   SAB: '#f1c40f',
   DOM: '#95a5a6'
 };
+const vehicleColors = {
+  carro: '#3498db',
+  moto: '#e74c3c',
+  pickup: '#e67e22',
+  pesado: '#8e44ad',
+  eletrico: '#2ecc71'
+};
+function colorForVehicle(vehicle) {
+  return vehicleColors[vehicle] || '#95a5a6';
+}
 const driverTerritoryPalette = ['#d84a4a', '#2f63d6', '#3a9f4f', '#7a5a3a', '#7a45b6'];
 const dddRegions = {
+  38: 'Montes Claros e Norte de Minas',
   61: 'Brasilia',
   62: 'Anapolis',
   64: 'Rio Verde',
   65: 'Cuiaba',
-  66: 'Tangara da Serra'
+  66: 'Tangara da Serra',
+  93: 'Santarem e Baixo Amazonas'
 };
 const dddStates = {
+  38: 'MG',
   61: 'DF',
   62: 'GO',
   64: 'GO',
   65: 'MT',
-  66: 'MT'
+  66: 'MT',
+  93: 'PA'
 };
 const dddSpecificReferenceBases = {
   31: { city: 'Belo Horizonte', neighborhood: 'Centro', address: 'Base Referência DDD 31', lat: -19.9167, lon: -43.9345, vehicle: 'carro' },
@@ -4534,22 +4583,32 @@ function inferRegionLabelByDDD(ddd) {
   return stateLabels[uf] || 'Nova sessão';
 }
 const driverBases = {
+  38: { city: 'Montes Claros', neighborhood: 'Centro', address: 'Rua da Base 38', lat: -16.7364, lon: -43.8617, vehicle: 'carro' },
   61: { city: 'Brasilia', neighborhood: 'Asa Sul', address: 'SQS Operacional 61', lat: -15.7801, lon: -47.9292, vehicle: 'carro' },
   62: { city: 'Anapolis', neighborhood: 'Jundiai', address: 'Rua dos Condutores 62', lat: -16.3265, lon: -48.9522, vehicle: 'pickup' },
   64: { city: 'Rio Verde', neighborhood: 'Setor Central', address: 'Avenida das Rotas 64', lat: -17.7927, lon: -50.9192, vehicle: 'pesado' },
   65: { city: 'Cuiaba', neighborhood: 'Jardim Cuiaba', address: 'Rua da Base 65', lat: -15.6014, lon: -56.0979, vehicle: 'moto' },
-  66: { city: 'Tangara da Serra', neighborhood: 'Centro', address: 'Travessa Operacional 66', lat: -14.6229, lon: -57.4932, vehicle: 'carro' }
+  66: { city: 'Tangara da Serra', neighborhood: 'Centro', address: 'Travessa Operacional 66', lat: -14.6229, lon: -57.4932, vehicle: 'carro' },
+  93: { city: 'Santarem', neighborhood: 'Centro', address: 'Rua da Base 93', lat: -2.4385, lon: -54.6996, vehicle: 'carro' }
 };
 const territories = ['urbano', 'interior', 'rodovia', 'fronteira'];
 const priorities = ['Alta', 'Media', 'Baixa'];
 const windows = ['08:00-10:00', '10:00-12:00', '13:00-15:00', '15:00-18:00'];
+const dddDriverSlots = {
+  38: 4,
+  65: 6,
+  93: 3
+};
 const MAX_WEEKS = 8;
 const MAX_MAP_RENDER_POINTS = 3000;
-const LARGE_DATASET_THRESHOLD = 12000;
+const LARGE_DATASET_THRESHOLD = 800;
 const VIEWPORT_BOUNDS_PAD_FACTOR = 0.35;
-const VIEWPORT_REFRESH_DEBOUNCE_MS = 180;
+const VIEWPORT_REFRESH_DEBOUNCE_MS = 350;
+const MARKER_BATCH_SIZE = 500;
+const MARKER_BATCH_DELAY_MS = 16;
 const LASSO_ROUTE_MAX_DISTANCE = 22;
 const LASSO_ROUTE_AMBIGUITY_GAP = 8;
+let _pendingMapRenderRAF = null;
 const PLAN_SAVE_STORAGE_KEY = 'ROUTflex:manual-plan:v1';
 const BACKEND_API_BASE = window.location.protocol === 'file:'
   ? 'http://127.0.0.1:8000'
@@ -4562,6 +4621,33 @@ const CRM_URL = CRM_DASHBOARD_OVERRIDE_URL
   || ROUTFLEX_RUNTIME_CONFIG.crmUrl
   || window.__ROUTFLEX_CRM_URL__
   || 'http://localhost:5173/';
+const CRM_API_BASE = ROUTFLEX_RUNTIME_CONFIG.crmApiUrl
+  || window.__ROUTFLEX_CRM_API_URL__
+  || `${window.location.protocol}//${window.location.hostname || '127.0.0.1'}:3001`;
+
+const logger = Object.freeze({
+  info(message, context) {
+    if (context !== undefined) {
+      console.info(message, context);
+      return;
+    }
+    console.info(message);
+  },
+  warn(message, context) {
+    if (context !== undefined) {
+      console.warn(message, context);
+      return;
+    }
+    console.warn(message);
+  },
+  error(message, context) {
+    if (context !== undefined) {
+      console.error(message, context);
+      return;
+    }
+    console.error(message);
+  }
+});
 
 function postBackendEvent(path, payload) {
   fetch(`${BACKEND_API_BASE}${path}`, {
@@ -4573,7 +4659,25 @@ function postBackendEvent(path, payload) {
   });
 }
 
+function crmFetch(endpoint, options = {}) {
+  if (!state.selectedDDD) state.selectedDDD = '65';
+  const sessionId = getCrmSessionIdForDDD(state.selectedDDD);
+  const headers = Object.assign({
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'x-session-id': sessionId,
+  }, options.headers || {});
+  return fetch(`${CRM_API_BASE}${endpoint}`, Object.assign({}, options, { headers }));
+}
+
 const state = {
+  mode: 'REAL',
+  sourceOfTruth: 'CRM',
+  sourceCustomers: [],
+  invalidCustomers: [],
+  filteredClientsCache: [],
+  routeGroupsCache: [],
+  selectedRouteCache: null,
   activeWeeks: new Set([1, 2, 3, 4]),
   weekCount: 4,
   weekStepperDirection: 1,
@@ -4644,24 +4748,75 @@ const state = {
   advancedHistoryItems: [],
   selectedHistoryId: null,
   selectedHistoryDetail: null,
-  historyLoadError: null
+  historyLoadError: null,
+  drivers: [],
+  driverSequence: 0,
+  clients: [],
+  markers: [],
+  routeLines: [],
+  driverMarkers: [],
+  territoryShapes: [],
+  roadRouteLayer: null,
+  clusterLayer: null,
+  lassoDrawLayer: null,
+  lassoSelectionLayer: null,
+  lassoDrawPoints: [],
+  lassoPendingMove: null,
+  lastFilterContext: null,
+  viewportRefreshTimer: null,
+  simulationSourceCustomers: [],
+  simulationSyncTimer: null
 };
 
-let drivers = [];
-let driverSequence = 0;
-let clients = [];
-let markers = [];
-let routeLines = [];
-let driverMarkers = [];
-let territoryShapes = [];
-let roadRouteLayer = null;
-let clusterLayer = null;
-let lassoDrawLayer = null;
-let lassoSelectionLayer = null;
-let lassoDrawPoints = [];
-let lassoPendingMove = null;
-let lastFilterContext = null;
-let viewportRefreshTimer = null;
+function updateState(patch) {
+  Object.assign(state, patch || {});
+  return state;
+}
+
+// Mutação centralizada de clientes individuais dentro de state.clients.
+// Todas as alterações em propriedades de clientes (driverId, week, day, sequence, etc.)
+// devem passar por esta função para garantir rastreabilidade.
+function patchClients(filterFn, patchFn) {
+  let changed = 0;
+  state.clients.forEach(function(client) {
+    if (!filterFn(client)) return;
+    patchFn(client);
+    changed += 1;
+  });
+  return changed;
+}
+
+function defineStateAlias(name) {
+  Object.defineProperty(window, name, {
+    configurable: true,
+    get() {
+      return state[name];
+    },
+    set(value) {
+      state[name] = value;
+    }
+  });
+}
+
+[
+  'drivers',
+  'driverSequence',
+  'clients',
+  'markers',
+  'routeLines',
+  'driverMarkers',
+  'territoryShapes',
+  'roadRouteLayer',
+  'clusterLayer',
+  'lassoDrawLayer',
+  'lassoSelectionLayer',
+  'lassoDrawPoints',
+  'lassoPendingMove',
+  'lastFilterContext',
+  'viewportRefreshTimer',
+  'simulationSourceCustomers',
+  'simulationSyncTimer'
+].forEach(defineStateAlias);
 const planningSessionRegistry = new Map();
 const planningSessionSnapshots = new Map();
 
@@ -4669,7 +4824,20 @@ const appShell = document.getElementById('app-shell');
 const entryScreen = document.getElementById('entry-screen');
 const entryAccessButton = document.getElementById('entry-access-button');
 
-const map = L.map('map', { center: [-15.9, -54.8], zoom: 6, minZoom: 4, zoomControl: false });
+const map = L.map('map', {
+  center: [-15.9, -54.8],
+  zoom: 6,
+  minZoom: 4,
+  zoomControl: false,
+  preferCanvas: true,
+  wheelDebounceTime: 40,
+  wheelPxPerZoomLevel: 60,
+  zoomSnap: 0.25,
+  zoomDelta: 0.5,
+  inertia: true,
+  inertiaDeceleration: 2000,
+  inertiaMaxSpeed: 1800
+});
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const CARTO_TILE_URL = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
@@ -4791,6 +4959,12 @@ function getDriverById(driverId) {
 
 function getRealSessionIdForDDD(ddd) {
   return `DDD_${ddd}`;
+}
+
+// Formato de session_id esperado pelo CRM backend ("DDD 65" com espaço)
+function getCrmSessionIdForDDD(ddd) {
+  const safeDDD = ddd || (typeof state !== 'undefined' && state.selectedDDD) || '65';
+  return `DDD ${safeDDD}`;
 }
 
 function getDDDOptionLabel(ddd) {
@@ -4987,18 +5161,20 @@ function buildPlanningSnapshotFromCurrentClients(ddd) {
 
 function applyPlanningSnapshotToCurrentClients(snapshot, ddd) {
   const byId = new Map((snapshot || []).map((item) => [item.id, item]));
-  clients.forEach((client) => {
-    if (client.ddd !== Number(ddd)) return;
-    const item = byId.get(client.id);
-    if (!item) return;
-    if (typeof item.week === 'number') client.week = item.week;
-    if (typeof item.day === 'string') client.day = item.day;
-    if (typeof item.driverId === 'string' && getDriverById(item.driverId)) {
-      client.driverId = item.driverId;
-      client.driverName = (getDriverById(item.driverId) || {}).name || client.driverName;
+  const numDdd = Number(ddd);
+  patchClients(
+    function(client) { return client.ddd === numDdd && byId.has(client.id); },
+    function(client) {
+      var item = byId.get(client.id);
+      if (typeof item.week === 'number') client.week = item.week;
+      if (typeof item.day === 'string') client.day = item.day;
+      if (typeof item.driverId === 'string' && getDriverById(item.driverId)) {
+        client.driverId = item.driverId;
+        client.driverName = (getDriverById(item.driverId) || {}).name || client.driverName;
+      }
+      if (typeof item.sequence === 'number') client.sequence = item.sequence;
     }
-    if (typeof item.sequence === 'number') client.sequence = item.sequence;
-  });
+  );
 }
 
 function captureActivePlanningSessionSnapshot() {
@@ -5303,6 +5479,10 @@ function createSimulationSessionForActiveDDD(targetDDD = state.selectedDDD, pref
 }
 
 function createPlanningSessionByDDD(targetDDD = state.selectedDDD) {
+  // Salvar snapshot do DDD atual antes de trocar de contexto
+  // para não perder alterações feitas pelo usuário
+  captureActivePlanningSessionSnapshot();
+
   const ddd = String(targetDDD);
 
   const realSessionId = getRealSessionIdForDDD(ddd);
@@ -5471,6 +5651,7 @@ function confirmPlanningCreateSessionFromModal() {
     const sourceSessionId = getRealSessionIdForDDD(currentDDD);
     createSimulationSessionForActiveDDD(currentDDD, sourceSessionId);
     closePlanningCreateSessionModal();
+    openPlanningSessionsPopover();
     return;
   }
 
@@ -5483,6 +5664,7 @@ function confirmPlanningCreateSessionFromModal() {
   }
   createPlanningSessionByDDD(rawDDD);
   closePlanningCreateSessionModal();
+  openPlanningSessionsPopover();
 }
 
 function deleteSelectedPlanningSession() {
@@ -5721,6 +5903,265 @@ function markPlanAsSaved() {
   state.hasUnsavedPlanChanges = false;
 }
 
+async function loadCustomers() {
+  // ══ SEPARAÇÃO DE FONTES ══════════════════════════════════════════════════
+  // SIMULATION → Python backend (simulation_store.py) — dados isolados de teste
+  // REAL       → CRM backend (mockStore.js ou PostgreSQL) — dados de integração
+  // ═════════════════════════════════════════════════════════════════════════
+  if (state.mode === 'SIMULATION') {
+    return await loadCustomersFromSimulation();
+  }
+  return await loadCustomersFromCRM();
+}
+
+// ── SIMULATION: carrega de Python /simulation/customers ────────────────────
+async function loadCustomersFromSimulation() {
+  const endpoint = `${BACKEND_API_BASE}/simulation/customers`;
+  logger.info('[FLOW SIMULATION] carregando clientes do Python simulation_store');
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} em ${endpoint}`);
+    }
+
+    const payload = await response.json();
+    const items = Array.isArray(payload?.items)
+      ? payload.items
+      : (Array.isArray(payload) ? payload : []);
+
+    logger.info('[FLOW SIMULATION] clientes carregados do Python', {
+      total: items.length,
+      source: 'simulation_store.py'
+    });
+
+    return items.map(mapSimulationCustomerToClient);
+  } catch (error) {
+    logger.error('[FLOW SIMULATION] falha ao carregar clientes do Python', {
+      message: error && error.message ? error.message : String(error)
+    });
+    // Separação estrita: não mistura com CRM automaticamente em modo SIMULATION.
+    return [];
+  }
+}
+
+// ── Mapeamento: formato simulation_store.py → formato interno do mapa ──────
+function mapSimulationCustomerToClient(source, index) {
+  const ddd = Number(source.ddd || state.selectedDDD || 65);
+  const dddDrivers = getDriversByDDD(ddd);
+  const assignedDriver = dddDrivers[index % Math.max(dddDrivers.length, 1)] || dddDrivers[0] || null;
+  const rawStatus = String(source.status || 'ATIVO').toUpperCase();
+  const clientType = rawStatus === 'SEM_COORDENADA'
+    ? 'sem_coordenada'
+    : rawStatus === 'INATIVO'
+      ? 'inativo'
+      : rawStatus === 'NOVO'
+        ? 'novo'
+        : 'ativo';
+  const clientGroupId = String(source.client_id || source.id || `SIM-${String(index + 1).padStart(6, '0')}`);
+  const id = `${clientGroupId}-w${source.visit_week || 1}`;
+  const lat = source.lat === null || source.lat === undefined ? null : Number(source.lat);
+  const lon = source.lon === null || source.lon === undefined ? null : Number(source.lon);
+
+  return {
+    id,
+    clientGroupId,
+    name: source.name || `Cliente ${clientGroupId}`,
+    nomeFantasia: source.name || `Cliente ${clientGroupId}`,
+    ddd,
+    region: dddRegions[ddd] || `DDD ${ddd}`,
+    driverId: assignedDriver ? assignedDriver.id : 'unassigned',
+    territory: territories[index % territories.length],
+    city: source.city || (driverBases[ddd] || {}).city || `DDD ${ddd}`,
+    neighborhood: source.neighborhood || (driverBases[ddd] || {}).neighborhood || 'Centro',
+    week: source.visit_week || 1,
+    day: source.visit_day || days[index % days.length],
+    vehicle: assignedDriver ? assignedDriver.vehicle : 'carro',
+    priority: source.priority || priorities[index % priorities.length],
+    curva: source.curve || 'C',
+    serviceTime: 20,
+    distance: Number((3 + seededRandom(index + 70) * 24).toFixed(1)),
+    lat,
+    lon,
+    fixedLat: lat,
+    fixedLon: lon,
+    window: windows[index % windows.length],
+    address: source.address || `${source.city || 'Centro'} ${index + 1}`,
+    status: clientType === 'inativo' || clientType === 'sem_coordenada' ? 'atencao' : 'ok',
+    driverName: assignedDriver ? assignedDriver.name : 'Sem motorista',
+    sequence: index + 1,
+    clientType,
+    eligibleForRouting: rawStatus === 'ATIVO' && Boolean(source.eligible_for_routing !== false),
+    accessMode: source.access_mode || null,
+    // Metadados de simulação — usados para rastreabilidade
+    _source: 'SIMULATION',
+    _sellerName: source.seller_name || null,
+    _driverBase: source.driver_base || null,
+  };
+}
+
+// ── REAL/INTEGRATION: carrega do CRM paginado ──────────────────────────────
+async function loadCustomersFromCRM() {
+  return loadCustomersFromCRMForDDD(state.selectedDDD);
+}
+
+async function loadCustomersFromCRMForDDD(ddd) {
+  const PAGE_SIZE = 200;
+  const allItems = [];
+  let currentPage = 1;
+  let totalPages = 1;
+
+  const crmSessionId = getCrmSessionIdForDDD(ddd);
+  logger.info(`[FLOW REAL] carregando clientes do CRM (session: "${crmSessionId}", ddd: ${ddd}, per_page=${PAGE_SIZE})`);
+
+  try {
+    while (currentPage <= totalPages) {
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'x-session-id': crmSessionId,
+      };
+      const response = await fetch(`${CRM_API_BASE}/customers?per_page=${PAGE_SIZE}&page=${currentPage}`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} na página ${currentPage}`);
+      }
+
+      const payload = await response.json();
+      const items = Array.isArray(payload?.items)
+        ? payload.items
+        : (Array.isArray(payload) ? payload : []);
+
+      allItems.push(...items);
+
+      if (typeof payload?.pages === 'number') {
+        totalPages = payload.pages;
+      } else if (typeof payload?.total === 'number') {
+        totalPages = Math.ceil(payload.total / PAGE_SIZE);
+      } else {
+        break;
+      }
+
+      if (items.length < PAGE_SIZE) {
+        break;
+      }
+
+      currentPage += 1;
+    }
+
+    logger.info(`[FLOW REAL] clientes carregados do CRM`, {
+      total: allItems.length,
+      pages: totalPages,
+      source: 'CRM mockStore/PostgreSQL'
+    });
+
+    return allItems.map(mapRealCustomerToClient);
+  } catch (error) {
+    logger.error(`[FLOW REAL] falha ao carregar clientes do CRM`, {
+      page: currentPage,
+      loaded: allItems.length,
+      message: error && error.message ? error.message : String(error)
+    });
+    if (allItems.length > 0) {
+      logger.warn(`[FLOW REAL] retornando ${allItems.length} clientes parciais`);
+      return allItems.map(mapRealCustomerToClient);
+    }
+    return [];
+  }
+}
+
+function validateCustomer(customer) {
+  const issues = [];
+  const customerId = String(customer && customer.id ? customer.id : '').trim();
+  const customerName = String(customer && customer.name ? customer.name : '').trim();
+
+  if (!customerId) {
+    issues.push({ code: 'missing_id', message: 'Cliente sem id.' });
+  }
+
+  if (!customerName) {
+    issues.push({ code: 'missing_name', message: 'Cliente sem nome.' });
+  }
+
+  if (!hasValidCoordinate(customer)) {
+    issues.push({ code: 'invalid_coordinates', message: 'Cliente sem coordenadas válidas.' });
+  }
+
+  return {
+    isValid: issues.length === 0,
+    issues
+  };
+}
+
+function validateCustomers(sourceCustomers) {
+  const validCustomers = [];
+  const invalidCustomers = [];
+
+  (sourceCustomers || []).forEach((customer) => {
+    const result = validateCustomer(customer);
+    if (result.isValid) {
+      validCustomers.push(customer);
+      return;
+    }
+
+    invalidCustomers.push({
+      customer,
+      issues: result.issues
+    });
+  });
+
+  logger.info('[FLOW VALIDATION] clientes validados', {
+    total: (sourceCustomers || []).length,
+    validos: validCustomers.length,
+    invalidos: invalidCustomers.length
+  });
+
+  return { validCustomers, invalidCustomers };
+}
+
+function applyFallbacks(validCustomers, invalidCustomers) {
+  const nextCustomers = [...(validCustomers || [])];
+
+  (invalidCustomers || []).forEach(({ customer, issues }) => {
+    const issueCodes = (issues || []).map((issue) => issue.code);
+    const hasFatalIssue = issueCodes.includes('missing_id') || issueCodes.includes('missing_name');
+
+    if (hasFatalIssue) {
+      logger.warn('[FLOW FALLBACK] cliente descartado por falha estrutural', {
+        issues: issueCodes,
+        rawCustomer: customer || null
+      });
+      return;
+    }
+
+    const fallbackCustomer = {
+      ...customer,
+      lat: null,
+      lon: null,
+      fixedLat: null,
+      fixedLon: null,
+      clientType: 'sem_coordenada',
+      eligibleForRouting: false,
+      status: 'atencao'
+    };
+
+    nextCustomers.push(fallbackCustomer);
+    logger.warn('[FLOW FALLBACK] cliente movido para SEM_COORDENADA', {
+      id: fallbackCustomer.id,
+      issues: issueCodes
+    });
+  });
+
+  return nextCustomers;
+}
+
 function clearSavedPlanningAdjustments() {
   try {
     localStorage.removeItem(PLAN_SAVE_STORAGE_KEY);
@@ -5736,26 +6177,25 @@ function clearSavedPlanningAdjustments() {
 function applySavedPlanningSnapshot(saved) {
   const savedClients = new Map((saved.clients || []).map((item) => [item.id, item]));
 
-  clients.forEach((client) => {
-    const snapshot = savedClients.get(client.id);
-    if (!snapshot) {
-      return;
+  patchClients(
+    function(client) { return savedClients.has(client.id); },
+    function(client) {
+      var snapshot = savedClients.get(client.id);
+      if (typeof snapshot.week === 'number') {
+        client.week = snapshot.week;
+      }
+      if (typeof snapshot.day === 'string') {
+        client.day = snapshot.day;
+      }
+      if (typeof snapshot.driverId === 'string' && getDriverById(snapshot.driverId)) {
+        client.driverId = snapshot.driverId;
+        client.driverName = (getDriverById(snapshot.driverId) || {}).name || client.driverName;
+      }
+      if (typeof snapshot.sequence === 'number') {
+        client.sequence = snapshot.sequence;
+      }
     }
-
-    if (typeof snapshot.week === 'number') {
-      client.week = snapshot.week;
-    }
-    if (typeof snapshot.day === 'string') {
-      client.day = snapshot.day;
-    }
-    if (typeof snapshot.driverId === 'string' && getDriverById(snapshot.driverId)) {
-      client.driverId = snapshot.driverId;
-      client.driverName = (getDriverById(snapshot.driverId) || {}).name || client.driverName;
-    }
-    if (typeof snapshot.sequence === 'number') {
-      client.sequence = snapshot.sequence;
-    }
-  });
+  );
 
   normalizeAllCurveSchedules();
 }
@@ -5913,9 +6353,12 @@ function initializeDrivers() {
 
   Object.entries(driverBases).forEach(([dddValue, base]) => {
     const ddd = Number(dddValue);
-    [1, 2].forEach((slot) => {
-      const latOffset = slot === 1 ? -0.06 : 0.06;
-      const lonOffset = slot === 1 ? -0.05 : 0.05;
+    const slotCount = Math.max(1, Number(dddDriverSlots[ddd] || 2));
+    Array.from({ length: slotCount }, (_, idx) => idx + 1).forEach((slot) => {
+      const angle = (2 * Math.PI * (slot - 1)) / slotCount;
+      const radius = slotCount <= 2 ? 0.075 : 0.11;
+      const latOffset = Number((Math.sin(angle) * radius).toFixed(5));
+      const lonOffset = Number((Math.cos(angle) * radius).toFixed(5));
       drivers.push(createDriverRecord({
         ddd,
         name: `${dddStates[ddd]} ${ddd} - ${String(slot).padStart(2, '0')}`,
@@ -6141,11 +6584,10 @@ function saveDriverEdits(event) {
   driver.neighborhood = sanitizeText(document.getElementById('driver-edit-neighborhood-input').value);
   driver.address = sanitizeText(document.getElementById('driver-edit-address-input').value);
 
-  clients.forEach((client) => {
-    if (client.driverId === driver.id) {
-      client.driverName = newName;
-    }
-  });
+  patchClients(
+    function(client) { return client.driverId === driver.id; },
+    function(client) { client.driverName = newName; }
+  );
 
   closeDriverEditModal();
   applyFilters({ skipFitBounds: true });
@@ -6194,11 +6636,10 @@ function createDriver(event) {
     driver.neighborhood = sanitizeText(document.getElementById('driver-neighborhood-input').value);
     driver.address = sanitizeText(document.getElementById('driver-address-input').value);
 
-    clients.forEach((client) => {
-      if (client.driverId === driver.id) {
-        client.driverName = updatedName;
-      }
-    });
+    patchClients(
+      function(client) { return client.driverId === driver.id; },
+      function(client) { client.driverName = updatedName; }
+    );
 
     closeDriverModal();
     applyFilters({ skipFitBounds: true });
@@ -6261,12 +6702,10 @@ function deleteSelectedDriver() {
   }
 
   const fallbackDriver = dddDrivers.find((item) => item.id !== driver.id);
-  clients.forEach((client) => {
-    if (client.driverId === driver.id) {
-      client.driverId = fallbackDriver.id;
-      client.driverName = fallbackDriver.name;
-    }
-  });
+  patchClients(
+    function(client) { return client.driverId === driver.id; },
+    function(client) { client.driverId = fallbackDriver.id; client.driverName = fallbackDriver.name; }
+  );
 
   drivers = drivers.filter((item) => item.id !== driver.id);
   normalizeDriverTerritoryAssignments();
@@ -6421,235 +6860,64 @@ function normalizeAllCurveSchedules() {
   return normalizeCurveSchedulesForClients(clients, {});
 }
 
-const _simTradeNames = [
-  'Mercado Bom Preço','Distribuidora Central','Atacado do Povo','Loja Nova Era','Supermercado Familiar',
-  'Comercial Esperança','Armazém do João','Empório São Jorge','Mercearia Estrela','Atacarejo Rápido',
-  'Mini Market Plus','Depósito Alfa','Casa do Produtor','Distribuidora Sul','Ponto Certo Atacado'
-];
-
-function _getSimTradeName(ddd, index) {
-  return _simTradeNames[(ddd + index * 3) % _simTradeNames.length] + ` ${index + 1}`;
+function seededRandom(seed) {
+  const value = Math.sin(seed * 999.91) * 10000;
+  return value - Math.floor(value);
 }
 
-function _getClientType(baseSeed) {
-  const r = baseSeed % 20;
-  if (r === 0) return 'inativo';
-  if (r === 1 || r === 2) return 'novo';
-  if (r === 3) return 'sem_coordenada';
-  return 'ativo';
-}
-
-function generateClients() {
-  const distribution = { 61: 34, 62: 26, 64: 28, 65: 42, 66: 30 };
-  const nextClients = [];
-
-  Object.entries(distribution).forEach(([dddValue, count]) => {
-    const ddd = Number(dddValue);
-    const dddDrivers = getDriversByDDD(ddd);
-    const base = driverBases[ddd] || {};
-
-    for (let index = 0; index < count; index += 1) {
-      const baseSeed = (ddd * 1000) + index;
-      const driver = dddDrivers[index % dddDrivers.length];
-      const vehicleOptions = getVehicleOptions(driver.vehicle);
-      const curva = ['A', 'B', 'C'][randomInt(0, 2)];
-      const scheduledWeeks = getScheduledWeeksForCurve(curva, baseSeed);
-      const day = days[randomInt(0, days.length - 1)];
-      const vehicle = vehicleOptions[index % vehicleOptions.length];
-      const territory = territories[(index + ddd) % territories.length];
-      const priority = priorities[randomInt(0, priorities.length - 1)];
-      const serviceTime = randomInt(15, 55);
-      const distance = Number((Math.random() * 34 + 3).toFixed(1));
-      const clientType = _getClientType(baseSeed);
-      const latOffset = (Math.random() * 0.9) - 0.45;
-      const lonOffset = (Math.random() * 0.9) - 0.45;
-      const lat = clientType === 'sem_coordenada'
-        ? null
-        : Number((driver.lat + latOffset).toFixed(5));
-      const lon = clientType === 'sem_coordenada'
-        ? null
-        : Number((driver.lon + lonOffset).toFixed(5));
-
-      // Special clientTypes don't participate in route scheduling
-      if (clientType !== 'ativo') {
-        nextClients.push({
-          id: `${ddd}-sp-${index + 1}`,
-          clientGroupId: `${ddd}-sp-${index + 1}`,
-          name: `Cliente Esp. ${index + 1}`,
-          nomeFantasia: _getSimTradeName(ddd, index),
-          ddd,
-          region: dddRegions[ddd],
-          driverId: driver.id,
-          territory,
-          city: base.city || `DDD ${ddd}`,
-          neighborhood: base.neighborhood || 'Centro',
-          vehicle,
-          priority,
-          curva,
-          serviceTime,
-          distance,
-          lat,
-          lon,
-          fixedLat: lat,
-          fixedLon: lon,
-          window: windows[randomInt(0, windows.length - 1)],
-          address: `Corredor ${territory} Esp. ${index + 1}`,
-          status: 'ok',
-          driverName: driver.name,
-          sequence: index + 1,
-          clientType
-        });
-        return; // skip week-based scheduling for special clients
-      }
-
-      scheduledWeeks.forEach((week) => {
-        nextClients.push({
-          id: `${ddd}-${index + 1}-w${week}`,
-          clientGroupId: `${ddd}-${index + 1}`,
-          name: `Cliente ${index + 1}`,
-          nomeFantasia: _getSimTradeName(ddd, index),
-          ddd,
-          region: dddRegions[ddd],
-          driverId: driver.id,
-          territory,
-          city: base.city || `DDD ${ddd}`,
-          neighborhood: base.neighborhood || 'Centro',
-          week,
-          day,
-          vehicle,
-          priority,
-          curva,
-          serviceTime,
-          distance,
-          lat,
-          lon,
-          fixedLat: lat,
-          fixedLon: lon,
-          window: windows[randomInt(0, windows.length - 1)],
-          address: `Corredor ${territory} ${index + 1}`,
-          status: randomInt(0, 10) > 7 ? 'atencao' : 'ok',
-          driverName: driver.name,
-          sequence: index + 1,
-          clientType: 'ativo'
-        });
-      });
-    }
-  });
-
-  clients = nextClients;
-  state._inactiveManualConfirmedIds.clear();
-}
-
-function distanceKm(lat1, lon1, lat2, lon2) {
-  const toRad = (value) => value * Math.PI / 180;
-  const radius = 6371;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  return radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-const MAX_DISTANCIA_VALIDA_KM = 500;
-const MULTIPLICADOR_LIMITE_DISTANCIA = 10;
-
-function computeStraightDistanceForWaypointsKm(waypointsLonLat) {
-  if (!Array.isArray(waypointsLonLat) || waypointsLonLat.length < 2) return 0;
-  let total = 0;
-  for (let index = 1; index < waypointsLonLat.length; index += 1) {
-    const [lonA, latA] = waypointsLonLat[index - 1];
-    const [lonB, latB] = waypointsLonLat[index];
-    total += distanceKm(latA, lonA, latB, lonB);
-  }
-  return total;
-}
-
-function evaluateRouteDistanceSanity(clienteId, distanciaRotaKm, distanciaLinhaRetaKm) {
-  const routeKm = Number(distanciaRotaKm);
-  const straightKm = Number(distanciaLinhaRetaKm);
-  const routeValueValid = Number.isFinite(routeKm);
-  const straightValueValid = Number.isFinite(straightKm) && straightKm >= 0;
-
-  const rotaInvalida = (!routeValueValid)
-    || (!straightValueValid)
-    || routeKm <= 0
-    || routeKm > MAX_DISTANCIA_VALIDA_KM
-    || routeKm > straightKm * MULTIPLICADOR_LIMITE_DISTANCIA;
-
-  const flag = (straightValueValid && routeValueValid && straightKm < 50 && routeKm > 300)
-    ? 'POSSIVEL_BARREIRA_GEOGRAFICA'
-    : null;
+// Adaptador: converte formato canônico CRM → formato interno do mapa
+// Formato canônico CRM: { id, name, lat, lon, status, ddd, city, state, ... }
+// Formato interno mapa: { id, clientGroupId, name, ddd, driverId, lat, lon, clientType, ... }
+function mapRealCustomerToClient(source, index) {
+  const ddd = Number(source.ddd || state.selectedDDD || 65);
+  const dddDrivers = getDriversByDDD(ddd);
+  const assignedDriver = dddDrivers[index % Math.max(dddDrivers.length, 1)] || dddDrivers[0] || null;
+  const rawStatus = String(source.status || 'ATIVO').toUpperCase();
+  const clientType = rawStatus === 'SEM_COORDENADA'
+    ? 'sem_coordenada'
+    : rawStatus === 'INATIVO'
+      ? 'inativo'
+      : rawStatus === 'NOVO'
+        ? 'novo'
+        : 'ativo';
+  const clientGroupId = String(source.client_id || source.id || `CRM-${String(index + 1).padStart(6, '0')}`);
+  const id = `${clientGroupId}-w1`;
+  const lat = source.lat === null || source.lat === undefined ? null : Number(source.lat);
+  const lon = source.lon === null || source.lon === undefined ? null : Number(source.lon);
 
   return {
-    cliente_id: clienteId,
-    distancia_rota: routeValueValid ? Number(routeKm.toFixed(2)) : null,
-    distancia_linha_reta: straightValueValid ? Number(straightKm.toFixed(2)) : null,
-    distancia_final: rotaInvalida && straightValueValid
-      ? Number(straightKm.toFixed(2))
-      : (routeValueValid ? Number(routeKm.toFixed(2)) : null),
-    tipo_distancia: rotaInvalida ? 'ESTIMADA' : 'REAL',
-    rota_valida: !rotaInvalida,
-    flag,
+    id,
+    clientGroupId,
+    name: source.name || `Cliente ${clientGroupId}`,
+    nomeFantasia: source.name || `Cliente ${clientGroupId}`,
+    ddd,
+    region: dddRegions[ddd] || `DDD ${ddd}`,
+    driverId: assignedDriver ? assignedDriver.id : 'unassigned',
+    territory: territories[index % territories.length],
+    city: source.city || (driverBases[ddd] || {}).city || `DDD ${ddd}`,
+    neighborhood: source.neighborhood || (driverBases[ddd] || {}).neighborhood || 'Centro',
+    week: 1,
+    day: days[index % days.length],
+    vehicle: assignedDriver ? assignedDriver.vehicle : 'carro',
+    priority: priorities[index % priorities.length],
+    curva: 'C',
+    serviceTime: 20,
+    distance: Number((3 + seededRandom(index + 70) * 24).toFixed(1)),
+    lat,
+    lon,
+    fixedLat: lat,
+    fixedLon: lon,
+    window: windows[index % windows.length],
+    address: source.address || `${source.city || 'Centro'} ${index + 1}`,
+    status: clientType === 'inativo' || clientType === 'sem_coordenada' ? 'atencao' : 'ok',
+    driverName: assignedDriver ? assignedDriver.name : 'Sem motorista',
+    sequence: index + 1,
+    clientType,
+    eligibleForRouting: rawStatus === 'ATIVO' && Boolean(source.eligible_for_routing !== false),
+    accessMode: null,
+    // Metadados de integração — origem CRM (mockStore/PostgreSQL)
+    _source: 'CRM',
   };
-}
-
-function setRouteClientsAccessStatus(routeClients, routeId, diagnostic) {
-  routeClients.forEach((client) => {
-    const shouldBlock = !diagnostic.rota_valida;
-    client.routeValidation = {
-      source: 'ROAD_SANITY',
-      routeId,
-      rota_valida: diagnostic.rota_valida,
-      flag: diagnostic.flag,
-      tipo_distancia: diagnostic.tipo_distancia,
-      distancia_final: diagnostic.distancia_final,
-      updatedAt: new Date().toISOString()
-    };
-
-    client.autoRoutingBlocked = shouldBlock;
-    if (shouldBlock) {
-      client.accessStatus = 'ACESSO_DIFICIL';
-      client.accessReason = diagnostic.flag || 'SEM_ROTA_VIAVEL';
-    } else if (client.accessStatus === 'ACESSO_DIFICIL') {
-      client.accessStatus = null;
-      client.accessReason = null;
-    }
-  });
-}
-
-function getAutoRoutableClients(scopeClients) {
-  return (scopeClients || []).filter((client) => !client.autoRoutingBlocked);
-}
-
-function colorForVehicle(vehicle) {
-  if (vehicle === 'carro') return '#52d0ff';
-  if (vehicle === 'moto') return '#ffb347';
-  if (vehicle === 'pickup') return '#28c58b';
-  if (vehicle === 'pesado') return '#ff6f61';
-  if (vehicle === 'eletrico') return '#9de88b';
-  return '#8fa7c4';
-}
-
-function getDriverTerritoryColor(driverId) {
-  const driver = getDriverById(driverId);
-  if (!driver) {
-    return '#8fa7c4';
-  }
-  if (!driver.territoryColor) {
-    normalizeDriverTerritoryAssignments();
-  }
-  return driver.territoryColor || '#8fa7c4';
-}
-
-function getClientMapColor(client, route) {
-  const ct = client.clientType || 'ativo';
-  if (ct === 'novo') return '#FF69B4';
-  if (ct === 'inativo') return '#D32F2F';
-  if (ct === 'sem_coordenada') return '#1a1a1a';
-  if (state.territoryViewEnabled) {
-    return getDriverTerritoryColor(client.driverId);
-  }
-  if (!route) return '#52d0ff';
-  return dayColors[route.day] || '#52d0ff';
 }
 
 function isActiveEquivalentClientType(clientType) {
@@ -6795,6 +7063,19 @@ function getTerritoryScopeClients() {
 
 function createRouteId(ddd, driverId, week, day) {
   return `${ddd}-${driverId}-${week}-${day}`;
+}
+
+// Haversine — distância em km entre dois pontos geográficos
+function distanceKm(lat1, lon1, lat2, lon2) {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return 0;
+  const R = 6371;
+  const toRad = (deg) => deg * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+          + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2))
+          * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function buildRouteGroups(filteredClients) {
@@ -7906,7 +8187,7 @@ function toggleLassoMode() {
     updatePlannerHint('Modo Laço ativo: desenhe o contorno, selecione os PDVs e arraste um selecionado para a rota alvo (dia/semana). Latitude e longitude não mudam.');
   }
   setLassoButtonState();
-  applyFilters({ skipFitBounds: true });
+  // Lasso é estado de UI — não precisa de re-render completo do mapa
 }
 
 const _simCollaborators = ['Ana Lima','Carlos Souza','Fernanda Dias','Rafael Melo','Patricia Rocha','Lucas Andrade','Juliana Costa','Diego Ferreira'];
@@ -9208,8 +9489,8 @@ function isKnownInvalidCoordinate(lat, lon) {
 }
 
 function isWithinExpectedArea(lat, lon) {
-  // Faixa operacional atual (Centro-Oeste/Brasil)
-  return lat >= -25.5 && lat <= -8.0 && lon >= -62.5 && lon <= -42.0;
+  // Faixa operacional Brasil (inclui Norte para cenários PA como Santarém/Aveiro)
+  return lat >= -34.0 && lat <= 6.5 && lon >= -74.5 && lon <= -32.0;
 }
 
 function hasValidCoordinate(client) {
@@ -9394,7 +9675,7 @@ function reprocessNoCoordGeocoding(clientId) {
     }
   })
   .catch(err => {
-    console.error('Erro ao geocodificar:', err);
+    logger.error('Erro ao geocodificar', err);
     updatePlannerHint('✗ Erro ao conectar backend para geocoding.');
   })
   .finally(() => {
@@ -9489,7 +9770,7 @@ async function reprocessNoCoordGecodingBatch() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     } catch (err) {
-      console.error(`Erro ao geocodificar ${clientId}:`, err);
+      logger.error(`Erro ao geocodificar ${clientId}`, err);
     }
 
     // Atualiza feedback a cada 5 clientes ou ao final
@@ -9875,14 +10156,62 @@ function renderTerritoryShapes(routeGroups, includeBase) {
   });
 }
 
+let _batchRenderAbort = null;
+
+function addMarkersToClustersInBatches(markerList, cluster) {
+  if (_batchRenderAbort) {
+    _batchRenderAbort.aborted = true;
+  }
+  const token = { aborted: false };
+  _batchRenderAbort = token;
+
+  if (markerList.length <= MARKER_BATCH_SIZE) {
+    cluster.addLayers(markerList);
+    map.addLayer(cluster);
+    return;
+  }
+
+  let offset = 0;
+  function nextBatch() {
+    if (token.aborted) return;
+    const batch = markerList.slice(offset, offset + MARKER_BATCH_SIZE);
+    if (batch.length === 0) {
+      map.addLayer(cluster);
+      return;
+    }
+    cluster.addLayers(batch);
+    offset += MARKER_BATCH_SIZE;
+    if (offset >= markerList.length) {
+      map.addLayer(cluster);
+      return;
+    }
+    setTimeout(nextBatch, MARKER_BATCH_DELAY_MS);
+  }
+
+  nextBatch();
+}
+
+function getClientMapColor(client, route) {
+  if (!client) return '#6b7280';
+  const ct = (client.clientType || 'ativo').toLowerCase();
+  if (ct === 'inativo')        return '#D32F2F';
+  if (ct === 'novo')            return '#FF69B4';
+  if (ct === 'sem_coordenada')  return '#9e9e9e';
+  // Cliente ativo — usar cor do dia da rota quando disponível
+  if (route && route.day && dayColors[route.day]) return dayColors[route.day];
+  return '#52d0ff';
+}
+
 function renderMap(filteredClients, routeGroups) {
-  markers.forEach((marker) => map.removeLayer(marker));
-  routeLines.forEach((line) => map.removeLayer(line.polyline));
-  driverMarkers.forEach((marker) => map.removeLayer(marker));
+  // Clear cluster first (handles most markers), then direct-to-map markers
   if (clusterLayer) {
+    clusterLayer.clearLayers();
     map.removeLayer(clusterLayer);
     clusterLayer = null;
   }
+  markers.forEach((marker) => { if (marker._map) map.removeLayer(marker); });
+  routeLines.forEach((line) => { if (line.polyline) map.removeLayer(line.polyline); });
+  driverMarkers.forEach((marker) => map.removeLayer(marker));
   clearRoadRoute();
   markers = [];
   routeLines = [];
@@ -9892,14 +10221,21 @@ function renderMap(filteredClients, routeGroups) {
 
   clusterLayer = L.markerClusterGroup({
     chunkedLoading: true,
-    maxClusterRadius: 50,
-    disableClusteringAtZoom: 13,
+    chunkInterval: 100,
+    chunkDelay: 10,
+    maxClusterRadius: 55,
+    disableClusteringAtZoom: 16,
     showCoverageOnHover: false,
     spiderfyOnMaxZoom: true,
+    animate: false,
+    removeOutsideVisibleBounds: true,
     iconCreateFunction(cluster) {
       const count = cluster.getChildCount();
+      let sizeClass = 'small';
+      if (count > 100) sizeClass = 'large';
+      else if (count > 30) sizeClass = 'medium';
       return L.divIcon({
-        html: `<div class="cluster-icon">${count}</div>`,
+        html: `<div class="cluster-icon cluster-${sizeClass}">${count}</div>`,
         className: 'custom-cluster',
         iconSize: [36, 36],
         iconAnchor: [18, 18]
@@ -9914,22 +10250,34 @@ function renderMap(filteredClients, routeGroups) {
     viewportMode
   } = selectClientsForMapRender(filteredClients);
 
+  const pendingClusterMarkers = [];
+
   routeGroups.forEach((route) => {
     const lineColor = state.territoryViewEnabled
       ? getDriverTerritoryColor(route.driver.id)
       : (dayColors[route.day] || '#52d0ff');
     const showBaseForThisMode = state.showDriverBase;
-    const visibleRouteClients = route.clients.filter((client) => activeClientRenderSet.has(client.id));
-    const points = showBaseForThisMode
-      ? [[route.driver.lat, route.driver.lon], ...visibleRouteClients.map((client) => [client.lat, client.lon]), [route.driver.lat, route.driver.lon]]
-      : visibleRouteClients.map((client) => [client.lat, client.lon]);
-    const polyline = points.length >= 2
-      ? L.polyline(points, {
-        color: lineColor,
-        weight: route.routeId === state.selectedRouteId ? 6 : 4,
-        opacity: route.routeId === state.selectedRouteId ? 0.95 : 0.55
-      }).addTo(map)
-      : null;
+    // Performance: só desenhar polylines para rota selecionada ou motorista focado
+    const isSelectedRoute = route.routeId === state.selectedRouteId;
+    const isFocusedDriver = state.focusDriverId && route.driver.id === state.focusDriverId;
+    const shouldDrawLine = isSelectedRoute || isFocusedDriver || state.territoryViewEnabled;
+
+    let polyline = null;
+    if (shouldDrawLine) {
+      const visibleRouteClients = route.clients.filter((client) => activeClientRenderSet.has(client.id) && client.lat != null && client.lon != null);
+      const driverHasCoord = route.driver.lat != null && route.driver.lon != null;
+      const clientPoints = visibleRouteClients.map((client) => [client.lat, client.lon]);
+      const points = (showBaseForThisMode && driverHasCoord)
+        ? [[route.driver.lat, route.driver.lon], ...clientPoints, [route.driver.lat, route.driver.lon]]
+        : clientPoints;
+      polyline = points.length >= 2
+        ? L.polyline(points, {
+          color: lineColor,
+          weight: isSelectedRoute ? 6 : 4,
+          opacity: isSelectedRoute ? 0.95 : 0.55
+        }).addTo(map)
+        : null;
+    }
 
     if (polyline) {
       polyline.on('click', () => {
@@ -9976,17 +10324,13 @@ function renderMap(filteredClients, routeGroups) {
       const isLassoSelected = state.lassoSelectionIds.has(client.id);
       const markerColor = getClientMapColor(client, route);
       const markerDisplayContent = getMarkerDisplayContent(client, route, index);
+      const canDrag = isActiveRoute || state.lassoModeActive || state.territoryViewEnabled;
       const marker = L.marker([client.lat, client.lon], {
         icon: createMarkerIcon(markerDisplayContent, markerColor, client.id === state.selectedStopId, isLassoSelected),
-        draggable: true,
-        autoPan: true
+        draggable: canDrag,
+        autoPan: canDrag
       });
       marker._clientId = client.id;
-      if (state.territoryViewEnabled || isActiveRoute || state.lassoModeActive) {
-        marker.addTo(map);
-      } else {
-        clusterLayer.addLayer(marker);
-      }
 
       marker.on('add', () => {
         const markerElement = marker.getElement();
@@ -10021,11 +10365,19 @@ function renderMap(filteredClients, routeGroups) {
       marker.on('drag', (event) => handleMarkerDrag(event, client));
       marker.on('dragend', (event) => handleMarkerDragEnd(event, client));
       markers.push(marker);
+
+      // Performance: só renderizar diretamente (fora do cluster) para a rota selecionada
+      // ou em modo território. Laço funciona SOBRE clusters — não precisa explodir tudo.
+      if (state.territoryViewEnabled || isActiveRoute) {
+        marker.addTo(map);
+      } else {
+        pendingClusterMarkers.push(marker);
+      }
     });
   });
 
-  if (!state.territoryViewEnabled) {
-    map.addLayer(clusterLayer);
+  if (!state.territoryViewEnabled && clusterLayer) {
+    addMarkersToClustersInBatches(pendingClusterMarkers, clusterLayer);
   }
   syncRoadRouteVisibility();
 
@@ -10091,12 +10443,18 @@ function renderFilterSummary(filteredClients) {
   document.getElementById('filter-summary-label').textContent = `${dddLabel}, ${driverLabel}, ${territoryLabel}, ${vehicleLabel} e ${filteredClients.length} stops.`;
 }
 
-function applyFilters(options = {}) {
+function calculateRoutes(options = {}) {
   renderDriverFilterOptions();
   const filteredClients = getFilteredClients();
   const routeGroups = buildRouteGroups(filteredClients);
   ensureSelections(routeGroups);
   const selectedRoute = routeGroups.find((route) => route.routeId === state.selectedRouteId) || null;
+
+  updateState({
+    filteredClientsCache: filteredClients,
+    routeGroupsCache: routeGroups,
+    selectedRouteCache: selectedRoute
+  });
 
   lastFilterContext = {
     filteredClients,
@@ -10119,11 +10477,24 @@ function applyFilters(options = {}) {
   renderAdvancedHistoryPanel();
   renderFilterSummary(filteredClients);
   renderManualPlanningPanel(filteredClients, routeGroups, selectedRoute);
-  renderMap(filteredClients, routeGroups);
 
-  if (!options.skipFitBounds) {
-    fitMapToFilteredClients(filteredClients, selectedRoute);
+  // Performance: defer o renderMap para o próximo frame, cancelando pending anterior
+  if (_pendingMapRenderRAF) {
+    cancelAnimationFrame(_pendingMapRenderRAF);
   }
+  _pendingMapRenderRAF = requestAnimationFrame(() => {
+    _pendingMapRenderRAF = null;
+    renderMap(filteredClients, routeGroups);
+    if (!options.skipFitBounds) {
+      fitMapToFilteredClients(filteredClients, selectedRoute);
+    }
+  });
+
+  return routeGroups;
+}
+
+function applyFilters(options = {}) {
+  return calculateRoutes(options);
 }
 
 map.on('moveend', scheduleViewportMapRefresh);
@@ -10318,34 +10689,39 @@ function buildAdvancedPlanPayload(filteredClients) {
 }
 
 function applyAdvancedPlanResult(filteredClients, result) {
-  const clientById = new Map(filteredClients.map((client) => [client.id, client]));
+  const filteredIds = new Set(filteredClients.map(function(c) { return c.id; }));
+  const assignmentMap = new Map();
   const touchedClientIds = new Set();
 
   (result.routes || []).forEach((route) => {
     const driver = getDriverById(route.vehicle_id);
     (route.route_order || []).forEach((clientId, index) => {
-      const client = clientById.get(clientId);
-      if (!client) {
-        return;
-      }
+      if (!filteredIds.has(clientId)) return;
       touchedClientIds.add(clientId);
-      if (driver) {
-        client.driverId = driver.id;
-        client.driverName = driver.name;
-      }
-      client.sequence = index + 1;
+      assignmentMap.set(clientId, { driver: driver, sequence: index + 1 });
     });
   });
 
   const dropped = new Set(result.dropped_customers || []);
-  filteredClients.forEach((client) => {
-    if (!touchedClientIds.has(client.id)) {
-      client.sequence = Math.max(client.sequence || 1, 9000);
+
+  patchClients(
+    function(client) { return filteredIds.has(client.id); },
+    function(client) {
+      var assignment = assignmentMap.get(client.id);
+      if (assignment) {
+        if (assignment.driver) {
+          client.driverId = assignment.driver.id;
+          client.driverName = assignment.driver.name;
+        }
+        client.sequence = assignment.sequence;
+      } else {
+        client.sequence = Math.max(client.sequence || 1, 9000);
+      }
+      if (dropped.has(client.id)) {
+        client.status = 'atencao';
+      }
     }
-    if (dropped.has(client.id)) {
-      client.status = 'atencao';
-    }
-  });
+  );
 }
 
 function runLocalFallbackOptimization(filteredClients) {
@@ -10359,14 +10735,21 @@ function runLocalFallbackOptimization(filteredClients) {
     groupedByRoute.get(routeId).push(client);
   });
 
+  const sequenceMap = new Map();
   groupedByRoute.forEach((routeClients) => {
     const driver = getDriverById(routeClients[0].driverId) || getDriversByDDD(routeClients[0].ddd)[0];
     routeClients
       .sort((first, second) => distanceKm(driver.lat, driver.lon, first.lat, first.lon) - distanceKm(driver.lat, driver.lon, second.lat, second.lon))
       .forEach((client, index) => {
-        client.sequence = index + 1;
+        sequenceMap.set(client.id, index + 1);
       });
   });
+
+  const filteredIds = new Set(filteredClients.map(function(c) { return c.id; }));
+  patchClients(
+    function(client) { return filteredIds.has(client.id) && sequenceMap.has(client.id); },
+    function(client) { client.sequence = sequenceMap.get(client.id); }
+  );
 }
 
 function handleTerritoryViewToggle(enabled) {
@@ -10682,8 +11065,10 @@ function toggleReportOptions() {
   panel.hidden = !panel.hidden;
 }
 
-function regenerateScenario() {
-  generateClients();
+async function regenerateScenario() {
+  if (state.mode !== 'SIMULATION') {
+    state.mode = 'SIMULATION';
+  }
   clearSavedPlanningAdjustments();
   closeLassoConfirmModal();
   clearLassoSelection({ skipRender: true });
@@ -10691,6 +11076,7 @@ function regenerateScenario() {
   state.plannerStatus = 'draft';
   state.selectedRouteId = null;
   state.selectedStopId = null;
+  await initializeApp();
   markPlanAsSaved();
   applyFilters();
 }
@@ -10719,7 +11105,7 @@ function togglePanel(panelId, stateKey) {
   setTimeout(() => map.invalidateSize(), 60);
 }
 
-function activatePlanningSessionScope(ddd, sessionId = null) {
+async function activatePlanningSessionScope(ddd, sessionId = null) {
   const dddText = String(ddd);
   captureActivePlanningSessionSnapshot();
   closeLassoConfirmModal();
@@ -10728,6 +11114,32 @@ function activatePlanningSessionScope(ddd, sessionId = null) {
   const dddSelect = document.getElementById('session-select');
   if (dddSelect) dddSelect.value = dddText;
   renderPlanningSessionSelector();
+
+  // ── Lazy loading: buscar clientes do CRM se o DDD ainda não foi carregado ──
+  if (state.mode === 'REAL') {
+    const dddNum = Number(dddText);
+    const alreadyLoaded = state.clients.some(c => c.ddd === dddNum);
+    if (!alreadyLoaded) {
+      logger.info(`[LAZY] DDD ${dddText} sem clientes em cache — buscando do CRM...`);
+      ensureDDDOperationalContext(dddText);
+      const newCustomers = await loadCustomersFromCRMForDDD(dddText);
+      if (newCustomers.length > 0) {
+        const validation = validateCustomers(newCustomers);
+        const validNew = applyFallbacks(validation.validCustomers, validation.invalidCustomers);
+        // Merge: adicionar sem duplicar (por id)
+        const existingIds = new Set(state.clients.map(c => c.id));
+        const uniqueNew = validNew.filter(c => !existingIds.has(c.id));
+        updateState({
+          sourceCustomers: [...state.sourceCustomers, ...newCustomers],
+          invalidCustomers: [...(state.invalidCustomers || []), ...validation.invalidCustomers],
+          clients: [...state.clients, ...uniqueNew]
+        });
+        logger.info(`[LAZY] DDD ${dddText}: ${uniqueNew.length} clientes adicionados ao cache`);
+      } else {
+        logger.warn(`[LAZY] DDD ${dddText}: nenhum cliente retornado do CRM`);
+      }
+    }
+  }
 
   const targetSessionId = sessionId
     || state.activePlanningSessionByDDD[dddText]
@@ -11118,20 +11530,57 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-async function bootstrapApp() {
+function updateDataModeUI() {
+  const btn = document.getElementById('data-mode-toggle-btn');
+  const label = document.getElementById('data-mode-label');
+  if (!btn || !label) return;
+  const isSimulation = state.mode === 'SIMULATION';
+  label.textContent = isSimulation ? 'SIMULAÇÃO' : 'REAL';
+  btn.title = isSimulation
+    ? 'Modo SIMULAÇÃO — dados do Python (simulation_store.py). Clique para INTEGRAÇÃO com CRM.'
+    : 'Modo REAL/INTEGRAÇÃO — dados do CRM (mockStore/PostgreSQL). Clique para SIMULAÇÃO isolada.';
+  btn.classList.toggle('is-simulation-mode', isSimulation);
+  logger.info('[FLOW MODE] modo ativo atualizado', { mode: state.mode });
+}
+
+async function toggleDataMode() {
+  state.mode = state.mode === 'SIMULATION' ? 'REAL' : 'SIMULATION';
+  updateDataModeUI();
+  await initializeApp();
+  updatePlannerHint(state.mode === 'SIMULATION'
+    ? 'Fonte: Python simulation_store (teste isolado). Sem integração CRM.'
+    : 'Fonte: CRM backend (integração). Dados de mockStore ou PostgreSQL.');
+}
+
+async function initializeApp() {
   initializeDrivers();
-  generateClients();
+
+  // Carregar apenas o DDD padrão no boot (lazy loading dos demais ao trocar)
+  const loadedCustomers = await loadCustomers();
+  logger.info(`[BOOT] DDD ${state.selectedDDD}: ${loadedCustomers.length} clientes carregados`);
+
+  const validation = validateCustomers(loadedCustomers);
+  const nextCustomers = applyFallbacks(validation.validCustomers, validation.invalidCustomers);
+  updateState({
+    sourceCustomers: loadedCustomers,
+    invalidCustomers: validation.invalidCustomers,
+    clients: nextCustomers
+  });
   initializePlanningSessions();
-  await loadSavedPlanningAdjustments();
-  initializePlanningSessions();
-  await loadAdvancedHistory();
   setLassoButtonState();
   syncManualPlanningModeUI();
   syncMapMenuVisibility();
   syncInstrumentsPanelUI();
   syncTerritoryViewUI();
-  applyFilters();
+  updateDataModeUI();
+  renderMap(state.clients, []);
+  calculateRoutes();
+  await loadSavedPlanningAdjustments();
+  calculateRoutes({ skipFitBounds: true });
+  await loadAdvancedHistory();
 }
+
+const bootstrapApp = initializeApp;
 
 // ══ ROUTEX AI ══════════════════════════════════════════════════
 const AI_KB = [
@@ -11342,15 +11791,17 @@ function _aiApplyBulkSchedule(targetDay, targetWeek, scopeContext) {
 
   let changed = 0;
   const adjustedDrivers = new Set();
+  const scopeIds = new Set(scopeClients.map(function(c) { return c.id; }));
 
-  scopeClients.forEach((client) => {
-    if (client.day !== targetDay || client.week !== targetWeek) {
+  patchClients(
+    function(client) { return scopeIds.has(client.id) && (client.day !== targetDay || client.week !== targetWeek); },
+    function(client) {
       client.day = targetDay;
       client.week = targetWeek;
       changed += 1;
       adjustedDrivers.add(client.driverId);
     }
-  });
+  );
 
   const normalizeResult = normalizeCurveSchedulesForClients(scopeClients, {
     targetDay,
@@ -11484,13 +11935,20 @@ function _aiReindexDriverRoutes(ddd, driverIds) {
     routeMap.get(key).push(client);
   });
 
+  const sequenceMap = new Map();
   routeMap.forEach((routeClients) => {
     routeClients
       .sort((first, second) => (first.sequence || 0) - (second.sequence || 0) || first.id.localeCompare(second.id))
       .forEach((client, index) => {
-        client.sequence = index + 1;
+        sequenceMap.set(client.id, index + 1);
       });
   });
+
+  const scopedIds = new Set(scoped.map(function(c) { return c.id; }));
+  patchClients(
+    function(client) { return scopedIds.has(client.id) && sequenceMap.has(client.id); },
+    function(client) { client.sequence = sequenceMap.get(client.id); }
+  );
 }
 
 function _aiBalanceTwoDriversByBaseProximity() {
