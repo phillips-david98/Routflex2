@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from pathlib import Path
 import json
 import os
+import re
 import uuid
 from typing import Optional
 from fastapi import Request
@@ -51,6 +52,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Routflex Backend")
 MANUAL_PLAN_FILE = Path(__file__).resolve().parent / "manual_plan_snapshot.json"
+MANUAL_PLAN_DIR = Path(__file__).resolve().parent / "manual_plans"
 
 
 def get_cors_settings():
@@ -170,6 +172,36 @@ def delete_manual_plan(user=Depends(require_auth)):
     if MANUAL_PLAN_FILE.exists():
         MANUAL_PLAN_FILE.unlink()
     return {"status": "deleted"}
+
+
+# ── DDD-scoped planning persistence ────────────────────────────────────────
+def _plan_file_for_ddd(ddd: str) -> Path:
+    safe = re.sub(r"[^0-9]", "", str(ddd))
+    if not safe:
+        safe = "0"
+    return MANUAL_PLAN_DIR / f"plan_ddd_{safe}.json"
+
+
+@app.get("/manual-plan/{ddd}")
+def get_manual_plan_by_ddd(ddd: str):
+    path = _plan_file_for_ddd(ddd)
+    if not path.exists():
+        return {"version": 1, "ddd": ddd, "savedAt": None, "clients": []}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return data
+    except (OSError, json.JSONDecodeError):
+        return {"version": 1, "ddd": ddd, "savedAt": None, "clients": []}
+
+
+@app.put("/manual-plan/{ddd}", response_model=ManualPlanSaveResponse)
+def save_manual_plan_by_ddd(ddd: str, snapshot: ManualPlanSnapshot):
+    MANUAL_PLAN_DIR.mkdir(parents=True, exist_ok=True)
+    payload = snapshot.model_dump()
+    payload["ddd"] = ddd
+    path = _plan_file_for_ddd(ddd)
+    path.write_text(json.dumps(payload, ensure_ascii=True, indent=2), encoding="utf-8")
+    return {"status": "saved", "savedAt": payload.get("savedAt", ""), "count": len(payload.get("clients", []))}
 
 
 @app.post("/sessions", response_model=SessionRegionSchema)

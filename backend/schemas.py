@@ -80,10 +80,11 @@ class SessionRegion(SessionRegionBase):
 
 class ManualPlanClientSnapshot(BaseModel):
     id: str
-    week: int
-    day: str
-    driverId: str
-    sequence: int
+    week: Optional[int] = None
+    day: Optional[str] = None
+    driverId: Optional[str] = None
+    driverName: Optional[str] = None
+    sequence: Optional[int] = None
 
 
 class ManualPlanSnapshot(BaseModel):

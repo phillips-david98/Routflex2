@@ -4,6 +4,14 @@ const { validateCpfCnpj, isValidCoordinate } = require('../utils/validators');
 
 const IS_MOCK = process.env.USE_MOCK !== 'false';
 
+// ── Normaliza tipos de colunas DECIMAL que o pg retorna como string ────────────
+function normalizeRow(row) {
+  if (!row) return row;
+  if (row.lat != null) row.lat = parseFloat(row.lat);
+  if (row.lon != null) row.lon = parseFloat(row.lon);
+  return row;
+}
+
 // ── Helpers DB ─────────────────────────────────────────────────────────────────
 async function dbFindAll(filters, page, perPage) {
   const conditions = [];
@@ -36,7 +44,7 @@ async function dbFindAll(filters, page, perPage) {
     [...params, perPage, offset]
   );
 
-  return { items: dataRes.rows, total, page, per_page: perPage, pages: Math.ceil(total / perPage) };
+  return { items: dataRes.rows.map(normalizeRow), total, page, per_page: perPage, pages: Math.ceil(total / perPage) };
 }
 
 // ── Model API ──────────────────────────────────────────────────────────────────
@@ -58,7 +66,7 @@ async function findById(id, sessionId) {
     params.push(sessionId);
   }
   const res = await query(`SELECT * FROM crm_customers WHERE ${conditions.join(' AND ')}`, params);
-  return res.rows[0] || null;
+  return normalizeRow(res.rows[0]) || null;
 }
 
 async function findByClientIds(clientIds = [], sessionId) {
@@ -86,7 +94,7 @@ async function findByClientIds(clientIds = [], sessionId) {
     `SELECT * FROM crm_customers WHERE ${conditions.join(' AND ')}`,
     params
   );
-  return res.rows;
+  return res.rows.map(normalizeRow);
 }
 
 async function findByCpfCnpj(cpfCnpj, sessionId) {
@@ -99,7 +107,7 @@ async function findByCpfCnpj(cpfCnpj, sessionId) {
     params.push(sessionId);
   }
   const res = await query(`SELECT * FROM crm_customers WHERE ${conditions.join(' AND ')}`, params);
-  return res.rows[0] || null;
+  return normalizeRow(res.rows[0]) || null;
 }
 
 async function create(data) {
@@ -129,7 +137,7 @@ async function create(data) {
       [data.name, data.phone, data.ddd, data.cpf_cnpj, data.address, data.number, data.neighborhood,
        data.city, data.state, data.zip_code, lat, lon, status, eligible, data.notes || null, data.session_id || null]
     );
-    return res.rows[0];
+    return normalizeRow(res.rows[0]);
   } catch (err) {
     // Re-throw com contexto
     err.context = 'customer_model_create';
@@ -155,7 +163,7 @@ async function update(id, data) {
      data.neighborhood ?? current.neighborhood, data.city ?? current.city, data.state ?? current.state,
      data.zip_code ?? current.zip_code, lat, lon, status, eligible, data.notes ?? current.notes, id]
   );
-  return res.rows[0];
+  return normalizeRow(res.rows[0]);
 }
 
 async function remove(id, sessionId) {

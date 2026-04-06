@@ -147,7 +147,8 @@ export default function Roteirizacao() {
                       <td>{c.ddd || '—'}</td>
                       <td>{c.city && c.state ? `${c.city} / ${c.state}` : '—'}</td>
                       <td style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)' }}>
-                        {c.lat?.toFixed(4)}, {c.lon?.toFixed(4)}
+                        {c.lat != null && Number.isFinite(Number(c.lat)) ? Number(c.lat).toFixed(4) : '—'},{' '}
+                        {c.lon != null && Number.isFinite(Number(c.lon)) ? Number(c.lon).toFixed(4) : '—'}
                       </td>
                       <td><Badge status={c.status} /></td>
                     </tr>
