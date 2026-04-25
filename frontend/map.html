@@ -1597,9 +1597,14 @@ body.login-active .app-shell {
 .driver-list-item.is-drag-over {
   background: rgba(255, 185, 50, 0.18);
   border-color: rgba(255, 185, 50, 0.75);
-  box-shadow: inset 0 0 0 1px rgba(255, 185, 50, 0.4), 0 0 14px rgba(255, 185, 50, 0.2);
-  transform: scale(1.01);
-  transition: transform 0.1s;
+  box-shadow: inset 0 0 0 1px rgba(255, 185, 50, 0.45), 0 0 18px rgba(255, 185, 50, 0.24), 0 0 34px rgba(255, 185, 50, 0.14);
+  transform: scale(1.018);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.driver-list-item.is-drop-flash,
+.route-item.is-drop-flash {
+  animation: assignmentDropFlash 0.34s ease-out;
 }
 
 .driver-list-item strong {
@@ -1889,6 +1894,11 @@ body.login-active .app-shell {
   shape-rendering: optimizeSpeed;
 }
 
+.territory-shape.is-assignment-target {
+  filter: drop-shadow(0 0 14px rgba(82, 208, 255, 0.38)) drop-shadow(0 0 26px rgba(82, 208, 255, 0.24));
+  animation: assignmentPolygonGlow 1.15s ease-in-out infinite alternate;
+}
+
 .lasso-confirm-card {
   width: min(430px, 100%);
 }
@@ -2104,6 +2114,14 @@ body.login-active .app-shell {
 .timeline-item.is-selected {
   border-color: rgba(82, 208, 255, 0.55);
   background: rgba(82, 208, 255, 0.12);
+}
+
+.route-item.is-drag-over {
+  border-color: rgba(255, 185, 50, 0.72);
+  background: rgba(255, 185, 50, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 185, 50, 0.36), 0 0 18px rgba(255, 185, 50, 0.16);
+  transform: translateY(-1px) scale(1.012);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
 }
 
 .route-meta,
@@ -2630,6 +2648,7 @@ body.login-active .app-shell {
   stroke: rgba(125, 214, 255, 0.95);
   stroke-width: 2;
   stroke-dasharray: 7 5;
+  pointer-events: none;
 }
 
 .lasso-selection-fill {
@@ -2637,6 +2656,7 @@ body.login-active .app-shell {
   stroke: rgba(125, 214, 255, 0.85);
   stroke-width: 2;
   stroke-dasharray: 7 5;
+  pointer-events: none;
 }
 @keyframes toastIn {
   from { opacity: 0; transform: translateX(-50%) translateY(8px); }
@@ -3269,11 +3289,11 @@ body.manual-planning-mode .manual-planning-panel {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.9);
+  border: 1px solid rgba(255,255,255,0.82);
   color: #fff;
   font-size: 0.76rem;
   font-weight: 700;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.32);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
 .route-marker-circle.is-lasso-selected {
@@ -3283,6 +3303,121 @@ body.manual-planning-mode .manual-planning-panel {
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.5), 0 8px 18px rgba(0, 0, 0, 0.32);
 }
 
+.leaflet-marker-icon.is-assignment-source .route-marker-circle {
+  opacity: 0.66 !important;
+  outline: 2px solid rgba(82, 208, 255, 0.42);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(82, 208, 255, 0.12), 0 8px 18px rgba(0, 0, 0, 0.32);
+  animation: assignmentSourcePulse 1.35s ease-in-out infinite;
+}
+
+.leaflet-marker-icon.is-assignment-target .route-marker-circle {
+  transform: scale(1.17) !important;
+  border-color: #52d0ff !important;
+  box-shadow: 0 0 0 4px rgba(82, 208, 255, 0.18), 0 0 18px rgba(82, 208, 255, 0.22), 0 12px 28px rgba(5, 17, 31, 0.5);
+}
+
+.leaflet-marker-icon.is-drop-flash .route-marker-circle {
+  animation: assignmentDropFlashMarker 0.34s ease-out;
+}
+
+.assignment-drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2500;
+  min-width: 164px;
+  max-width: 240px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(82, 208, 255, 0.26);
+  background: linear-gradient(145deg, rgba(7, 19, 35, 0.96), rgba(11, 33, 56, 0.92));
+  color: #edf4ff;
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.38), 0 10px 26px rgba(82, 208, 255, 0.08), 0 0 0 1px rgba(82, 208, 255, 0.08);
+  backdrop-filter: blur(18px) saturate(1.08);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-9999px, -9999px, 0) scale(0.96);
+  transition: opacity 0.16s ease, filter 0.16s ease;
+  filter: saturate(0.96);
+  will-change: transform, opacity;
+}
+
+.assignment-drag-ghost.is-active {
+  opacity: 1;
+  filter: saturate(1.06);
+}
+
+.assignment-drag-ghost.is-success {
+  animation: assignmentGhostSnap 0.24s ease-out;
+}
+
+.assignment-drag-ghost-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(82, 208, 255, 0.12);
+  color: rgba(170, 228, 255, 0.95);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.assignment-drag-ghost-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assignment-drag-ghost-meta {
+  margin-top: 3px;
+  font-size: 0.76rem;
+  color: #8fa7c4;
+}
+
+.assignment-drag-ghost-target {
+  margin-top: 8px;
+  font-size: 0.73rem;
+  color: #bfefff;
+}
+
+@keyframes assignmentSourcePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 4px rgba(82, 208, 255, 0.10), 0 8px 18px rgba(0, 0, 0, 0.32); }
+  50% { transform: scale(1.035); box-shadow: 0 0 0 6px rgba(82, 208, 255, 0.14), 0 10px 22px rgba(0, 0, 0, 0.34); }
+}
+
+@keyframes assignmentPolygonGlow {
+  from { filter: drop-shadow(0 0 10px rgba(82, 208, 255, 0.26)) drop-shadow(0 0 18px rgba(82, 208, 255, 0.14)); }
+  to { filter: drop-shadow(0 0 16px rgba(82, 208, 255, 0.42)) drop-shadow(0 0 32px rgba(82, 208, 255, 0.24)); }
+}
+
+@keyframes assignmentGhostSnap {
+  0% { transform: translate3d(var(--assignment-ghost-x, -9999px), var(--assignment-ghost-y, -9999px), 0) scale(1.08); }
+  65% { transform: translate3d(var(--assignment-ghost-x, -9999px), var(--assignment-ghost-y, -9999px), 0) scale(0.98); }
+  100% { transform: translate3d(var(--assignment-ghost-x, -9999px), var(--assignment-ghost-y, -9999px), 0) scale(1.02); }
+}
+
+@keyframes assignmentDropFlash {
+  0% { box-shadow: inset 0 0 0 1px rgba(82, 208, 255, 0.22), 0 0 0 rgba(82, 208, 255, 0); }
+  45% { box-shadow: inset 0 0 0 1px rgba(82, 208, 255, 0.55), 0 0 26px rgba(82, 208, 255, 0.28); }
+  100% { box-shadow: inset 0 0 0 1px rgba(82, 208, 255, 0.18), 0 0 0 rgba(82, 208, 255, 0); }
+}
+
+@keyframes assignmentDropFlashMarker {
+  0% { transform: scale(1.18); box-shadow: 0 0 0 0 rgba(82, 208, 255, 0.36), 0 12px 28px rgba(5, 17, 31, 0.5); }
+  55% { transform: scale(1.28); box-shadow: 0 0 0 9px rgba(82, 208, 255, 0), 0 0 24px rgba(82, 208, 255, 0.3), 0 12px 28px rgba(5, 17, 31, 0.5); }
+  100% { transform: scale(1.16); box-shadow: 0 0 0 0 rgba(82, 208, 255, 0), 0 12px 28px rgba(5, 17, 31, 0.5); }
+}
+
 #map.lasso-mode,
 #map.lasso-mode .leaflet-interactive,
 #map.lasso-mode .leaflet-pane,
@@ -3290,6 +3425,24 @@ body.manual-planning-mode .manual-planning-panel {
 #map.lasso-mode .leaflet-overlay-pane,
 #map.lasso-mode .leaflet-map-pane {
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M3 21l3-1 11-11-2-2L4 18 3 21zM16 5l2 2 1-1-2-2-1 1z'/%3E%3C/svg%3E") 2 20, crosshair !important;
+}
+
+#map.lasso-mode.lasso-move-mode,
+#map.lasso-mode.lasso-move-mode .leaflet-interactive,
+#map.lasso-mode.lasso-move-mode .leaflet-pane,
+#map.lasso-mode.lasso-move-mode .leaflet-marker-icon,
+#map.lasso-mode.lasso-move-mode .leaflet-overlay-pane,
+#map.lasso-mode.lasso-move-mode .leaflet-map-pane {
+  cursor: grab !important;
+}
+
+#map.lasso-mode.lasso-dragging-mode,
+#map.lasso-mode.lasso-dragging-mode .leaflet-interactive,
+#map.lasso-mode.lasso-dragging-mode .leaflet-pane,
+#map.lasso-mode.lasso-dragging-mode .leaflet-marker-icon,
+#map.lasso-mode.lasso-dragging-mode .leaflet-overlay-pane,
+#map.lasso-mode.lasso-dragging-mode .leaflet-map-pane {
+  cursor: grabbing !important;
 }
 
 .driver-marker {
@@ -4525,6 +4678,22 @@ body.login-active .routex-ai-panel { display:none !important; }
 <script>
 let _pendingMapRenderRAF = null;
 let _pendingSidebarRAF = null;
+const PERF_APPLY_FILTERS_DEBUG = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost'
+  || window.location.hostname === '127.0.0.1'
+  || window.location.search.includes('debug_perf=1')
+);
+
+function logApplyFiltersPerf(message, details) {
+  if (!PERF_APPLY_FILTERS_DEBUG || typeof console === 'undefined' || typeof console.debug !== 'function') {
+    return;
+  }
+  if (typeof details === 'undefined') {
+    console.debug(`[PERF] ${message}`);
+    return;
+  }
+  console.debug(`[PERF] ${message}`, details);
+}
 
 function postBackendEvent(path, payload) {
   fetch(`${BACKEND_API_BASE}${path}`, {
@@ -4534,6 +4703,199 @@ function postBackendEvent(path, payload) {
   }).catch(() => {
     // Best effort audit logging; UI flow must not be blocked when backend is unavailable.
   });
+}
+
+const CUSTOMER_SOURCE_STORAGE_PREFIX = 'ROUTflex:customers:ddd:';
+
+function normalizeCustomersFromSourcePayload(payload, ddd) {
+  const dddText = String(ddd || '').trim();
+  const rawCustomers = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload && payload.customers)
+      ? payload.customers
+      : Array.isArray(payload && payload.data)
+        ? payload.data
+        : Array.isArray(payload && payload.items)
+          ? payload.items
+          : [];
+
+  if (!dddText) {
+    return rawCustomers;
+  }
+
+  return rawCustomers.filter((customer) => String((customer || {}).ddd || '') === dddText);
+}
+
+function persistCustomersSourceCache(ddd, customers) {
+  const dddText = String(ddd || '').trim();
+  if (!dddText) return;
+
+  try {
+    localStorage.setItem(`${CUSTOMER_SOURCE_STORAGE_PREFIX}${dddText}`, JSON.stringify({
+      savedAt: new Date().toISOString(),
+      customers: Array.isArray(customers) ? customers : []
+    }));
+  } catch (_) {
+    // Keep customer loading resilient even when browser storage is unavailable.
+  }
+}
+
+async function tryLoadCustomersFromMapBackend(ddd) {
+  const dddText = String(ddd || '').trim();
+  if (!dddText) {
+    return { loaded: false, customers: [] };
+  }
+
+  const candidates = [
+    `${BACKEND_API_BASE}/customers?ddd=${encodeURIComponent(dddText)}`,
+    `${BACKEND_API_BASE}/customers?regiao=${encodeURIComponent(dddText)}`,
+    `${BACKEND_API_BASE}/customers/${encodeURIComponent(dddText)}`
+  ];
+
+  for (const endpoint of candidates) {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json();
+      const customers = normalizeCustomersFromSourcePayload(payload, dddText);
+      return { loaded: true, customers };
+    } catch (_) {
+      // Try the next backend candidate silently.
+    }
+  }
+
+  return { loaded: false, customers: [] };
+}
+
+function tryLoadCustomersFromLocalStorage(ddd) {
+  const dddText = String(ddd || '').trim();
+  if (!dddText) {
+    return { loaded: false, customers: [] };
+  }
+
+  try {
+    const raw = localStorage.getItem(`${CUSTOMER_SOURCE_STORAGE_PREFIX}${dddText}`);
+    if (!raw) {
+      return { loaded: false, customers: [] };
+    }
+
+    const payload = JSON.parse(raw);
+    const customers = normalizeCustomersFromSourcePayload(payload, dddText);
+    return { loaded: true, customers };
+  } catch (_) {
+    return { loaded: false, customers: [] };
+  }
+}
+
+async function tryLoadCustomersFromLegacySource(ddd, options = {}) {
+  const dddText = String(ddd || '').trim();
+  const entryPoint = String(options.entryPoint || 'boot');
+
+  const tryBootLoader = async () => {
+    if (typeof loadCustomers !== 'function') {
+      return [];
+    }
+    const customers = await loadCustomers();
+    return normalizeCustomersFromSourcePayload(customers, dddText);
+  };
+
+  const tryDddLoader = async () => {
+    if (!dddText || typeof loadCustomersFromCRMForDDD !== 'function') {
+      return [];
+    }
+    const customers = await loadCustomersFromCRMForDDD(dddText);
+    return normalizeCustomersFromSourcePayload(customers, dddText);
+  };
+
+  const loaders = entryPoint === 'ddd'
+    ? [tryDddLoader, tryBootLoader]
+    : [tryBootLoader, tryDddLoader];
+
+  for (const loader of loaders) {
+    try {
+      const customers = await loader();
+      if (Array.isArray(customers) && customers.length > 0) {
+        return { loaded: true, customers };
+      }
+    } catch (_) {
+      // Fall through to the next compatible source.
+    }
+  }
+
+  return { loaded: false, customers: [] };
+}
+
+async function tryLoadCustomersFromLocalMock(ddd) {
+  const dddText = String(ddd || '').trim();
+  const mockCandidates = [
+    state.simulationSourceCustomers,
+    window.ROUTFLEX_LOCAL_CUSTOMERS_MOCK,
+    window.ROUTFLEX_CUSTOMERS_MOCK,
+    state.sourceCustomers
+  ];
+
+  for (const candidate of mockCandidates) {
+    const customers = normalizeCustomersFromSourcePayload(candidate, dddText);
+    if (Array.isArray(candidate) || (candidate && typeof candidate === 'object')) {
+      return { loaded: true, customers };
+    }
+  }
+
+  return { loaded: false, customers: [] };
+}
+
+async function loadCustomersFromSource(ddd, options = {}) {
+  const dddText = String(ddd || state.selectedDDD || '').trim();
+  const entryPoint = String(options.entryPoint || 'boot');
+  logger.info('[MAP] carregando clientes via SOURCE', {
+    ddd: dddText || null,
+    mode: state.mode,
+    entryPoint
+  });
+
+  const legacyResult = await tryLoadCustomersFromLegacySource(dddText, { entryPoint });
+  if (legacyResult.loaded) {
+    persistCustomersSourceCache(dddText, legacyResult.customers);
+    return Array.isArray(legacyResult.customers) ? legacyResult.customers : [];
+  }
+
+  const backendResult = await tryLoadCustomersFromMapBackend(dddText);
+  if (backendResult.loaded) {
+    persistCustomersSourceCache(dddText, backendResult.customers);
+    return Array.isArray(backendResult.customers) ? backendResult.customers : [];
+  }
+
+  const storageResult = tryLoadCustomersFromLocalStorage(dddText);
+  if (storageResult.loaded) {
+    logger.warn('[MAP] fallback local ativado', {
+      source: 'localStorage',
+      ddd: dddText || null
+    });
+    return Array.isArray(storageResult.customers) ? storageResult.customers : [];
+  }
+
+  const mockResult = await tryLoadCustomersFromLocalMock(dddText);
+  if (mockResult.loaded) {
+    logger.warn('[MAP] fallback local ativado', {
+      source: 'mock',
+      ddd: dddText || null
+    });
+    persistCustomersSourceCache(dddText, mockResult.customers);
+    return Array.isArray(mockResult.customers) ? mockResult.customers : [];
+  }
+
+  logger.warn('[MAP] fallback local ativado', {
+    source: 'empty-array',
+    ddd: dddText || null
+  });
+  return [];
 }
 
 function crmFetch(endpoint, options = {}) {
@@ -4793,6 +5155,23 @@ function getSelectedRouteCrmContext() {
   return { regiao, data };
 }
 
+function getOperationalCrmContext(ddd = null) {
+  const resolvedDDD = String(ddd || state.selectedDDD || '').trim();
+  if (!/^\d{2,3}$/.test(resolvedDDD)) {
+    return null;
+  }
+
+  const hasOperationalCustomers = clients.some((client) => String(client.ddd) === resolvedDDD);
+  if (!hasOperationalCustomers) {
+    return null;
+  }
+
+  return {
+    ddd: resolvedDDD,
+    sessionId: getRealSessionIdForDDD(resolvedDDD)
+  };
+}
+
 function buildCrmDashboardUrl() {
   const baseUrl = String(CRM_URL || '').trim();
   if (!baseUrl) {
@@ -4800,13 +5179,14 @@ function buildCrmDashboardUrl() {
   }
 
   const context = getSelectedRouteCrmContext();
-  const url = new URL(baseUrl, window.location.href);
-  url.searchParams.set('session_id', state.activePlanningSessionId || getRealSessionIdForDDD(state.selectedDDD));
-  url.searchParams.set('regiao', context.regiao);
-  url.searchParams.set('data', context.data);
-  if (state.selectedRouteId) {
-    url.searchParams.set('rota_id', String(state.selectedRouteId));
+  const operationalContext = getOperationalCrmContext(context.regiao);
+  if (!operationalContext) {
+    return '';
   }
+
+  const url = new URL(baseUrl, window.location.href);
+  url.searchParams.set('session_id', operationalContext.sessionId);
+  url.searchParams.set('regiao', operationalContext.ddd);
   return url.toString();
 }
 
@@ -4830,9 +5210,14 @@ async function isCrmReachable(baseUrl) {
 }
 
 async function openCrmDashboard() {
+  if (!String(CRM_URL || '').trim()) {
+    updatePlannerHint('URL do CRM não configurada. Defina crmDashboardUrl em window.ROUTFLEX_RUNTIME_CONFIG.');
+    return;
+  }
+
   const crmUrl = buildCrmDashboardUrl();
   if (!crmUrl) {
-    updatePlannerHint('URL do CRM não configurada. Defina crmDashboardUrl em window.ROUTFLEX_RUNTIME_CONFIG.');
+    updatePlannerHint('Não há contexto operacional real disponível para abrir o CRM. Simulações usam apenas contexto local.');
     return;
   }
 
@@ -5102,47 +5487,15 @@ function createSimulationSessionForActiveDDD(targetDDD = state.selectedDDD, pref
 }
 
 function createPlanningSessionByDDD(targetDDD = state.selectedDDD) {
-  // Salvar snapshot do DDD atual antes de trocar de contexto
-  // para não perder alterações feitas pelo usuário
-  captureActivePlanningSessionSnapshot();
-
-  const ddd = String(targetDDD);
-
-  const realSessionId = getRealSessionIdForDDD(ddd);
-  const alreadyExists = planningSessionRegistry.has(realSessionId);
-
-  ensureDDDOperationalContext(ddd);
-  ensureDDDOptionExists(ddd);
-  state.selectedDDD = ddd;
-  const dddSelect = document.getElementById('session-select');
-  if (dddSelect) dddSelect.value = ddd;
-
-  if (!alreadyExists) {
-    planningSessionRegistry.set(realSessionId, {
-      id: realSessionId,
+  const ddd = String(targetDDD || state.selectedDDD || '').trim();
+  updatePlannerHint('Sessões operacionais reais são criadas automaticamente quando existem clientes no DDD. Use Simulação para testar cenários.');
+  if (/^\d{2,3}$/.test(ddd)) {
+    logger.info('[PLANNING SESSIONS] criação manual de sessão REAL bloqueada', {
       ddd,
-      tipo_sessao: 'REAL',
-      createdAt: new Date().toISOString(),
-      sourceSessionId: null,
+      activeSessionId: state.activePlanningSessionId,
+      mode: state.mode
     });
-    planningSessionSnapshots.set(realSessionId, buildPlanningSnapshotFromCurrentClients(ddd));
   }
-
-  state.activePlanningSessionByDDD[ddd] = realSessionId;
-  renderPlanningSessionSelector();
-  switchPlanningSession(realSessionId, { skipCapture: true });
-  focusMapOnDDD(ddd, { zoom: 8, animate: true });
-  postBackendEvent('/planning/sessions/create-real', {
-    sessionId: realSessionId,
-    ddd,
-    sessionType: 'REAL',
-    source: 'routing-control-tower',
-    integrateWith: ['db', 'crm'],
-    createdAt: new Date().toISOString()
-  });
-  updatePlannerHint(alreadyExists
-    ? `Sessão de produção DDD ${ddd} já existia.`
-    : `Sessão de produção DDD ${ddd} criada com integração de banco e CRM.`);
 }
 
 function deleteActiveSimulationSessionForDDD(options = {}) {
@@ -5279,15 +5632,8 @@ function confirmPlanningCreateSessionFromModal() {
   }
 
   const dddInput = document.getElementById('planning-create-ddd-input');
-  const rawDDD = String((dddInput && dddInput.value) || '').replace(/\D/g, '').slice(0, 3);
-  if (!/^\d{2,3}$/.test(rawDDD)) {
-    updatePlannerHint('Informe um DDD válido com 2 ou 3 dígitos.');
-    if (dddInput) dddInput.focus();
-    return;
-  }
-  createPlanningSessionByDDD(rawDDD);
-  closePlanningCreateSessionModal();
-  openPlanningSessionsPopover();
+  if (dddInput) dddInput.focus();
+  createPlanningSessionByDDD((dddInput && dddInput.value) || state.selectedDDD);
 }
 
 function deleteSelectedPlanningSession() {
@@ -6545,9 +6891,55 @@ function clearRoadRoute() {
     roadRouteLayer = null;
   }
   state.roadRouteId = null;
+  state._roadRouteSignature = null;
   const existing = document.getElementById('road-route-toast');
   if (existing) existing.remove();
   syncRoadRouteVisibility();
+}
+
+function buildRoadRouteSignature(route) {
+  if (!route || !Array.isArray(route.clients)) {
+    return null;
+  }
+
+  const waypointFingerprint = route.clients.map((client) => {
+    return [
+      client.id,
+      Number(client.lat || 0).toFixed(5),
+      Number(client.lon || 0).toFixed(5),
+      client.sequence || 0
+    ].join(':');
+  }).join('|');
+
+  return [
+    state.viewMode,
+    state.showDriverBase ? 1 : 0,
+    state.weekColorMode ? 1 : 0,
+    route.routeId,
+    route.driver && route.driver.id,
+    route.driver && Number(route.driver.lat || 0).toFixed(5),
+    route.driver && Number(route.driver.lon || 0).toFixed(5),
+    route.day,
+    route.week,
+    waypointFingerprint
+  ].join('~');
+}
+
+function shouldKeepRoadRoute(routeGroups) {
+  if (!roadRouteLayer || state.viewMode !== 'operational' || !state.roadRouteId) {
+    return false;
+  }
+
+  const selectedRoute = Array.isArray(routeGroups)
+    ? routeGroups.find((route) => route.routeId === state.selectedRouteId)
+    : null;
+
+  if (!selectedRoute || state.roadRouteId !== selectedRoute.routeId) {
+    return false;
+  }
+
+  const signature = buildRoadRouteSignature(selectedRoute);
+  return Boolean(signature && state._roadRouteSignature === signature);
 }
 
 function syncRoadRouteVisibility() {
@@ -6649,6 +7041,7 @@ async function fetchRoadRoute() {
     }).addTo(map);
 
     state.roadRouteId = route.routeId;
+    state._roadRouteSignature = buildRoadRouteSignature(route);
     syncRoadRouteVisibility();
     map.fitBounds(roadRouteLayer.getBounds(), { padding: [50, 50] });
 
@@ -6673,6 +7066,7 @@ async function fetchRoadRoute() {
 }
 
 function clearManualRebalanceState(message) {
+  clearClientMarkerAssignmentPointerSession();
   state.dragClientId = null;
   state.dragTargetWeek = null;
   state.dragTargetDay = null;
@@ -6684,11 +7078,292 @@ function clearManualRebalanceState(message) {
   updatePlannerHint(message);
 }
 
+function getHoveredDriverTargetFromPointer(clientX, clientY) {
+  if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
+    return null;
+  }
+
+  const element = document.elementFromPoint(clientX, clientY);
+  const target = element && element.closest('.driver-list-item[data-driver-id], .route-item[data-driver-id]');
+  const driverId = target && target.dataset.driverId && target.dataset.driverId !== 'all'
+    ? target.dataset.driverId
+    : null;
+  return driverId || null;
+}
+
 function syncDriverListDragState() {
   const hoverDriverId = state.lassoHoverDriverId || state.dragHoverDriverId;
-  document.querySelectorAll('#driver-list-panel .driver-list-item').forEach((btn) => {
+  document.querySelectorAll('#driver-list-panel .driver-list-item, #route-list .route-item[data-driver-id]').forEach((btn) => {
     btn.classList.toggle('is-drag-over', btn.dataset.driverId === hoverDriverId);
   });
+}
+
+function getAssignmentDragSourceIds(client) {
+  if (client && state.lassoModeActive && state.lassoSelectionIds.has(client.id)) {
+    return Array.from(state.lassoSelectionIds);
+  }
+  return client ? [client.id] : [];
+}
+
+function getAssignmentDriverLabel(driverId) {
+  if (!driverId) {
+    return 'destino selecionado';
+  }
+  return getDriverShortCode(driverId) || ((getDriverById(driverId) || {}).name) || driverId;
+}
+
+function ensureAssignmentDragGhost() {
+  let visual = state._assignmentDragVisual;
+  if (visual && visual.el) {
+    return visual;
+  }
+
+  const el = document.createElement('div');
+  el.className = 'assignment-drag-ghost';
+  el.innerHTML = [
+    '<div class="assignment-drag-ghost-badge"></div>',
+    '<div class="assignment-drag-ghost-title"></div>',
+    '<div class="assignment-drag-ghost-meta"></div>',
+    '<div class="assignment-drag-ghost-target"></div>'
+  ].join('');
+  document.body.appendChild(el);
+
+  visual = {
+    el,
+    badgeEl: el.querySelector('.assignment-drag-ghost-badge'),
+    titleEl: el.querySelector('.assignment-drag-ghost-title'),
+    metaEl: el.querySelector('.assignment-drag-ghost-meta'),
+    targetEl: el.querySelector('.assignment-drag-ghost-target'),
+    sourceIds: new Set(),
+    targetMarkerId: null,
+    targetPolygonDriverId: null,
+    pendingX: -9999,
+    pendingY: -9999,
+    renderX: -9999,
+    renderY: -9999,
+    rafId: 0,
+    flashTimerId: 0
+  };
+  state._assignmentDragVisual = visual;
+  return visual;
+}
+
+function updateAssignmentDragGhost(config = {}) {
+  const visual = ensureAssignmentDragGhost();
+  const sourceIds = Array.isArray(config.sourceIds) ? config.sourceIds : [];
+  const count = Number(config.count || sourceIds.length || 1);
+  const isGroup = count > 1;
+  const client = config.client || null;
+  const title = isGroup
+    ? `${count} clientes selecionados`
+    : (client && (client.nomeFantasia || client.tradeName || client.name || client.id)) || '1 cliente';
+  const meta = isGroup
+    ? 'Movimentação lógica em lote'
+    : '1 cliente';
+  const badge = isGroup ? 'SELEÇÃO' : 'CLIENTE';
+
+  visual.badgeEl.textContent = badge;
+  visual.titleEl.textContent = title;
+  visual.metaEl.textContent = meta;
+  visual.targetEl.textContent = config.targetLabel ? `Destino: ${config.targetLabel}` : 'Destino: arraste para um alvo válido';
+
+  if (config.originalEvent && Number.isFinite(config.originalEvent.clientX) && Number.isFinite(config.originalEvent.clientY)) {
+    visual.pendingX = config.originalEvent.clientX + 18;
+    visual.pendingY = config.originalEvent.clientY + 18;
+    if (!Number.isFinite(visual.renderX) || visual.renderX < -9000) {
+      visual.renderX = visual.pendingX;
+      visual.renderY = visual.pendingY;
+    }
+  }
+
+  visual.el.classList.add('is-active');
+  if (!visual.rafId) {
+    visual.rafId = requestAnimationFrame(() => {
+      const animateGhost = () => {
+        const dx = visual.pendingX - visual.renderX;
+        const dy = visual.pendingY - visual.renderY;
+        visual.renderX += dx * 0.42;
+        visual.renderY += dy * 0.42;
+        visual.el.style.setProperty('--assignment-ghost-x', `${visual.renderX}px`);
+        visual.el.style.setProperty('--assignment-ghost-y', `${visual.renderY}px`);
+        visual.el.style.transform = `translate3d(${visual.renderX}px, ${visual.renderY}px, 0) scale(1.07)`;
+
+        if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5 || visual.el.classList.contains('is-active')) {
+          visual.rafId = requestAnimationFrame(animateGhost);
+        } else {
+          visual.rafId = 0;
+        }
+      };
+
+      animateGhost();
+    });
+  }
+}
+
+function hideAssignmentDragGhost() {
+  const visual = state._assignmentDragVisual;
+  if (!visual || !visual.el) {
+    return;
+  }
+  if (visual.rafId) {
+    cancelAnimationFrame(visual.rafId);
+    visual.rafId = 0;
+  }
+  if (visual.flashTimerId) {
+    clearTimeout(visual.flashTimerId);
+    visual.flashTimerId = 0;
+  }
+  visual.el.classList.remove('is-active');
+  visual.el.classList.remove('is-success');
+  visual.targetEl.textContent = '';
+  visual.renderX = -9999;
+  visual.renderY = -9999;
+  visual.el.style.setProperty('--assignment-ghost-x', '-9999px');
+  visual.el.style.setProperty('--assignment-ghost-y', '-9999px');
+  visual.el.style.transform = 'translate3d(-9999px, -9999px, 0) scale(0.96)';
+}
+
+function triggerAssignmentDropFeedback(target = {}) {
+  const visual = state._assignmentDragVisual;
+  if (visual && visual.el) {
+    visual.el.classList.remove('is-success');
+    void visual.el.offsetWidth;
+    visual.el.classList.add('is-success');
+    if (visual.flashTimerId) {
+      clearTimeout(visual.flashTimerId);
+    }
+    visual.flashTimerId = setTimeout(() => {
+      if (state._assignmentDragVisual && state._assignmentDragVisual.el) {
+        state._assignmentDragVisual.el.classList.remove('is-success');
+      }
+      if (state._assignmentDragVisual) {
+        state._assignmentDragVisual.flashTimerId = 0;
+      }
+    }, 260);
+  }
+
+  const flashClasses = ['is-drop-flash'];
+  const driverId = target.driverId || null;
+  const markerId = target.targetMarkerId || target.clientId || null;
+  const routeButton = driverId
+    ? document.querySelector(`#driver-list-panel .driver-list-item[data-driver-id="${driverId}"], #route-list .route-item[data-driver-id="${driverId}"]`)
+    : null;
+  if (routeButton) {
+    routeButton.classList.remove(...flashClasses);
+    void routeButton.offsetWidth;
+    routeButton.classList.add(...flashClasses);
+    setTimeout(() => routeButton.classList.remove(...flashClasses), 340);
+  }
+
+  if (markerId) {
+    const markerEntry = _markerRegistry.get(markerId);
+    const markerElement = markerEntry && markerEntry.marker && markerEntry.marker.getElement ? markerEntry.marker.getElement() : null;
+    if (markerElement) {
+      markerElement.classList.remove('is-drop-flash');
+      void markerElement.offsetWidth;
+      markerElement.classList.add('is-drop-flash');
+      setTimeout(() => markerElement.classList.remove('is-drop-flash'), 340);
+    }
+  }
+}
+
+function _setAssignmentMarkerClass(clientId, className, enabled) {
+  const entry = _markerRegistry.get(clientId);
+  const marker = entry && entry.marker;
+  const element = marker && typeof marker.getElement === 'function' ? marker.getElement() : null;
+  if (!element) {
+    return;
+  }
+  element.classList.toggle(className, Boolean(enabled));
+}
+
+function _setAssignmentPolygonHighlight(driverId, enabled) {
+  const entry = _territoryRegistry.get(driverId);
+  if (!entry || !entry.polygon) {
+    return;
+  }
+
+  const baseFillOpacity = entry.fillDisabled ? 0 : (entry.selected ? 0.18 : 0.10);
+  const baseOpacity = entry.selected ? 0.55 : 0.35;
+  const baseWeight = entry.selected ? 2.2 : 1.4;
+
+  entry.polygon.setStyle(enabled ? {
+    color: entry.color,
+    fillColor: entry.color,
+    fillOpacity: Math.max(baseFillOpacity, 0.18),
+    opacity: 0.92,
+    weight: baseWeight + 1.4
+  } : {
+    color: entry.color,
+    fillColor: entry.color,
+    fillOpacity: baseFillOpacity,
+    opacity: baseOpacity,
+    weight: baseWeight
+  });
+
+  const polygonElement = typeof entry.polygon.getElement === 'function' ? entry.polygon.getElement() : null;
+  if (polygonElement) {
+    polygonElement.classList.toggle('is-assignment-target', Boolean(enabled));
+  }
+}
+
+function syncAssignmentDragVisualState(options = {}) {
+  const active = Boolean(options.active);
+  const visual = state._assignmentDragVisual || (active ? ensureAssignmentDragGhost() : null);
+  if (!visual) {
+    return;
+  }
+  const nextSourceIds = new Set(active && Array.isArray(options.sourceIds) ? options.sourceIds : []);
+  const nextTargetMarkerId = active ? (options.targetMarkerId || null) : null;
+  const nextTargetPolygonDriverId = active ? (options.targetPolygonDriverId || null) : null;
+
+  visual.sourceIds.forEach((clientId) => {
+    if (!nextSourceIds.has(clientId)) {
+      _setAssignmentMarkerClass(clientId, 'is-assignment-source', false);
+    }
+  });
+  nextSourceIds.forEach((clientId) => {
+    if (!visual.sourceIds.has(clientId)) {
+      _setAssignmentMarkerClass(clientId, 'is-assignment-source', true);
+    }
+  });
+
+  if (visual.targetMarkerId && visual.targetMarkerId !== nextTargetMarkerId) {
+    _setAssignmentMarkerClass(visual.targetMarkerId, 'is-assignment-target', false);
+  }
+  if (nextTargetMarkerId && visual.targetMarkerId !== nextTargetMarkerId) {
+    _setAssignmentMarkerClass(nextTargetMarkerId, 'is-assignment-target', true);
+  }
+
+  if (visual.targetPolygonDriverId && visual.targetPolygonDriverId !== nextTargetPolygonDriverId) {
+    _setAssignmentPolygonHighlight(visual.targetPolygonDriverId, false);
+  }
+  if (nextTargetPolygonDriverId && visual.targetPolygonDriverId !== nextTargetPolygonDriverId) {
+    _setAssignmentPolygonHighlight(nextTargetPolygonDriverId, true);
+  }
+
+  visual.sourceIds = nextSourceIds;
+  visual.targetMarkerId = nextTargetMarkerId;
+  visual.targetPolygonDriverId = nextTargetPolygonDriverId;
+
+  if (!active) {
+    hideAssignmentDragGhost();
+  }
+}
+
+function cancelAssignmentPointerDrag(message = 'Movimentação cancelada.') {
+  clearClientMarkerAssignmentPointerSession();
+  state.lassoHoverDriverId = null;
+  state.lassoDragTarget = null;
+  state.lassoGroupDragActive = false;
+  document.body.classList.remove('rfx-dragging');
+  syncMapDragging();
+  map.scrollWheelZoom.enable();
+  map.doubleClickZoom.enable();
+  clearManualRebalanceState(message);
+  setLassoButtonState();
+  syncAssignmentDragVisualState({ active: false });
+  hideAssignmentDragGhost();
 }
 
 let _dropTargetRectsCache = null;
@@ -6845,13 +7520,79 @@ function clearLassoLayers() {
   }
 }
 
-function setLassoButtonState() {
-  const button = document.getElementById('toggle-lasso-btn');
-  if (!button) {
+function syncLassoInteractionState() {
+  const container = map.getContainer();
+  if (!container) {
     return;
   }
-  button.classList.toggle('is-active', state.lassoModeActive);
-  map.getContainer().classList.toggle('lasso-mode', state.lassoModeActive);
+
+  const hasSelection = state.lassoModeActive && state.lassoSelectionIds.size > 0;
+  const isDrawing = state.lassoModeActive && state.lassoDrawingActive;
+  const isDraggingGroup = state.lassoModeActive && state.lassoGroupDragActive;
+  container.classList.toggle('lasso-mode', state.lassoModeActive);
+  container.classList.toggle('lasso-drawing-active', isDrawing);
+  container.classList.toggle('lasso-move-mode', hasSelection && !isDraggingGroup);
+  container.classList.toggle('lasso-dragging-mode', isDraggingGroup);
+}
+
+function setLassoButtonState() {
+  const button = document.getElementById('toggle-lasso-btn');
+  if (button) {
+    button.classList.toggle('is-active', state.lassoModeActive);
+  }
+  syncLassoInteractionState();
+}
+
+function getLatLngFromClientPoint(clientX, clientY) {
+  if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
+    return null;
+  }
+
+  const container = map && typeof map.getContainer === 'function' ? map.getContainer() : null;
+  if (!container) {
+    return null;
+  }
+
+  const rect = container.getBoundingClientRect();
+  return map.containerPointToLatLng([clientX - rect.left, clientY - rect.top]);
+}
+
+function detachLassoDocumentListeners() {
+  if (state._lassoDocumentMoveHandler) {
+    document.removeEventListener('mousemove', state._lassoDocumentMoveHandler, true);
+    state._lassoDocumentMoveHandler = null;
+  }
+  if (state._lassoDocumentUpHandler) {
+    document.removeEventListener('mouseup', state._lassoDocumentUpHandler, true);
+    state._lassoDocumentUpHandler = null;
+  }
+}
+
+function attachLassoDocumentListeners() {
+  if (state._lassoDocumentMoveHandler || state._lassoDocumentUpHandler) {
+    return;
+  }
+
+  state._lassoDocumentMoveHandler = (event) => {
+    if (!state.lassoModeActive || !state.lassoDrawingActive) {
+      return;
+    }
+    const latlng = getLatLngFromClientPoint(event.clientX, event.clientY);
+    if (!latlng) {
+      return;
+    }
+    updateLassoDraw(latlng);
+  };
+
+  state._lassoDocumentUpHandler = () => {
+    if (!state.lassoModeActive || !state.lassoDrawingActive) {
+      return;
+    }
+    finishLassoDraw();
+  };
+
+  document.addEventListener('mousemove', state._lassoDocumentMoveHandler, true);
+  document.addEventListener('mouseup', state._lassoDocumentUpHandler, true);
 }
 
 /* ── NAV tool (temporary map panning in operational mode) ────────────────── */
@@ -6890,6 +7631,9 @@ function deactivateNavTool() {
 }
 
 function clearLassoSelection(options = {}) {
+  detachLassoDocumentListeners();
+  clearClientMarkerAssignmentPointerSession();
+  syncAssignmentDragVisualState({ active: false });
   state.lassoSelectionIds.clear();
   state.lassoHoverDriverId = null;
   state.lassoDragTarget = null;
@@ -6904,6 +7648,7 @@ function clearLassoSelection(options = {}) {
   state.dragTargetDay = null;
   lassoDrawPoints = [];
   document.body.classList.remove('rfx-dragging');
+  setLassoButtonState();
   syncMapDragging();
   clearLassoLayers();
   syncDriverListDragState();
@@ -6933,9 +7678,12 @@ function pointInPolygon(point, polygon) {
 
 function beginLassoDraw(latlng) {
   clearLassoLayers();
+  detachLassoDocumentListeners();
   state.lassoDrawingActive = true;
+  setLassoButtonState();
   lassoDrawPoints = [latlng];
   map.dragging.disable();
+  attachLassoDocumentListeners();
   lassoDrawLayer = L.polyline(lassoDrawPoints, {
     className: 'lasso-selection-guide',
     interactive: false
@@ -7028,6 +7776,85 @@ function getDriverTargetFromBase(latlng, ddd) {
   return candidates[0];
 }
 
+function getClosestClientMarkerTarget(latlng, sourceClient) {
+  const ddd = Number(state.selectedDDD);
+  const point = map.latLngToLayerPoint(latlng);
+  let bestTarget = null;
+  const maxDistancePx = 30;
+
+  _markerRegistry.forEach((entry, clientId) => {
+    const marker = entry && entry.marker;
+    const markerClient = marker && marker._rfxClient;
+    if (!marker || !markerClient) {
+      return;
+    }
+    if (markerClient.id === (sourceClient || {}).id) {
+      return;
+    }
+    if (Number(markerClient.ddd) !== ddd) {
+      return;
+    }
+    if (!markerClient.driverId || markerClient.driverId === (sourceClient || {}).driverId) {
+      return;
+    }
+    if ((markerClient.clientType || 'ativo') === 'sem_coordenada') {
+      return;
+    }
+
+    const markerPoint = map.latLngToLayerPoint(marker.getLatLng());
+    const distance = point.distanceTo(markerPoint);
+    if (distance > maxDistancePx) {
+      return;
+    }
+
+    if (!bestTarget || distance < bestTarget.distance) {
+      bestTarget = {
+        driverId: markerClient.driverId,
+        clientId,
+        distance,
+        source: 'marker'
+      };
+    }
+  });
+
+  return bestTarget;
+}
+
+function getDriverTargetFromTerritoryPolygon(latlng) {
+  if (!_territoryRegistry.size) {
+    return null;
+  }
+
+  const point = map.latLngToContainerPoint(latlng);
+  let bestTarget = null;
+
+  _territoryRegistry.forEach((entry, driverId) => {
+    if (!entry || !entry.polygon) {
+      return;
+    }
+
+    const latlngGroups = entry.polygon.getLatLngs();
+    const hull = Array.isArray(latlngGroups) && Array.isArray(latlngGroups[0]) ? latlngGroups[0] : latlngGroups;
+    if (!Array.isArray(hull) || hull.length < 3) {
+      return;
+    }
+
+    const polygonPoints = hull.map((vertex) => map.latLngToContainerPoint(vertex));
+    if (!pointInPolygon(point, polygonPoints)) {
+      return;
+    }
+
+    const center = entry.polygon.getBounds().getCenter();
+    const centerPoint = map.latLngToContainerPoint(center);
+    const distance = point.distanceTo(centerPoint);
+    if (!bestTarget || distance < bestTarget.distance) {
+      bestTarget = { driverId, distance, source: 'territorio' };
+    }
+  });
+
+  return bestTarget;
+}
+
 function resolveLassoDropTarget(latlng) {
   const ddd = Number(state.selectedDDD);
   if (state.lassoHoverDriverId) {
@@ -7036,6 +7863,7 @@ function resolveLassoDropTarget(latlng) {
 
   const lineTarget = getDriverTargetFromRouteLine(latlng, ddd);
   const baseTarget = getDriverTargetFromBase(latlng, ddd);
+  const polygonTarget = getDriverTargetFromTerritoryPolygon(latlng);
 
   if (lineTarget && lineTarget.ambiguous) {
     return { ambiguous: true, source: 'linha' };
@@ -7053,7 +7881,7 @@ function resolveLassoDropTarget(latlng) {
     }
     return lineTarget.distance < baseTarget.distance ? lineTarget : baseTarget;
   }
-  return lineTarget || baseTarget;
+  return lineTarget || baseTarget || polygonTarget;
 }
 
 function getLassoPointerEvent(originalEvent) {
@@ -7104,7 +7932,8 @@ function getLassoDayDropTargetFromPointer(originalEvent) {
   return {
     type: 'day',
     day: targetClient.day,
-    source: 'bolinha'
+    source: 'bolinha',
+    clientId: targetClient.id
   };
 }
 
@@ -7350,7 +8179,8 @@ function moveLassoSelectionToDay(targetDay, options = {}) {
   updatePlannerHint(`${changed} clientes reprogramados para o dia ${targetDay}.`);
 }
 
-function handleLassoGroupDrag(event) {
+function handleLassoGroupDrag(event, previewLatLng = null) {
+  const sourceIds = Array.from(state.lassoSelectionIds);
   if (event.originalEvent) {
     state._lassoPointerX = event.originalEvent.clientX;
     state._lassoPointerY = event.originalEvent.clientY;
@@ -7359,19 +8189,37 @@ function handleLassoGroupDrag(event) {
   let hoveredDriverId = null;
   const pointerEvent = getLassoPointerEvent(event.originalEvent);
   if (pointerEvent) {
-    const element = document.elementFromPoint(pointerEvent.clientX, pointerEvent.clientY);
-    const driverItem = element && element.closest('.driver-list-item');
-    hoveredDriverId = (driverItem && driverItem.dataset.driverId && driverItem.dataset.driverId !== 'all')
-      ? driverItem.dataset.driverId
-      : null;
+    hoveredDriverId = getHoveredDriverTargetFromPointer(pointerEvent.clientX, pointerEvent.clientY);
   }
 
   state.lassoHoverDriverId = hoveredDriverId;
   syncDriverListDragState();
+  syncAssignmentDragVisualState({ active: true, sourceIds });
+  updateAssignmentDragGhost({
+    originalEvent: event.originalEvent,
+    client: event.target ? event.target._rfxClient : null,
+    sourceIds,
+    count: sourceIds.length,
+    targetLabel: hoveredDriverId ? `Solte para transferir para ${getAssignmentDriverLabel(hoveredDriverId)}` : null
+  });
 
   const dayTarget = getLassoDayDropTargetFromPointer(event.originalEvent);
   if (dayTarget) {
     state.lassoDragTarget = dayTarget;
+    syncAssignmentDragVisualState({
+      active: true,
+      sourceIds,
+      targetMarkerId: dayTarget.source === 'bolinha' ? dayTarget.clientId : null
+    });
+    updateAssignmentDragGhost({
+      originalEvent: event.originalEvent,
+      client: event.target ? event.target._rfxClient : null,
+      sourceIds,
+      count: sourceIds.length,
+      targetLabel: dayTarget.source === 'bolinha'
+        ? `Solte para aplicar em massa no dia ${dayTarget.day}`
+        : `Solte para aplicar em massa no dia ${dayTarget.day}`
+    });
     if (dayTarget.source === 'bolinha') {
       updatePlannerHint(`Destino detectado: bolinha de parada com dia ${dayTarget.day}. Solte para aplicar em massa.`);
     } else {
@@ -7380,21 +8228,50 @@ function handleLassoGroupDrag(event) {
     return;
   }
 
-  const driverTarget = resolveLassoDropTarget(event.target.getLatLng());
-  const target = driverTarget ? { ...driverTarget, type: 'driver' } : null;
+  const effectiveLatLng = previewLatLng || event.target.getLatLng();
+  const markerTarget = state.viewMode === 'territorial'
+    ? getClosestClientMarkerTarget(effectiveLatLng, { id: null, driverId: null })
+    : null;
+  const driverTarget = resolveLassoDropTarget(effectiveLatLng);
+  const target = driverTarget
+    ? { ...driverTarget, type: 'driver' }
+    : markerTarget
+      ? { ...markerTarget, type: 'driver' }
+      : null;
   state.lassoDragTarget = target || null;
 
   if (!target) {
-    updatePlannerHint('Arraste para linha/base/lista de um único motorista ou para um dia (SEG/TER/...).');
+    syncAssignmentDragVisualState({ active: true, sourceIds });
+    updateAssignmentDragGhost({
+      originalEvent: event.originalEvent,
+      client: event.target ? event.target._rfxClient : null,
+      sourceIds,
+      count: sourceIds.length
+    });
+    updatePlannerHint('Arraste a seleção para um card, cliente ou polígono de território.');
     return;
   }
 
   if (target.ambiguous) {
+    syncAssignmentDragVisualState({ active: true, sourceIds });
     updatePlannerHint('Destino ambíguo detectado. Aproxime mais para escolher apenas um motorista.');
     return;
   }
 
   const driverName = (getDriverById(target.driverId) || {}).name || target.driverId;
+  syncAssignmentDragVisualState({
+    active: true,
+    sourceIds,
+    targetMarkerId: target.source === 'marker' ? target.clientId : null,
+    targetPolygonDriverId: target.source === 'territorio' ? target.driverId : null
+  });
+  updateAssignmentDragGhost({
+    originalEvent: event.originalEvent,
+    client: event.target ? event.target._rfxClient : null,
+    sourceIds,
+    count: sourceIds.length,
+    targetLabel: `Solte para transferir para ${getAssignmentDriverLabel(target.driverId)}`
+  });
   if (target.source === 'linha') {
     updatePlannerHint(`Rota detectada: ${driverName} | ${target.day} | S${target.week}. Solte para aplicar em massa (posição geográfica preservada).`);
     return;
@@ -7402,17 +8279,28 @@ function handleLassoGroupDrag(event) {
   updatePlannerHint(`Destino detectado: ${driverName} via ${target.source}. Solte para aplicar em massa.`);
 }
 
-function handleLassoGroupDrop(event) {
+function handleLassoGroupDrop(event, dropLatLng = null) {
   const dayTarget = getLassoDayDropTargetFromPointer(event.originalEvent);
   let target = null;
+  const selectedIds = new Set(state.lassoSelectionIds);
 
-  if (dayTarget) {
+  if (state.viewMode === 'territorial') {
+    const effectiveLatLng = dropLatLng || event.target.getLatLng();
+    if (state.lassoHoverDriverId) {
+      target = { driverId: state.lassoHoverDriverId, type: 'driver', source: 'lista' };
+    } else {
+      const polygonTarget = resolveLassoDropTarget(effectiveLatLng);
+      const markerTarget = getClosestClientMarkerTarget(effectiveLatLng, { id: null, driverId: null });
+      const resolvedTarget = polygonTarget || markerTarget;
+      target = resolvedTarget ? { ...resolvedTarget, type: 'driver' } : null;
+    }
+  } else if (dayTarget) {
     target = dayTarget;
   } else if (state.lassoDragTarget && state.lassoDragTarget.type === 'driver' && !state.lassoDragTarget.ambiguous) {
     // Mantém o alvo detectado durante o drag (com dia/semana da linha) para evitar perder o contexto no drop.
     target = state.lassoDragTarget;
   } else {
-    const driverTarget = resolveLassoDropTarget(event.target.getLatLng());
+    const driverTarget = resolveLassoDropTarget(dropLatLng || event.target.getLatLng());
     target = driverTarget ? { ...driverTarget, type: 'driver' } : null;
   }
 
@@ -7425,12 +8313,13 @@ function handleLassoGroupDrop(event) {
   state.dragTargetWeek = null;
   state.dragTargetDay = null;
   state.dragClientId = null;
+  setLassoButtonState();
   syncMapDragging();
   syncDriverListDragState();
   syncPlannerDropState();
 
   if (!target) {
-    updatePlannerHint('Movimentação cancelada. Solte sobre um único motorista ou sobre um dia de visita.');
+    updatePlannerHint('Arraste a seleção para um card, cliente ou polígono de território.');
     return;
   }
 
@@ -7440,11 +8329,19 @@ function handleLassoGroupDrop(event) {
   }
 
   if (target.type === 'day') {
+    triggerAssignmentDropFeedback({ clientId: target.clientId || null });
     moveLassoSelectionToDay(target.day);
     return;
   }
 
+  triggerAssignmentDropFeedback({
+    driverId: target.driverId,
+    clientId: target.clientId || null,
+    targetMarkerId: target.source === 'marker' ? target.clientId : null
+  });
   moveLassoSelectionToDriver(target.driverId, {
+    selectedClientIds: [...selectedIds],
+    skipConfirm: true,
     targetDay: target.source === 'linha' ? target.day : null,
     targetWeek: target.source === 'linha' ? target.week : null
   });
@@ -7455,7 +8352,9 @@ function finishLassoDraw() {
     return;
   }
 
+  detachLassoDocumentListeners();
   state.lassoDrawingActive = false;
+  setLassoButtonState();
   syncMapDragging();
 
   if (lassoDrawPoints.length < 3) {
@@ -7495,8 +8394,9 @@ function finishLassoDraw() {
     return;
   }
 
+  setLassoButtonState();
   applyFilters({ skipFitBounds: true });
-  updatePlannerHint(`${state.lassoSelectionIds.size} clientes selecionados. Clique no dia (SEG/TER/...) para colar em massa ou arraste um selecionado para outro motorista.`);
+  updatePlannerHint('Seleção criada. Arraste o grupo para um card, cliente ou polígono de território.');
 }
 
 function onMapLassoMouseDown(event) {
@@ -7509,6 +8409,12 @@ function onMapLassoMouseDown(event) {
 
   const target = event.originalEvent.target;
   if (target && target.closest('.leaflet-marker-icon, .leaflet-control, .toolbar, .focus-strip, .planner-dock, .instruments-hub, .manual-planning-panel')) {
+    return;
+  }
+
+  if (state.lassoSelectionIds.size > 0) {
+    event.originalEvent.preventDefault();
+    updatePlannerHint('Seleção criada. Arraste o grupo para um card, cliente ou polígono de território.');
     return;
   }
 
@@ -8069,7 +8975,130 @@ function changePdvWeek(clientId, newWeek) {
   postBackendEvent(`/customers/${encodeURIComponent(refreshedClient.id)}/visit-day?day=${encodeURIComponent(refreshedClient.day)}&week=${encodeURIComponent(newWeek)}&user=frontend`, {});
 }
 
-function handleMarkerDragStart(client) {
+function getLatLngFromPointerEvent(originalEvent) {
+  if (!originalEvent || !Number.isFinite(originalEvent.clientX) || !Number.isFinite(originalEvent.clientY)) {
+    return null;
+  }
+
+  const container = map && typeof map.getContainer === 'function' ? map.getContainer() : null;
+  if (!container) {
+    return null;
+  }
+
+  const rect = container.getBoundingClientRect();
+  const x = originalEvent.clientX - rect.left;
+  const y = originalEvent.clientY - rect.top;
+  return map.containerPointToLatLng([x, y]);
+}
+
+function buildPointerDragEvent(originalEvent, marker, latlng = null) {
+  return {
+    target: marker,
+    originalEvent,
+    latlng: latlng || getLatLngFromPointerEvent(originalEvent)
+  };
+}
+
+function clearClientMarkerAssignmentPointerSession(options = {}) {
+  const session = state._clientMarkerPointerDragSession;
+  if (session) {
+    if (session.moveHandler) {
+      document.removeEventListener('mousemove', session.moveHandler);
+    }
+    if (session.upHandler) {
+      document.removeEventListener('mouseup', session.upHandler);
+    }
+  }
+
+  if (options.suppressClick) {
+    state._suppressMarkerClickUntil = Date.now() + 250;
+  }
+
+  state._clientMarkerPointerDragSession = null;
+  syncAssignmentDragVisualState({ active: false });
+  hideAssignmentDragGhost();
+}
+
+function handleClientMarkerPointerMove(originalEvent) {
+  const session = state._clientMarkerPointerDragSession;
+  if (!session || !originalEvent) {
+    return;
+  }
+
+  const movedX = originalEvent.clientX - session.startX;
+  const movedY = originalEvent.clientY - session.startY;
+  const movedEnough = Math.abs(movedX) >= 4 || Math.abs(movedY) >= 4;
+  if (!session.active && !movedEnough) {
+    return;
+  }
+
+  const previewLatLng = getLatLngFromPointerEvent(originalEvent) || session.marker.getLatLng();
+  if (!session.active) {
+    session.active = true;
+    handleMarkerDragStart(buildPointerDragEvent(originalEvent, session.marker, previewLatLng), session.client);
+  }
+
+  if (originalEvent.cancelable) {
+    originalEvent.preventDefault();
+  }
+
+  updateAssignmentDragGhost({
+    originalEvent,
+    client: session.client,
+    sourceIds: getAssignmentDragSourceIds(session.client)
+  });
+
+  handleMarkerDrag(buildPointerDragEvent(originalEvent, session.marker, previewLatLng), session.client, previewLatLng);
+}
+
+function handleClientMarkerPointerUp(originalEvent) {
+  const session = state._clientMarkerPointerDragSession;
+  if (!session) {
+    return;
+  }
+
+  const previewLatLng = getLatLngFromPointerEvent(originalEvent) || session.marker.getLatLng();
+  const wasActive = Boolean(session.active);
+  const marker = session.marker;
+  const client = session.client;
+  clearClientMarkerAssignmentPointerSession({ suppressClick: wasActive });
+
+  if (!wasActive) {
+    return;
+  }
+
+  if (originalEvent && originalEvent.cancelable) {
+    originalEvent.preventDefault();
+  }
+
+  handleMarkerDragEnd(buildPointerDragEvent(originalEvent, marker, previewLatLng), client, previewLatLng);
+}
+
+function handleClientMarkerPointerDown(event, client) {
+  if (!event || !event.originalEvent || !event.target || !client) {
+    return;
+  }
+
+  if (event.originalEvent.button !== 0) {
+    return;
+  }
+
+  clearClientMarkerAssignmentPointerSession();
+  state._clientMarkerPointerDragSession = {
+    marker: event.target,
+    client,
+    startX: event.originalEvent.clientX,
+    startY: event.originalEvent.clientY,
+    active: false,
+    moveHandler: handleClientMarkerPointerMove,
+    upHandler: handleClientMarkerPointerUp
+  };
+
+  document.addEventListener('mousemove', handleClientMarkerPointerMove);
+  document.addEventListener('mouseup', handleClientMarkerPointerUp);
+}
+
+function handleMarkerDragStart(event, client) {
   // Prevent native browser drag/selection during operational drag
   document.body.classList.add('rfx-dragging');
   map.dragging.disable();
@@ -8088,6 +9117,15 @@ function handleMarkerDragStart(client) {
     state._clientClickTimer = null;
   }
 
+  const sourceIds = getAssignmentDragSourceIds(client);
+  syncAssignmentDragVisualState({ active: true, sourceIds });
+  updateAssignmentDragGhost({
+    originalEvent: event.originalEvent,
+    client,
+    sourceIds,
+    count: sourceIds.length
+  });
+
   if (state.lassoModeActive && state.lassoSelectionIds.has(client.id)) {
     state.lassoGroupDragActive = true;
     state.lassoHoverDriverId = null;
@@ -8097,9 +9135,10 @@ function handleMarkerDragStart(client) {
     state.dragHoverDay = null;
     state.dragTargetWeek = null;
     state.dragTargetDay = null;
+    setLassoButtonState();
     syncDriverListDragState();
     syncPlannerDropState();
-    updatePlannerHint(`Movendo ${state.lassoSelectionIds.size} clientes selecionados. Arraste para motorista ou dia de visita.`);
+    updatePlannerHint('Seleção criada. Arraste o grupo para um card, cliente ou polígono de território.');
     return;
   }
 
@@ -8119,10 +9158,11 @@ function handleMarkerDragStart(client) {
 let _dragRAFPending = false;
 let _dragRAFEvent = null;
 let _dragRAFClient = null;
+let _dragRAFPreviewLatLng = null;
 
-function handleMarkerDrag(event, client) {
+function handleMarkerDrag(event, client, previewLatLng = null) {
   if (state.lassoModeActive && state.lassoGroupDragActive && state.lassoSelectionIds.has(client.id)) {
-    handleLassoGroupDrag(event);
+    handleLassoGroupDrag(event, previewLatLng || event.latlng || getLatLngFromPointerEvent(event.originalEvent));
     return;
   }
 
@@ -8133,6 +9173,7 @@ function handleMarkerDrag(event, client) {
   // Throttle: only process once per animation frame
   _dragRAFEvent = event;
   _dragRAFClient = client;
+  _dragRAFPreviewLatLng = previewLatLng || event.latlng || getLatLngFromPointerEvent(event.originalEvent) || event.target.getLatLng();
   if (_dragRAFPending) return;
   _dragRAFPending = true;
   requestAnimationFrame(_processDragFrame);
@@ -8142,16 +9183,14 @@ function _processDragFrame() {
   _dragRAFPending = false;
   const event = _dragRAFEvent;
   const client = _dragRAFClient;
+  const previewLatLng = _dragRAFPreviewLatLng || (event ? (event.latlng || getLatLngFromPointerEvent(event.originalEvent) || event.target.getLatLng()) : null);
+  const sourceIds = getAssignmentDragSourceIds(client);
   if (!event || !client || state.dragClientId === null) return;
 
   // Always resolve driver-list hover first so dragHoverDriverId is never stale
   let hoveredDriverId = null;
   if (event.originalEvent) {
-    const el = document.elementFromPoint(event.originalEvent.clientX, event.originalEvent.clientY);
-    const driverItem = el && el.closest('.driver-list-item');
-    hoveredDriverId = (driverItem && driverItem.dataset.driverId && driverItem.dataset.driverId !== 'all')
-      ? driverItem.dataset.driverId
-      : null;
+    hoveredDriverId = getHoveredDriverTargetFromPointer(event.originalEvent.clientX, event.originalEvent.clientY);
   }
   if (hoveredDriverId !== state.dragHoverDriverId) {
     state.dragHoverDriverId = hoveredDriverId;
@@ -8160,14 +9199,56 @@ function _processDragFrame() {
 
   // If hovering a driver item, show transfer hint and skip map-drop logic
   if (hoveredDriverId) {
-    const driverName = (getDriverById(hoveredDriverId) || {}).name || hoveredDriverId;
+    const driverName = getAssignmentDriverLabel(hoveredDriverId);
+    syncAssignmentDragVisualState({ active: true, sourceIds });
+    updateAssignmentDragGhost({
+      originalEvent: event.originalEvent,
+      client,
+      sourceIds,
+      targetLabel: `Solte para transferir para ${driverName}`
+    });
     updatePlannerHint(`Solte para transferir ${client.name} para ${driverName}.`);
     return;
   }
 
-  const point = map.latLngToContainerPoint(event.target.getLatLng());
+  if (state.viewMode === 'territorial') {
+    const territorialMarkerTarget = getClosestClientMarkerTarget(previewLatLng || event.target.getLatLng(), client);
+    const territorialTarget = territorialMarkerTarget || resolveLassoDropTarget(previewLatLng || event.target.getLatLng());
+
+    if (!territorialTarget) {
+      syncAssignmentDragVisualState({ active: true, sourceIds });
+      updateAssignmentDragGhost({ originalEvent: event.originalEvent, client, sourceIds });
+      updatePlannerHint('Arraste para um card, cliente ou polígono de território.');
+      return;
+    }
+
+    if (territorialTarget.ambiguous) {
+      syncAssignmentDragVisualState({ active: true, sourceIds });
+      updateAssignmentDragGhost({ originalEvent: event.originalEvent, client, sourceIds });
+      updatePlannerHint('Destino ambíguo detectado. Aproxime mais para escolher apenas um motorista.');
+      return;
+    }
+
+    const targetLabel = getAssignmentDriverLabel(territorialTarget.driverId);
+    syncAssignmentDragVisualState({
+      active: true,
+      sourceIds,
+      targetMarkerId: territorialTarget.source === 'marker' ? territorialTarget.clientId : null,
+      targetPolygonDriverId: territorialTarget.source === 'territorio' ? territorialTarget.driverId : null
+    });
+    updateAssignmentDragGhost({
+      originalEvent: event.originalEvent,
+      client,
+      sourceIds,
+      targetLabel: `Solte para transferir para ${targetLabel}`
+    });
+    updatePlannerHint(`Solte para transferir para ${targetLabel}.`);
+    return;
+  }
+
+  const point = map.latLngToContainerPoint(previewLatLng || event.target.getLatLng());
   const { hoveredWeek, hoveredDay } = getDropTargetsFromPoint(point);
-  const closestRoute = getClosestRouteTarget(event.target.getLatLng(), client);
+  const closestRoute = getClosestRouteTarget(previewLatLng || event.target.getLatLng(), client);
 
   state.dragHoverWeek = hoveredWeek;
   state.dragHoverDay = hoveredDay;
@@ -8189,6 +9270,16 @@ function _processDragFrame() {
   syncPlannerDropState();
   const weekLabel = state.dragTargetWeek ? `S${state.dragTargetWeek}` : 'semana atual';
   const dayLabel = state.dragTargetDay || 'dia atual';
+  const ghostTargetLabel = closestRoute && hoveredWeek === null && hoveredDay === null
+    ? `Solte para reprogramar em S${closestRoute.week} | ${closestRoute.day}`
+    : `Solte para reprogramar em ${weekLabel} | ${dayLabel}`;
+  syncAssignmentDragVisualState({ active: true, sourceIds });
+  updateAssignmentDragGhost({
+    originalEvent: event.originalEvent,
+    client,
+    sourceIds,
+    targetLabel: ghostTargetLabel
+  });
 
   if (closestRoute && hoveredWeek === null && hoveredDay === null) {
     updatePlannerHint(`Rota mais proxima detectada: S${closestRoute.week} | ${closestRoute.day}. Solte para reprogramar o PDV sem alterar latitude/longitude.`);
@@ -8198,18 +9289,18 @@ function _processDragFrame() {
   updatePlannerHint(`Destino manual: ${weekLabel} | ${dayLabel}. Solte para reprogramar a visita mantendo o mesmo ponto no mapa.`);
 }
 
-function handleMarkerDragEnd(event, client) {
+function handleMarkerDragEnd(event, client, dropLatLng = null) {
   // Restore map drag and browser interaction
   document.body.classList.remove('rfx-dragging');
   syncMapDragging();
   map.scrollWheelZoom.enable();
   map.doubleClickZoom.enable();
   _clearDropTargetRectsCache();
-  event.target.setLatLng([client.fixedLat, client.fixedLon]);
+  const droppedLatLng = dropLatLng || event.latlng || getLatLngFromPointerEvent(event.originalEvent) || event.target.getLatLng();
 
   if (state.lassoModeActive && state.lassoSelectionIds.has(client.id)) {
     if (state.lassoGroupDragActive) {
-      handleLassoGroupDrop(event);
+      handleLassoGroupDrop(event, droppedLatLng);
     }
     return;
   }
@@ -8254,6 +9345,7 @@ function handleMarkerDragEnd(event, client) {
       });
     }
     patchClient(client.id, _patch);
+    triggerAssignmentDropFeedback({ driverId: newDriverId });
     state.selectedRouteId = createRouteId(client.ddd, newDriverId, client.week, client.day);
     state.selectedStopId = client.id;
     state.plannerStatus = 'draft';
@@ -8266,6 +9358,34 @@ function handleMarkerDragEnd(event, client) {
   }
   state.dragHoverDriverId = null;
   syncDriverListDragState();
+
+  if (state.viewMode === 'territorial') {
+    const markerTarget = getClosestClientMarkerTarget(droppedLatLng, client);
+    const territorialTarget = markerTarget || resolveLassoDropTarget(droppedLatLng);
+    if (territorialTarget && !territorialTarget.ambiguous && territorialTarget.driverId && territorialTarget.driverId !== client.driverId) {
+      state.dragClientId = null;
+      state.dragTargetWeek = null;
+      state.dragTargetDay = null;
+      state.dragHoverWeek = null;
+      state.dragHoverDay = null;
+      state.dragRouteTarget = null;
+      state.selectedStopId = client.id;
+      triggerAssignmentDropFeedback({
+        driverId: territorialTarget.driverId,
+        clientId: territorialTarget.clientId || null,
+        targetMarkerId: territorialTarget.source === 'marker' ? territorialTarget.clientId : null
+      });
+      moveLassoSelectionToDriver(territorialTarget.driverId, {
+        selectedClientIds: [client.id],
+        skipConfirm: true
+      });
+      return;
+    }
+
+    clearManualRebalanceState('Solte sobre outro cliente, polígono ou card de território para transferir.');
+    applyFilters({ skipFitBounds: true });
+    return;
+  }
 
   const sourceDriverId = client.driverId;
   const targetWeek = state.dragTargetWeek || client.week;
@@ -8308,6 +9428,7 @@ function handleMarkerDragEnd(event, client) {
       });
     }
     patchClient(client.id, _patch);
+    triggerAssignmentDropFeedback({ driverId: targetDriverId });
 
     // Single-client drag: do NOT propagate to other weeks/occurrences.
     // normalizeCurveScheduleForClient is only for explicit popup controls.
@@ -8665,6 +9786,56 @@ function renderAlerts(filteredClients, routeGroups) {
 
 function renderRouteList(routeGroups) {
   const container = document.getElementById('route-list');
+  if (state.viewMode === 'territorial') {
+    const dddDrivers = getDriversByDDD(Number(state.selectedDDD));
+    const selectedRoute = routeGroups.find((route) => route.routeId === state.selectedRouteId) || null;
+    const selectedDriverId = selectedRoute && selectedRoute.driver ? selectedRoute.driver.id : null;
+    document.getElementById('route-list-count').textContent = `${dddDrivers.length} territorios`;
+
+    if (!dddDrivers.length) {
+      container.innerHTML = '<div class="empty-state">Nenhum territorio disponivel para o DDD atual.</div>';
+      return;
+    }
+
+    container.innerHTML = dddDrivers.map((driver) => {
+      const portfolio = getDriverPortfolio(driver.id);
+      const primaryRoute = routeGroups.find((route) => route.driver && route.driver.id === driver.id) || null;
+      const territoryLabel = portfolio.territories.length
+        ? portfolio.territories.join(', ')
+        : 'Sem territorio vinculado';
+
+      return `
+        <div class="route-item ${driver.id === selectedDriverId ? 'is-selected' : ''}" data-driver-id="${driver.id}" ${primaryRoute ? `data-route-id="${primaryRoute.routeId}"` : ''}>
+          <strong>${getDriverShortCode(driver.id)} -> ${portfolio.stopCount} clientes</strong>
+          <div class="route-meta">
+            <span>${driver.name}</span>
+            <span>${territoryLabel}</span>
+          </div>
+          <div class="inline-meta">
+            <span class="inline-pill">${driver.city || 'Cidade n/d'}</span>
+            <span class="inline-pill">${driver.vehicle || 'Veiculo n/d'}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    Array.from(container.querySelectorAll('.route-item[data-driver-id]')).forEach((element) => {
+      element.onclick = () => {
+        const driverId = element.dataset.driverId;
+        const targetRoute = routeGroups.find((route) => route.driver && route.driver.id === driverId) || null;
+        state.selectedRouteId = targetRoute ? targetRoute.routeId : null;
+        state.selectedStopId = targetRoute && targetRoute.clients[0] ? targetRoute.clients[0].id : null;
+        state.focusDriverId = driverId;
+        applyFilters({
+          skipFitBounds: true,
+          skipRouteRecalculate: true,
+          skipHeavyPanels: true
+        });
+      };
+    });
+    return;
+  }
+
   document.getElementById('route-list-count').textContent = `${routeGroups.length} rotas`;
 
   if (!routeGroups.length) {
@@ -8692,7 +9863,11 @@ function renderRouteList(routeGroups) {
       state.selectedRouteId = element.dataset.routeId;
       const selectedRoute = routeGroups.find((route) => route.routeId === state.selectedRouteId);
       state.selectedStopId = selectedRoute && selectedRoute.clients[0] ? selectedRoute.clients[0].id : null;
-      applyFilters({ skipFitBounds: true });
+      applyFilters({
+        skipFitBounds: true,
+        skipRouteRecalculate: true,
+        skipHeavyPanels: true
+      });
     };
   });
 }
@@ -8739,7 +9914,11 @@ function renderTimeline(selectedRoute) {
   Array.from(container.querySelectorAll('.timeline-item')).forEach((element) => {
     element.onclick = () => {
       state.selectedStopId = element.dataset.stopId;
-      applyFilters({ skipFitBounds: true });
+      applyFilters({
+        skipFitBounds: true,
+        skipRouteRecalculate: true,
+        skipHeavyPanels: true
+      });
     };
   });
 }
@@ -9373,7 +10552,10 @@ function getMarkerDisplayContent(client, route, sequenceIndex) {
   if (ct === 'inativo') return 'I';
   if (ct === 'novo' || ct === 'sem_coordenada') return 'N';
   const displayMode = state.territoryPdvDisplay || 'sequence';
-  switch (displayMode) {
+  const effectiveDisplayMode = state.viewMode === 'territorial' && displayMode === 'sequence'
+    ? 'driver'
+    : displayMode;
+  switch (effectiveDisplayMode) {
     case 'driver':
       // Extrai e exibe somente o número do motorista (ex: "01" de "MOTORISTA - 01")
       if (client.driverName) {
@@ -9735,6 +10917,119 @@ function renderTerritoryShapes(routeGroups) {
 }
 
 let _batchRenderAbort = null;
+const _driverBaseRegistry = new Map(); // routeId -> { marker, signature, popupFP }
+
+function _buildDriverBaseSignature(route) {
+  return [
+    route.routeId,
+    route.driver && route.driver.id,
+    Number(route.driver && route.driver.lat || 0).toFixed(6),
+    Number(route.driver && route.driver.lon || 0).toFixed(6),
+    route.ddd,
+    route.week,
+    route.day
+  ].join('|');
+}
+
+function _buildDriverBasePopupHtml(route) {
+  return `<strong>${route.driver.name}</strong><br>Base da rota S${route.week} | ${route.ddd} | ${route.day}`;
+}
+
+function _createDriverBaseMarker(route) {
+  const baseMarker = L.marker([route.driver.lat, route.driver.lon], { icon: createDriverIcon() }).addTo(map);
+  baseMarker.bindPopup(_buildDriverBasePopupHtml(route));
+  baseMarker.on('click', () => {
+    const now = Date.now();
+    const driverId = baseMarker._driverId;
+    const routeId = baseMarker._routeId;
+    const firstClientId = baseMarker._firstClientId;
+    const isDouble = state._lastBaseClickDriverId === driverId && (now - (state._lastBaseClickTs || 0)) < 420;
+    state._lastBaseClickDriverId = driverId;
+    state._lastBaseClickTs = now;
+
+    if (isDouble) {
+      if (state._baseClickTimer) { clearTimeout(state._baseClickTimer); state._baseClickTimer = null; }
+      openDriverModalForEdit(driverId);
+      return;
+    }
+
+    if (state._baseClickTimer) clearTimeout(state._baseClickTimer);
+    state._baseClickTimer = setTimeout(() => {
+      state._baseClickTimer = null;
+      state.focusDriverId = driverId;
+      state.selectedRouteId = routeId;
+      state.selectedStopId = firstClientId;
+      applyFilters({
+        skipFitBounds: true,
+        skipRouteRecalculate: true,
+        skipHeavyPanels: true
+      });
+    }, 430);
+  });
+  return baseMarker;
+}
+
+function syncDriverBaseMarkers(desiredBaseMarkers) {
+  let reused = 0;
+  let updated = 0;
+  let created = 0;
+  let removed = 0;
+
+  desiredBaseMarkers.forEach((desired, routeId) => {
+    const existing = _driverBaseRegistry.get(routeId);
+    if (existing) {
+      const marker = existing.marker;
+      marker._driverId = desired.driverId;
+      marker._ddd = desired.ddd;
+      marker._routeId = desired.routeId;
+      marker._firstClientId = desired.firstClientId;
+
+      if (existing.signature !== desired.signature) {
+        marker.setLatLng([desired.lat, desired.lon]);
+        existing.signature = desired.signature;
+        updated++;
+      } else {
+        reused++;
+      }
+
+      if (existing.popupFP !== desired.popupFP) {
+        marker.setPopupContent(desired.popupHtml);
+        existing.popupFP = desired.popupFP;
+        updated++;
+      }
+    } else {
+      const marker = _createDriverBaseMarker(desired.route);
+      marker._driverId = desired.driverId;
+      marker._ddd = desired.ddd;
+      marker._routeId = desired.routeId;
+      marker._firstClientId = desired.firstClientId;
+      _driverBaseRegistry.set(routeId, {
+        marker,
+        signature: desired.signature,
+        popupFP: desired.popupFP
+      });
+      created++;
+    }
+  });
+
+  _driverBaseRegistry.forEach((entry, routeId) => {
+    if (!desiredBaseMarkers.has(routeId)) {
+      map.removeLayer(entry.marker);
+      _driverBaseRegistry.delete(routeId);
+      removed++;
+    }
+  });
+
+  driverMarkers = Array.from(_driverBaseRegistry.values()).map((entry) => entry.marker);
+  window.__rfxPerf.count('driverBaseRegistry.reused', reused);
+  window.__rfxPerf.count('driverBaseRegistry.updated', updated);
+  window.__rfxPerf.count('driverBaseRegistry.created', created);
+  window.__rfxPerf.count('driverBaseRegistry.removed', removed);
+  if (typeof console !== 'undefined' && typeof console.debug === 'function') {
+    console.debug('[PERF] driver base markers reused', reused);
+    console.debug('[PERF] driver base markers updated', updated);
+  }
+}
 
 function addMarkersToLayerInBatches(markerList, layer) {
   if (_batchRenderAbort) {
@@ -9959,25 +11254,42 @@ function _buildPopupHtml(client, route) {
       `;
 }
 
-function _bindClientMarkerEvents(marker, isSpecial) {
+function _ensureClientMarkerBaseEvents(marker) {
+  if (marker._rfxEventsBound) {
+    return;
+  }
+
   marker.on('add', () => {
     const el = marker.getElement();
-    if (el) {
-      el.dataset.clientId = marker._clientId;
-      // Block specific DOM events from reaching map — but NOT click
-      // (click must bubble so Leaflet dispatches marker.on('click') correctly)
-      // NOTE: do NOT use L.DomEvent.disableClickPropagation — it sets
-      // _leaflet_disable_events=true which kills ALL Leaflet event dispatch.
-      L.DomEvent.on(el, 'mousedown', L.DomEvent.stopPropagation);
-      L.DomEvent.on(el, 'dblclick', L.DomEvent.stopPropagation);
-      L.DomEvent.disableScrollPropagation(el);
+    if (!el) {
+      return;
     }
+    el.dataset.clientId = marker._clientId;
+    if (marker._rfxBoundElement && marker._rfxBoundElement !== el && marker._rfxDomPointerDownHandler) {
+      L.DomEvent.off(marker._rfxBoundElement, 'mousedown', marker._rfxDomPointerDownHandler);
+    }
+    if (marker._rfxBoundElement === el) {
+      return;
+    }
+    marker._rfxBoundElement = el;
+    // Block specific DOM events from reaching map — but NOT click
+    // (click must bubble so Leaflet dispatches marker.on('click') correctly)
+    // NOTE: do NOT use L.DomEvent.disableClickPropagation — it sets
+    // _leaflet_disable_events=true which kills ALL Leaflet event dispatch.
+    L.DomEvent.on(el, 'mousedown', L.DomEvent.stopPropagation);
+    L.DomEvent.on(el, 'dblclick', L.DomEvent.stopPropagation);
+    L.DomEvent.disableScrollPropagation(el);
+    marker._rfxDomPointerDownHandler = (domEvent) => {
+      if (!marker._rfxPointerDownBound) {
+        return;
+      }
+      handleClientMarkerPointerDown({ target: marker, originalEvent: domEvent }, marker._rfxClient);
+    };
+    L.DomEvent.on(el, 'mousedown', marker._rfxDomPointerDownHandler);
   });
 
-  // Block Leaflet-level dblclick from reaching map (prevents zoom)
   marker.on('dblclick', (e) => { L.DomEvent.stopPropagation(e); });
 
-  // Lazy popup: generate HTML only on first open
   marker.on('popupopen', () => {
     if (!marker._rfxPopupReady) {
       marker.setPopupContent(_buildPopupHtml(marker._rfxClient, marker._rfxRoute));
@@ -9985,48 +11297,80 @@ function _bindClientMarkerEvents(marker, isSpecial) {
     }
   });
 
-  if (isSpecial) {
-    marker.on('click', () => {
-      const client = marker._rfxClient;
-      const now = Date.now();
-      const latlng = marker.getLatLng();
-      const isDouble = state._lastClickId === client.id && (now - (state._lastClickTs || 0)) < 400;
-      state._lastClickId = client.id;
-      state._lastClickTs = now;
-      if (isDouble) {
-        openClientPopup(client, latlng);
-      }
-    });
-  } else {
-    marker.on('click', () => {
-      const client = marker._rfxClient;
-      const route = marker._rfxRoute;
-      const now = Date.now();
-      const latlng = marker.getLatLng();
-      const isDouble = state._lastClickId === client.id && (now - (state._lastClickTs || 0)) < 400;
-      state._lastClickId = client.id;
-      state._lastClickTs = now;
-      state._lastClickLatlng = latlng;
-      if (isDouble) {
-        if (state._clientClickTimer) { clearTimeout(state._clientClickTimer); state._clientClickTimer = null; }
+  marker.on('click', () => {
+    if ((state._suppressMarkerClickUntil || 0) > Date.now()) {
+      return;
+    }
+
+    const client = marker._rfxClient;
+    const route = marker._rfxRoute;
+    const now = Date.now();
+    const latlng = marker.getLatLng();
+    const isDouble = state._lastClickId === client.id && (now - (state._lastClickTs || 0)) < 400;
+    state._lastClickId = client.id;
+    state._lastClickTs = now;
+    state._lastClickLatlng = latlng;
+
+    if (isDouble) {
+      if (state._clientClickTimer) { clearTimeout(state._clientClickTimer); state._clientClickTimer = null; }
+      if (!marker._rfxIsSpecial && route) {
         state.selectedRouteId = route.routeId;
         state.selectedStopId = client.id;
-        openClientPopup(client, latlng);
-        return;
       }
-      if (state._clientClickTimer) clearTimeout(state._clientClickTimer);
-      state._clientClickTimer = setTimeout(() => {
-        state._clientClickTimer = null;
-        state.selectedRouteId = route.routeId;
-        state.selectedStopId = client.id;
-        closeClientPopup();
-        applyFilters({ skipFitBounds: true });
-      }, 410);
-    });
-    marker.on('dragstart', () => handleMarkerDragStart(marker._rfxClient));
-    marker.on('drag', (event) => handleMarkerDrag(event, marker._rfxClient));
-    marker.on('dragend', (event) => handleMarkerDragEnd(event, marker._rfxClient));
+      openClientPopup(client, latlng);
+      return;
+    }
+
+    if (marker._rfxIsSpecial) {
+      return;
+    }
+
+    if (state._clientClickTimer) clearTimeout(state._clientClickTimer);
+    state._clientClickTimer = setTimeout(() => {
+      state._clientClickTimer = null;
+      state.selectedRouteId = route.routeId;
+      state.selectedStopId = client.id;
+      closeClientPopup();
+      applyFilters({
+        skipFitBounds: true,
+        skipRouteRecalculate: true,
+        skipHeavyPanels: true
+      });
+    }, 410);
+  });
+  marker._rfxDragStartHandler = (event) => handleMarkerDragStart(event, marker._rfxClient);
+  marker._rfxDragHandler = (event) => handleMarkerDrag(event, marker._rfxClient, event.latlng || getLatLngFromPointerEvent(event.originalEvent));
+  marker._rfxDragEndHandler = (event) => handleMarkerDragEnd(event, marker._rfxClient, event.latlng || getLatLngFromPointerEvent(event.originalEvent));
+  marker._rfxEventsBound = true;
+}
+
+function _syncClientMarkerInteractionMode(marker, interactive, draggable) {
+  if (marker._rfxDragEventsBound) {
+    marker.off('dragstart', marker._rfxDragStartHandler);
+    marker.off('drag', marker._rfxDragHandler);
+    marker.off('dragend', marker._rfxDragEndHandler);
+    marker._rfxDragEventsBound = false;
   }
+
+  if (marker && marker.dragging && typeof marker.dragging.disable === 'function') {
+    marker.dragging.disable();
+  }
+
+  if (marker && marker.options) {
+    marker.options.draggable = false;
+    marker.options.autoPan = false;
+    marker.options.autoPanOnFocus = false;
+  }
+
+  marker._rfxPointerDownBound = Boolean(draggable);
+
+  marker._rfxDraggable = false;
+}
+
+function _bindClientMarkerEvents(marker, isSpecial, interactive, draggable) {
+  marker._rfxIsSpecial = Boolean(isSpecial);
+  _ensureClientMarkerBaseEvents(marker);
+  _syncClientMarkerInteractionMode(marker, Boolean(interactive), Boolean(draggable));
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -10035,6 +11379,7 @@ function _bindClientMarkerEvents(marker, isSpecial) {
 function updateMarkerIconsOnly() {
   const _t0_umi = performance.now();
   let _iconUpdated = 0;
+  let _iconSkipped = 0;
   _markerRegistry.forEach((entry) => {
     const m = entry.marker;
     const client = m._rfxClient;
@@ -10056,6 +11401,8 @@ function updateMarkerIconsOnly() {
       m.setIcon(createMarkerIcon(displayContent, color, isActive, isLassoSelected));
       entry.iconKey = newIconKey;
       _iconUpdated++;
+    } else {
+      _iconSkipped++;
     }
   });
   const _t1_umi = performance.now();
@@ -10064,6 +11411,7 @@ function updateMarkerIconsOnly() {
   _umiE.count++; _umiE.totalMs += (_t1_umi - _t0_umi); _umiE.lastMs = _t1_umi - _t0_umi;
   if (_t1_umi - _t0_umi > _umiE.maxMs) _umiE.maxMs = _t1_umi - _t0_umi;
   window.__rfxPerf.count('updateMarkerIconsOnly.updated', _iconUpdated);
+  window.__rfxPerf.count('updateMarkerIconsOnly.skipped', _iconSkipped);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -10073,13 +11421,21 @@ function renderMap(filteredClients, routeGroups) {
   const _t0_rm = performance.now();
   window.__rfxPerf.count('renderMap.input.clients', filteredClients ? filteredClients.length : 0);
   window.__rfxPerf.count('renderMap.input.routeGroups', routeGroups ? routeGroups.length : 0);
-  // === Polyline diff-based, driver markers rebuilt (cheap, few) ===
+  // === Polyline diff-based, driver markers reconciled locally ===
   const _desiredPolylineIds = new Set();
+  const _desiredDriverBaseMarkers = new Map();
   let _polyReused = 0, _polyUpdated = 0, _polyCreated = 0, _polyRemoved = 0;
-  driverMarkers.forEach((marker) => map.removeLayer(marker));
-  clearRoadRoute();
   routeLines = [];
-  driverMarkers = [];
+
+  if (roadRouteLayer) {
+    if (shouldKeepRoadRoute(routeGroups)) {
+      if (typeof console !== 'undefined' && typeof console.debug === 'function') {
+        console.debug('[PERF] road route clear skipped', state.roadRouteId);
+      }
+    } else {
+      clearRoadRoute();
+    }
+  }
 
   // Territory shapes: preserve in territory mode (registry handles diff)
   if (state.viewMode !== 'territorial') {
@@ -10159,7 +11515,11 @@ function renderMap(filteredClients, routeGroups) {
             if (state.dragClientId || state.lassoGroupDragActive) return;
             state.selectedRouteId = routeId;
             state.selectedStopId = route.clients[0] ? route.clients[0].id : null;
-            applyFilters({ skipFitBounds: true });
+            applyFilters({
+              skipFitBounds: true,
+              skipRouteRecalculate: true,
+              skipHeavyPanels: true
+            });
           });
           _polylineRegistry.set(routeId, {
             polyline: pl, pointsFP: fp,
@@ -10174,34 +11534,20 @@ function renderMap(filteredClients, routeGroups) {
       }
     }
 
-    // --- Driver base markers (unchanged) ---
+    // --- Driver base markers (diffed, no full rebuild) ---
     if (showBaseForThisMode) {
-      const baseMarker = L.marker([route.driver.lat, route.driver.lon], { icon: createDriverIcon() }).addTo(map);
-      baseMarker._driverId = route.driver.id;
-      baseMarker._ddd = route.ddd;
-      baseMarker.bindPopup(`<strong>${route.driver.name}</strong><br>Base da rota S${route.week} | ${route.ddd} | ${route.day}`);
-      baseMarker.on('click', () => {
-        const now = Date.now();
-        const isDouble = state._lastBaseClickDriverId === route.driver.id && (now - (state._lastBaseClickTs || 0)) < 420;
-        state._lastBaseClickDriverId = route.driver.id;
-        state._lastBaseClickTs = now;
-
-        if (isDouble) {
-          if (state._baseClickTimer) { clearTimeout(state._baseClickTimer); state._baseClickTimer = null; }
-          openDriverModalForEdit(route.driver.id);
-          return;
-        }
-
-        if (state._baseClickTimer) clearTimeout(state._baseClickTimer);
-        state._baseClickTimer = setTimeout(() => {
-          state._baseClickTimer = null;
-          state.focusDriverId = route.driver.id;
-          state.selectedRouteId = route.routeId;
-          state.selectedStopId = route.clients[0] ? route.clients[0].id : null;
-          applyFilters({ skipFitBounds: true });
-        }, 430);
+      _desiredDriverBaseMarkers.set(route.routeId, {
+        route,
+        routeId: route.routeId,
+        driverId: route.driver.id,
+        ddd: route.ddd,
+        lat: route.driver.lat,
+        lon: route.driver.lon,
+        firstClientId: route.clients[0] ? route.clients[0].id : null,
+        signature: _buildDriverBaseSignature(route),
+        popupHtml: _buildDriverBasePopupHtml(route),
+        popupFP: `${route.driver.name}|${route.week}|${route.ddd}|${route.day}`
       });
-      driverMarkers.push(baseMarker);
     }
 
     // --- Collect desired client markers (NO DOM creation yet) ---
@@ -10213,6 +11559,7 @@ function renderMap(filteredClients, routeGroups) {
       const isActive = client.id === state.selectedStopId;
       const isOperational = state.viewMode === 'operational';
       const canDrag = isOperational || isSelectedRoute || state.lassoModeActive || isTerritorial;
+      const isInteractive = isActive || isLassoSelected || canDrag || isFocusedDriver || isSelectedRoute;
       const iconKey = `${markerDisplayContent}|${markerColor}|${isActive ? 1 : 0}|${isLassoSelected ? 1 : 0}`;
 
       desiredMarkers.set(client.id, {
@@ -10220,6 +11567,7 @@ function renderMap(filteredClients, routeGroups) {
         isSpecial: false,
         iconKey,
         popupFP: `${route.routeId}|${client.driverId}`,
+        interactive: isInteractive,
         draggable: canDrag,
         displayContent: markerDisplayContent,
         color: markerColor,
@@ -10236,6 +11584,7 @@ function renderMap(filteredClients, routeGroups) {
       _polyRemoved++;
     }
   });
+  syncDriverBaseMarkers(_desiredDriverBaseMarkers);
   window.__rfxPerf.count('polylineRegistry.reused', _polyReused);
   window.__rfxPerf.count('polylineRegistry.updated', _polyUpdated);
   window.__rfxPerf.count('polylineRegistry.created', _polyCreated);
@@ -10258,6 +11607,7 @@ function renderMap(filteredClients, routeGroups) {
       isSpecial: true,
       iconKey,
       popupFP: `special|${client.id}`,
+      interactive: false,
       draggable: false,
       displayContent: label,
       color, isActive, isLassoSelected
@@ -10267,9 +11617,16 @@ function renderMap(filteredClients, routeGroups) {
   // ═══ DIFF: reconcile _markerRegistry vs desiredMarkers ═══
   const _t0_diff = performance.now();
   const newMarkersList = [];
-  let _diffReused = 0, _diffCreated = 0, _diffIconUpdated = 0;
+  let _diffReused = 0, _diffCreated = 0, _diffIconUpdated = 0, _diffIconSkipped = 0;
+  let _interactiveMarkers = 0, _passiveMarkers = 0, _latLngUpdated = 0;
 
   desiredMarkers.forEach((desired, clientId) => {
+    if (desired.interactive) {
+      _interactiveMarkers++;
+    } else {
+      _passiveMarkers++;
+    }
+
     const existing = _markerRegistry.get(clientId);
     if (existing) {
       _diffReused++;
@@ -10278,12 +11635,21 @@ function renderMap(filteredClients, routeGroups) {
       m._rfxClient = desired.client;
       m._rfxRoute = desired.route;
       m._rfxIndex = desired.index;
+      m._rfxIsSpecial = desired.isSpecial;
+
+      const currentLatLng = m.getLatLng();
+      if (!currentLatLng || currentLatLng.lat !== desired.client.lat || currentLatLng.lng !== desired.client.lon) {
+        m.setLatLng([desired.client.lat, desired.client.lon]);
+        _latLngUpdated++;
+      }
 
       // Update icon only if visual state changed
       if (existing.iconKey !== desired.iconKey) {
         m.setIcon(createMarkerIcon(desired.displayContent, desired.color, desired.isActive, desired.isLassoSelected));
         existing.iconKey = desired.iconKey;
         _diffIconUpdated++;
+      } else {
+        _diffIconSkipped++;
       }
 
       // Update popup only if route/driver changed
@@ -10297,23 +11663,19 @@ function renderMap(filteredClients, routeGroups) {
         existing.popupFP = desired.popupFP;
       }
 
-      // Update draggable only if changed — autoPan always OFF (operational drag)
-      if (existing.draggable !== desired.draggable) {
-        if (desired.draggable) {
-          m.dragging.enable();
-        } else {
-          m.dragging.disable();
-        }
-        m.options.autoPan = false;
-        m.options.autoPanOnFocus = false;
+      if (existing.interactive !== desired.interactive || existing.draggable !== desired.draggable) {
+        _syncClientMarkerInteractionMode(m, desired.interactive, desired.draggable);
+        existing.interactive = desired.interactive;
         existing.draggable = desired.draggable;
       }
+      existing.lat = desired.client.lat;
+      existing.lon = desired.client.lon;
     } else {
       _diffCreated++;
       // ── CREATE new marker ──
       const m = L.marker([desired.client.lat, desired.client.lon], {
         icon: createMarkerIcon(desired.displayContent, desired.color, desired.isActive, desired.isLassoSelected),
-        draggable: desired.draggable,
+        draggable: false,
         autoPan: false,
         autoPanOnFocus: false
       });
@@ -10321,15 +11683,19 @@ function renderMap(filteredClients, routeGroups) {
       m._rfxClient = desired.client;
       m._rfxRoute = desired.route;
       m._rfxIndex = desired.index;
+      m._rfxIsSpecial = desired.isSpecial;
       m._rfxPopupReady = false;
       m.bindPopup('');
-      _bindClientMarkerEvents(m, desired.isSpecial);
+      _bindClientMarkerEvents(m, desired.isSpecial, desired.interactive, desired.draggable);
 
       _markerRegistry.set(clientId, {
         marker: m,
         iconKey: desired.iconKey,
+        interactive: desired.interactive,
         draggable: desired.draggable,
-        popupFP: desired.popupFP
+        popupFP: desired.popupFP,
+        lat: desired.client.lat,
+        lon: desired.client.lon
       });
 
       newMarkersList.push(m);
@@ -10349,8 +11715,13 @@ function renderMap(filteredClients, routeGroups) {
   window.__rfxPerf.count('diff.reused', _diffReused);
   window.__rfxPerf.count('diff.created', _diffCreated);
   window.__rfxPerf.count('diff.iconUpdated', _diffIconUpdated);
+  window.__rfxPerf.count('diff.iconSkipped', _diffIconSkipped);
+  window.__rfxPerf.count('diff.latLngUpdated', _latLngUpdated);
   window.__rfxPerf.count('diff.removed', toRemove.length);
   window.__rfxPerf.count('diff.desired', desiredMarkers.size);
+  window.__rfxPerf.count('markers.visible.desired', desiredMarkers.size);
+  window.__rfxPerf.count('markers.interactive', _interactiveMarkers);
+  window.__rfxPerf.count('markers.passive', _passiveMarkers);
   if (!window.__rfxPerf.calls['renderMap.diff']) window.__rfxPerf.calls['renderMap.diff'] = { count: 0, totalMs: 0, maxMs: 0, lastMs: 0 };
   var _diffE = window.__rfxPerf.calls['renderMap.diff'];
   _diffE.count++; _diffE.totalMs += (_t1_diff - _t0_diff); _diffE.lastMs = _t1_diff - _t0_diff;
@@ -10396,6 +11767,10 @@ function renderMap(filteredClients, routeGroups) {
   if (_t1_rm - _t0_rm > _rmEntry.maxMs) _rmEntry.maxMs = _t1_rm - _t0_rm;
   window.__rfxPerf.count('markerRegistry.size', _markerRegistry.size);
   window.__rfxPerf.count('markers.visible', markers.length);
+  logApplyFiltersPerf('markers visible', desiredMarkers.size);
+  logApplyFiltersPerf('markers interactive', _interactiveMarkers);
+  logApplyFiltersPerf('markers passive', _passiveMarkers);
+  logApplyFiltersPerf('marker icon updates skipped', _diffIconSkipped);
   // Snapshot after render
   window.__rfxPerf.snapshot();
 }
@@ -10412,8 +11787,178 @@ function renderFilterSummary(filteredClients) {
   document.getElementById('filter-summary-label').textContent = `${dddLabel}, ${driverLabel}, ${territoryLabel}, ${vehicleLabel} e ${filteredClients.length} stops.`;
 }
 
+function normalizeApplyFiltersOptions(options = {}) {
+  return {
+    skipRouteRecalculate: false,
+    skipSidebarRender: false,
+    skipTimelineRender: false,
+    skipHeavyPanels: false,
+    skipFitBounds: false,
+    ...options
+  };
+}
+
+function buildCachedRenderContext() {
+  const allFilteredClients = Array.isArray(state.filteredClientsCache) ? state.filteredClientsCache : [];
+  const allRouteGroups = Array.isArray(state.routeGroupsCache) ? state.routeGroupsCache : [];
+  const isTerritorial = state.viewMode === 'territorial';
+  const isAnalytics = state.viewMode === 'analytics';
+  const isOperational = state.viewMode === 'operational';
+
+  if (!allFilteredClients.length && !allRouteGroups.length) {
+    return null;
+  }
+
+  const selectedRoute = allRouteGroups.find((route) => route.routeId === state.selectedRouteId) || null;
+  let mapClients = allFilteredClients;
+  let mapRouteGroups = allRouteGroups;
+
+  if (isOperational) {
+    const activeDriverId = (selectedRoute && selectedRoute.driver)
+      ? selectedRoute.driver.id
+      : state.focusDriverId;
+
+    if (activeDriverId) {
+      mapClients = allFilteredClients.filter((client) => client.driverId === activeDriverId);
+      mapRouteGroups = allRouteGroups.filter((route) => route.driver && route.driver.id === activeDriverId);
+    }
+  }
+
+  return {
+    allFilteredClients,
+    allRouteGroups,
+    selectedRoute,
+    mapClients,
+    mapRouteGroups,
+    isTerritorial,
+    isAnalytics,
+    isOperational
+  };
+}
+
+function renderDeferredPanels(renderContext, options = {}) {
+  if (!renderContext || options.skipSidebarRender) {
+    return;
+  }
+
+  const {
+    allFilteredClients,
+    allRouteGroups,
+    selectedRoute,
+    isTerritorial,
+    isAnalytics
+  } = renderContext;
+
+  if (isTerritorial) {
+    renderRouteList(allRouteGroups);
+    if (options.skipHeavyPanels) {
+      logApplyFiltersPerf('skipped heavy panels', { mode: 'territorial' });
+      return;
+    }
+    renderNoCoordinatePanel();
+    return;
+  }
+
+  if (isAnalytics) {
+    if (options.skipHeavyPanels) {
+      logApplyFiltersPerf('skipped heavy panels', { mode: 'analytics' });
+      renderRouteList(allRouteGroups);
+      return;
+    }
+
+    renderKpis(allFilteredClients, allRouteGroups);
+    renderCharts(allFilteredClients);
+    renderAlerts(allFilteredClients, allRouteGroups);
+    renderOperationalStatus(allFilteredClients, allRouteGroups);
+    renderAnalyticsSummary(allFilteredClients, allRouteGroups);
+    renderRouteList(allRouteGroups);
+    renderNoCoordinatePanel();
+    return;
+  }
+
+  if (options.skipHeavyPanels) {
+    logApplyFiltersPerf('skipped heavy panels', { mode: 'operational' });
+  } else {
+    renderKpis(allFilteredClients, allRouteGroups);
+    renderCharts(allFilteredClients);
+    renderAlerts(allFilteredClients, allRouteGroups);
+    renderOperationalStatus(allFilteredClients, allRouteGroups);
+    renderAdvancedHistoryPanel();
+    renderManualPlanningPanel(allFilteredClients, allRouteGroups, selectedRoute);
+    renderNoCoordinatePanel();
+  }
+
+  renderRouteDetail(selectedRoute);
+  if (!options.skipTimelineRender) {
+    renderTimeline(selectedRoute);
+  }
+  renderStopDetail(selectedRoute);
+  updateFocusCards(selectedRoute, allFilteredClients, allRouteGroups);
+  renderRouteList(allRouteGroups);
+}
+
 function calculateRoutes(options = {}) {
+  options = normalizeApplyFiltersOptions(options);
   const _t0_calc = performance.now();
+  logApplyFiltersPerf('applyFilters start', options);
+
+  const finishApplyFiltersPerf = (extra = {}) => {
+    const elapsed = Number((performance.now() - _t0_calc).toFixed(2));
+    logApplyFiltersPerf('applyFilters end', { ms: elapsed, ...extra });
+  };
+
+  const scheduleRenderPass = (renderContext) => {
+    if (_pendingMapRenderRAF) {
+      cancelAnimationFrame(_pendingMapRenderRAF);
+    }
+    if (_pendingSidebarRAF) {
+      cancelAnimationFrame(_pendingSidebarRAF);
+    }
+
+    _pendingMapRenderRAF = requestAnimationFrame(() => {
+      _pendingMapRenderRAF = null;
+      renderMap(renderContext.mapClients, renderContext.mapRouteGroups);
+      if (!options.skipFitBounds) {
+        fitMapToFilteredClients(renderContext.mapClients, renderContext.selectedRoute);
+      }
+
+      if (options.skipSidebarRender) {
+        finishApplyFiltersPerf({ cached: options.skipRouteRecalculate, sidebar: 'skipped' });
+        return;
+      }
+
+      _pendingSidebarRAF = requestAnimationFrame(() => {
+        _pendingSidebarRAF = null;
+        renderDeferredPanels(renderContext, options);
+        finishApplyFiltersPerf({ cached: options.skipRouteRecalculate });
+      });
+    });
+  };
+
+  if (options.skipRouteRecalculate) {
+    const cachedContext = buildCachedRenderContext();
+    if (cachedContext) {
+      updateState({
+        selectedRouteCache: cachedContext.selectedRoute
+      });
+
+      lastFilterContext = {
+        filteredClients: cachedContext.mapClients,
+        routeGroups: cachedContext.mapRouteGroups,
+        selectedRoute: cachedContext.selectedRoute
+      };
+
+      scheduleRenderPass(cachedContext);
+
+      const _t1_cached = performance.now();
+      if (!window.__rfxPerf.calls['calculateRoutes']) window.__rfxPerf.calls['calculateRoutes'] = { count: 0, totalMs: 0, maxMs: 0, lastMs: 0 };
+      var _cachedEntry = window.__rfxPerf.calls['calculateRoutes'];
+      _cachedEntry.count++; _cachedEntry.totalMs += (_t1_cached - _t0_calc); _cachedEntry.lastMs = _t1_cached - _t0_calc;
+      if (_t1_cached - _t0_calc > _cachedEntry.maxMs) _cachedEntry.maxMs = _t1_cached - _t0_calc;
+      return;
+    }
+  }
+
   renderDriverFilterOptions();
   const isTerritorial = state.viewMode === 'territorial';
   const isAnalytics = state.viewMode === 'analytics';
@@ -10490,50 +12035,15 @@ function calculateRoutes(options = {}) {
     renderFilterSummary(allFilteredClients);
   }
 
-  // ── Priority: render map FIRST, then sidebar in next frame ──
-  if (_pendingMapRenderRAF) {
-    cancelAnimationFrame(_pendingMapRenderRAF);
-  }
-  if (_pendingSidebarRAF) {
-    cancelAnimationFrame(_pendingSidebarRAF);
-  }
-  _pendingMapRenderRAF = requestAnimationFrame(() => {
-    _pendingMapRenderRAF = null;
-    // Map uses mapClients/mapRouteGroups (operational: active driver only)
-    renderMap(mapClients, mapRouteGroups);
-    if (!options.skipFitBounds) {
-      fitMapToFilteredClients(mapClients, selectedRoute);
-    }
-
-    // Sidebar deferred to NEXT frame after map paint
-    _pendingSidebarRAF = requestAnimationFrame(() => {
-      _pendingSidebarRAF = null;
-      if (isTerritorial) {
-        renderRouteList(allRouteGroups);
-        renderNoCoordinatePanel();
-      } else if (isAnalytics) {
-        renderKpis(allFilteredClients, allRouteGroups);
-        renderCharts(allFilteredClients);
-        renderAlerts(allFilteredClients, allRouteGroups);
-        renderOperationalStatus(allFilteredClients, allRouteGroups);
-        renderAnalyticsSummary(allFilteredClients, allRouteGroups);
-        renderRouteList(allRouteGroups);
-        renderNoCoordinatePanel();
-      } else {
-        renderKpis(allFilteredClients, allRouteGroups);
-        renderCharts(allFilteredClients);
-        renderAlerts(allFilteredClients, allRouteGroups);
-        renderRouteDetail(selectedRoute);
-        renderTimeline(selectedRoute);
-        renderStopDetail(selectedRoute);
-        renderOperationalStatus(allFilteredClients, allRouteGroups);
-        updateFocusCards(selectedRoute, allFilteredClients, allRouteGroups);
-        renderAdvancedHistoryPanel();
-        renderManualPlanningPanel(allFilteredClients, allRouteGroups, selectedRoute);
-        renderRouteList(allRouteGroups);
-        renderNoCoordinatePanel();
-      }
-    });
+  scheduleRenderPass({
+    allFilteredClients,
+    allRouteGroups,
+    selectedRoute,
+    mapClients,
+    mapRouteGroups,
+    isTerritorial,
+    isAnalytics,
+    isOperational
   });
 
   const _t1_calc = performance.now();
@@ -10546,6 +12056,7 @@ function calculateRoutes(options = {}) {
 let _applyFiltersScheduled = false;
 
 function applyFilters(options = {}) {
+  options = normalizeApplyFiltersOptions(options);
   if (_applyFiltersScheduled && options.skipFitBounds) {
     return;
   }
@@ -10627,8 +12138,15 @@ function renderTerritoryPalettePreview() {
 function syncTerritoryViewUI() {
   const isTerritorial = state.viewMode === 'territorial';
   const button = document.getElementById('open-params-btn');
+  const optimizeBtn = document.getElementById('optimize-plan-btn');
   if (button) {
     button.classList.toggle('is-active', isTerritorial);
+  }
+  if (optimizeBtn) {
+    optimizeBtn.disabled = isTerritorial;
+    optimizeBtn.title = isTerritorial
+      ? 'Otimizacao indisponivel no modo Territorial.'
+      : 'Otimizar sequenciamento';
   }
 }
 
@@ -10889,6 +12407,11 @@ function switchViewMode(newMode) {
 }
 
 async function optimizeSelectedRoutes() {
+  if (state.viewMode === 'territorial') {
+    updatePlannerHint('Otimizacao desabilitada no modo Territorial. Use o modo Operacional para sequenciar rotas.');
+    return;
+  }
+
   const btn = document.getElementById('optimize-plan-btn');
   btn.disabled = true;
   btn.textContent = 'Calculando…';
@@ -11188,7 +12711,11 @@ function clearSelection() {
   state.selectedRouteId = null;
   state.selectedStopId = null;
   state.focusDriverId = null;
-  applyFilters({ skipFitBounds: true });
+  applyFilters({
+    skipFitBounds: true,
+    skipRouteRecalculate: true,
+    skipHeavyPanels: true
+  });
 }
 
 function centerCurrentRoute() {
@@ -11218,9 +12745,9 @@ async function activatePlanningSessionScope(ddd, sessionId = null) {
     const dddNum = Number(dddText);
     const alreadyLoaded = state.clients.some(c => c.ddd === dddNum);
     if (!alreadyLoaded) {
-      logger.info(`[LAZY] DDD ${dddText} sem clientes em cache — buscando do CRM...`);
+      logger.info(`[LAZY] DDD ${dddText} sem clientes em cache — buscando via SOURCE...`);
       ensureDDDOperationalContext(dddText);
-      const newCustomers = await loadCustomersFromCRMForDDD(dddText);
+      const newCustomers = await loadCustomersFromSource(dddText, { entryPoint: 'ddd' });
       if (newCustomers.length > 0) {
         const validation = validateCustomers(newCustomers);
         const validNew = applyFallbacks(validation.validCustomers, validation.invalidCustomers);
@@ -11623,6 +13150,12 @@ document.getElementById('toggle-left').onclick = () => togglePanel('left-panel',
 document.getElementById('toggle-right').onclick = () => togglePanel('right-panel', 'panelRightOpen');
 
 document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && state._clientMarkerPointerDragSession) {
+    event.preventDefault();
+    cancelAssignmentPointerDrag('Movimentação cancelada.');
+    return;
+  }
+
   if (event.key === 'Escape' && state.navToolActive) {
     event.preventDefault();
     deactivateNavTool();
@@ -11698,7 +13231,7 @@ async function initializeApp() {
   initializeDrivers();
 
   // Carregar apenas o DDD padrão no boot (lazy loading dos demais ao trocar)
-  const loadedCustomers = await loadCustomers();
+  const loadedCustomers = await loadCustomersFromSource(state.selectedDDD, { entryPoint: 'boot' });
   logger.info(`[BOOT] DDD ${state.selectedDDD}: ${loadedCustomers.length} clientes carregados`);
 
   const validation = validateCustomers(loadedCustomers);

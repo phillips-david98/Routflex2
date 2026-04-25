@@ -7,7 +7,6 @@ import { useSession } from '../contexts/SessionContext.jsx';
 
 export default function Roteirizacao() {
   const { activeSession } = useSession();
-  const activeSessionId = activeSession?.id;
   const [eligible, setEligible] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(new Set());
@@ -34,7 +33,7 @@ export default function Roteirizacao() {
     } finally {
       setLoading(false);
     }
-  }, [activeSessionId]);
+  }, [activeSession]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -147,8 +146,7 @@ export default function Roteirizacao() {
                       <td>{c.ddd || '—'}</td>
                       <td>{c.city && c.state ? `${c.city} / ${c.state}` : '—'}</td>
                       <td style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)' }}>
-                        {c.lat != null && Number.isFinite(Number(c.lat)) ? Number(c.lat).toFixed(4) : '—'},{' '}
-                        {c.lon != null && Number.isFinite(Number(c.lon)) ? Number(c.lon).toFixed(4) : '—'}
+                        {c.lat?.toFixed(4)}, {c.lon?.toFixed(4)}
                       </td>
                       <td><Badge status={c.status} /></td>
                     </tr>

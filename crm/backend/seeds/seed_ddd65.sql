@@ -214,6 +214,43 @@ FROM generate_series(461, 500) AS s(i);
 -- ── 5. Atualizar sequence ───────────────────────────────────
 SELECT setval('crm_customer_seq', COALESCE((SELECT MAX(id) FROM crm_customers), 0) + 1, false);
 
+-- ── 5a. Backfill territory_code + seller_name ───────────────
+-- Requires migration 003_add_territory_code.sql applied beforehand.
+-- Cuiabá → MT-65-01/02/03 (3 driver slots)
+-- Várzea Grande → MT-65-04/05 (2 driver slots)
+-- Others → MT-65-03 (rural overflow)
+-- Seller names round-robin from canonical 8-name list.
+UPDATE crm_customers AS c
+SET
+  territory_code = sub.territory_code,
+  seller_name    = sub.seller_name
+FROM (
+  SELECT
+    id,
+    CASE
+      WHEN LOWER(city) LIKE 'cuiab%' THEN
+        'MT-65-' || LPAD(((ROW_NUMBER() OVER (PARTITION BY city ORDER BY id) - 1) % 3 + 1)::TEXT, 2, '0')
+      WHEN LOWER(city) LIKE 'v_rzea%' OR LOWER(city) LIKE 'varzea%' THEN
+        'MT-65-' || LPAD(((ROW_NUMBER() OVER (PARTITION BY city ORDER BY id) - 1) % 2 + 4)::TEXT, 2, '0')
+      ELSE 'MT-65-03'
+    END AS territory_code,
+    CASE (ROW_NUMBER() OVER (ORDER BY id) - 1) % 8
+      WHEN 0 THEN 'Marcos Oliveira'
+      WHEN 1 THEN 'Tatiana Ramos'
+      WHEN 2 THEN 'Felipe Azevedo'
+      WHEN 3 THEN 'Juliana Moura'
+      WHEN 4 THEN 'Ricardo Santos'
+      WHEN 5 THEN 'Priscila Lima'
+      WHEN 6 THEN 'Anderson Silva'
+      ELSE 'Camila Ferreira'
+    END AS seller_name
+  FROM crm_customers
+  WHERE session_id = 'DDD 65'
+) AS sub
+WHERE c.id = sub.id
+  AND c.session_id = 'DDD 65'
+  AND c.territory_code IS NULL;
+
 -- ── 6. Resumo ───────────────────────────────────────────────
 DO $$
 DECLARE

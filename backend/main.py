@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -7,10 +6,8 @@ from sqlalchemy.orm import Session
 from pathlib import Path
 import json
 import os
-import re
 import uuid
 from typing import Optional
-from fastapi import Request
 from datetime import datetime
 from event_logger import append_event, read_events
 from logging_manager import set_request_id
@@ -18,7 +15,7 @@ from coordinate_rules import is_sem_coordenada, normalize_status_with_coordinate
 from geocoding_service import get_geocoding_service
 
 from db import engine, Base, get_db
-from models import SessionRegion as SessionRegionModel, Customer as CustomerModel, Vehicle as VehicleModel, AdvancedPlanHistory, RouteVersion
+from models import SessionRegion as SessionRegionModel, Customer as CustomerModel, Vehicle as VehicleModel, AdvancedPlanHistory
 from schemas import (CustomerCreate, Customer as CustomerSchema, VehicleCreate, Vehicle as VehicleSchema,
                      SessionRegionCreate, SessionRegion as SessionRegionSchema, RouteReport,
                      ManualPlanSnapshot, AdvancedPlanRequest,
@@ -33,37 +30,16 @@ from schemas import (CustomerCreate, Customer as CustomerSchema, VehicleCreate, 
                      CustomerGeocodingRequest, CustomerGeocodingResponse,
                      HealthResponse, GenericStatusResponse,
                      ManualPlanSaveResponse, CustomerStatusEventResponse,
-                     CustomerVisitDayEventResponse, SimulationScenarioResponse,
-                     RouteVersionItem, RouteVersionListResponse,
-                     RouteVersionDetailResponse, RouteVersionCompareResponse,
-                     RouteVersionRestoreResponse)
+                     CustomerVisitDayEventResponse, SimulationScenarioResponse)
 from route_planner import plan_route, plan_advanced_routes, plan_batch_routes
 from logging_manager import app_logger
-from simulation_store import (
-    get_simulation_customers,
-    apply_assignment_updates,
-    get_simulation_summary,
-)
-from validate_env import validate_env
-from jwt_utils import require_auth
-
-validate_env()
-Base.metadata.create_all(bind=engine)
-
-app = FastAPI(title="Routflex Backend")
-MANUAL_PLAN_FILE = Path(__file__).resolve().parent / "manual_plan_snapshot.json"
-MANUAL_PLAN_DIR = Path(__file__).resolve().parent / "manual_plans"
-
 
 def get_cors_settings():
     raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3001,http://127.0.0.1:3001")
-    env = os.getenv("NODE_ENV", "development")
-    if env == "production":
-        origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "https://app.routflex.com").split(",") if o.strip()]
-    else:
-        origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+    origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
     if not origins:
         origins = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3001", "http://127.0.0.1:3001"]
+
     has_wildcard = "*" in origins
     return {
         "allow_origins": origins,
@@ -71,43 +47,32 @@ def get_cors_settings():
     }
 
 
-cors_settings = get_cors_settings()
+
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="Routflex Backend")
 
 
-class PermissiveDevCORSMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        origin = request.headers.get("origin")
-        allowed_origins = set(cors_settings["allow_origins"])
-        allow_this_origin = (origin in allowed_origins) or (origin == "null")
-
-        if request.method == "OPTIONS":
-            response = Response(status_code=200)
-        else:
-            response = await call_next(request)
-
-        if allow_this_origin:
-            response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Methods"] = "*"
-            response.headers["Access-Control-Allow-Headers"] = "*"
-            response.headers["Vary"] = "Origin"
-        return response
-
-
+# CORS Middleware fixo para frontend local
+CORS_ALLOW_ORIGINS = [
+    "http://127.0.0.1:8080",
+    "http://localhost:8080"
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_settings["allow_origins"],
-    allow_credentials=cors_settings["allow_credentials"],
+    allow_origins=CORS_ALLOW_ORIGINS,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-if os.getenv("NODE_ENV") != "production":
-    app.add_middleware(PermissiveDevCORSMiddleware)
+
+MANUAL_PLAN_FILE = Path(__file__).resolve().parent / "manual_plan_snapshot.json"
 
 
 # Middleware para rastreabilidade: injeta request_id no contexto
 class RequestIdMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        # Tenta extrair request_id do header ou gera um novo
         request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
         set_request_id(request_id)
         response = await call_next(request)
@@ -118,18 +83,13 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
 app.add_middleware(RequestIdMiddleware)
 
 
+
 @app.on_event("startup")
 async def _on_startup() -> None:
-    env = os.getenv("NODE_ENV", "development")
-    use_mock = os.getenv("USE_MOCK", "false").lower() in ["1", "true", "yes"]
     app_logger.info(
         "Routflex backend iniciado",
-        extra={"cors_origins": cors_settings["allow_origins"], "env": env, "use_mock": use_mock},
+        extra={"cors_origins": CORS_ALLOW_ORIGINS},
     )
-    if env == "production" and use_mock:
-        app_logger.error("USE_MOCK=true não permitido em produção. Abortando.")
-        import sys
-        sys.exit(1)
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -161,51 +121,21 @@ def get_manual_plan():
 
 
 @app.put("/manual-plan", response_model=ManualPlanSaveResponse)
-def save_manual_plan(snapshot: ManualPlanSnapshot, user=Depends(require_auth)):
+def save_manual_plan(snapshot: ManualPlanSnapshot):
     payload = snapshot.model_dump()
     write_manual_plan_snapshot(payload)
     return {"status": "saved", "savedAt": payload["savedAt"], "count": len(payload["clients"])}
 
 
 @app.delete("/manual-plan", response_model=GenericStatusResponse)
-def delete_manual_plan(user=Depends(require_auth)):
+def delete_manual_plan():
     if MANUAL_PLAN_FILE.exists():
         MANUAL_PLAN_FILE.unlink()
     return {"status": "deleted"}
 
 
-# ── DDD-scoped planning persistence ────────────────────────────────────────
-def _plan_file_for_ddd(ddd: str) -> Path:
-    safe = re.sub(r"[^0-9]", "", str(ddd))
-    if not safe:
-        safe = "0"
-    return MANUAL_PLAN_DIR / f"plan_ddd_{safe}.json"
-
-
-@app.get("/manual-plan/{ddd}")
-def get_manual_plan_by_ddd(ddd: str):
-    path = _plan_file_for_ddd(ddd)
-    if not path.exists():
-        return {"version": 1, "ddd": ddd, "savedAt": None, "clients": []}
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return data
-    except (OSError, json.JSONDecodeError):
-        return {"version": 1, "ddd": ddd, "savedAt": None, "clients": []}
-
-
-@app.put("/manual-plan/{ddd}", response_model=ManualPlanSaveResponse)
-def save_manual_plan_by_ddd(ddd: str, snapshot: ManualPlanSnapshot):
-    MANUAL_PLAN_DIR.mkdir(parents=True, exist_ok=True)
-    payload = snapshot.model_dump()
-    payload["ddd"] = ddd
-    path = _plan_file_for_ddd(ddd)
-    path.write_text(json.dumps(payload, ensure_ascii=True, indent=2), encoding="utf-8")
-    return {"status": "saved", "savedAt": payload.get("savedAt", ""), "count": len(payload.get("clients", []))}
-
-
 @app.post("/sessions", response_model=SessionRegionSchema)
-def create_session(session: SessionRegionCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
+def create_session(session: SessionRegionCreate, db: Session = Depends(get_db)):
     db_session = SessionRegionModel(code=session.code, name=session.name, ddd=session.ddd)
     db.add(db_session)
     db.commit()
@@ -219,7 +149,7 @@ def list_sessions(db: Session = Depends(get_db)):
 
 
 @app.post("/customers", response_model=CustomerSchema)
-def create_customer(customer: CustomerCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
+def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
     resolved_status = normalize_status_with_coordinates("ATIVO", customer.lat, customer.lon)
     db_customer = CustomerModel(
         name=customer.name,
@@ -249,7 +179,7 @@ def list_customers(db: Session = Depends(get_db)):
 
 
 @app.post("/vehicles", response_model=VehicleSchema)
-def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
+def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db)):
     db_vehicle = VehicleModel(
         name=vehicle.name,
         cost_per_km=vehicle.cost_per_km,
@@ -267,52 +197,6 @@ def list_vehicles(db: Session = Depends(get_db)):
     return db.query(VehicleModel).all()
 
 
-# ── Route Versioning helper ─────────────────────────────────────────────────────
-
-def _next_route_version(db_session: Session, session_id: Optional[int], route_type: str) -> int:
-    from sqlalchemy import func
-    q = db_session.query(func.coalesce(func.max(RouteVersion.version), 0)).filter(
-        RouteVersion.route_type == route_type,
-    )
-    if session_id is not None:
-        q = q.filter(RouteVersion.session_id == session_id)
-    return q.scalar() + 1
-
-
-def _save_route_version(
-    db_session: Session,
-    *,
-    session_id: Optional[int],
-    route_type: str,
-    driver_id: Optional[str],
-    customers: list,
-    route_order: list,
-    result: dict,
-    total_distance_km: Optional[float] = None,
-    total_time_min: Optional[float] = None,
-    total_cost: Optional[float] = None,
-    label: Optional[str] = None,
-) -> RouteVersion:
-    version_num = _next_route_version(db_session, session_id, route_type)
-    rv = RouteVersion(
-        session_id=session_id,
-        version=version_num,
-        route_type=route_type,
-        driver_id=driver_id,
-        customers_json=json.dumps(customers, ensure_ascii=False),
-        route_order_json=json.dumps(route_order, ensure_ascii=False),
-        result_json=json.dumps(result, ensure_ascii=False),
-        total_distance_km=total_distance_km,
-        total_time_min=total_time_min,
-        total_cost=total_cost,
-        label=label,
-    )
-    db_session.add(rv)
-    db_session.commit()
-    db_session.refresh(rv)
-    return rv
-
-
 @app.post("/plan", response_model=RouteReport)
 def plan(
     start_address: str,
@@ -321,7 +205,6 @@ def plan(
     vehicle_id: int,
     session_id: Optional[int] = None,
     db: Session = Depends(get_db),
-    user=Depends(require_auth),
 ):
     vehicle = db.get(VehicleModel, vehicle_id)
     if not vehicle:
@@ -354,19 +237,6 @@ def plan(
     total_service_time_min = sum(int(c.get("tempo_atendimento", 0) or 0) for c in clients)
     total_time_min = round(plan_result["total_time_min"] + total_service_time_min, 1)
 
-    _save_route_version(
-        db,
-        session_id=session_id,
-        route_type="plan",
-        driver_id=vehicle.name,
-        customers=clients,
-        route_order=plan_result["route_order"],
-        result=plan_result,
-        total_distance_km=plan_result["total_distance_km"],
-        total_time_min=total_time_min,
-        total_cost=total_cost,
-    )
-
     return RouteReport(
         start_address=start_address,
         route_order=plan_result["route_order"],
@@ -377,7 +247,7 @@ def plan(
 
 
 @app.post("/plan/advanced", response_model=AdvancedPlanResponse)
-def plan_advanced(request: AdvancedPlanRequest, db: Session = Depends(get_db), user=Depends(require_auth)):
+def plan_advanced(request: AdvancedPlanRequest, db: Session = Depends(get_db)):
     payload = request.model_dump()
     result = plan_advanced_routes(
         depot=payload["depot"],
@@ -399,52 +269,20 @@ def plan_advanced(request: AdvancedPlanRequest, db: Session = Depends(get_db), u
         db.add(history)
         db.commit()
 
-    summary = result.get("summary", {})
-    for route in result.get("routes", []):
-        _save_route_version(
-            db,
-            session_id=None,
-            route_type="advanced",
-            driver_id=route.get("vehicle_id"),
-            customers=payload.get("customers", []),
-            route_order=route.get("route_order", []),
-            result=route,
-            total_distance_km=route.get("total_distance_km"),
-            total_time_min=route.get("total_route_time_min"),
-            total_cost=route.get("estimated_cost"),
-            label=payload.get("scenario_name"),
-        )
-
     return result
 
 
 @app.post("/plan/batch", response_model=BatchRoutingResponse)
-def plan_batch(request: BatchRoutingRequest, db: Session = Depends(get_db), user=Depends(require_auth)):
+def plan_batch(request: BatchRoutingRequest):
     payload = request.model_dump()
     try:
-        result = plan_batch_routes(
+        return plan_batch_routes(
             customers=payload.get("customers", []),
             depots=payload.get("depots", []),
             options=payload.get("options", {}),
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    for group in result.get("groups", []):
-        _save_route_version(
-            db,
-            session_id=None,
-            route_type="batch",
-            driver_id=group.get("driver_id") or group.get("group_id"),
-            customers=payload.get("customers", []),
-            route_order=group.get("route_order", []),
-            result=group,
-            total_distance_km=group.get("total_distance_km"),
-            total_time_min=group.get("total_time_min"),
-            total_cost=group.get("total_cost"),
-        )
-
-    return result
 
 
 @app.post("/routes/eligibility", response_model=RouteEligibilityResponse)
@@ -467,7 +305,7 @@ def validate_route_eligibility(request: RouteEligibilityRequest):
 
 
 @app.post("/routes/manual-include", response_model=ManualIncludeRouteResponse)
-def manual_include_in_route(request: ManualIncludeRouteRequest, user=Depends(require_auth)):
+def manual_include_in_route(request: ManualIncludeRouteRequest):
     if request.status == ClientStatus.INATIVO and not request.confirm_inactive:
         raise HTTPException(
             status_code=400,
@@ -492,7 +330,7 @@ def manual_include_in_route(request: ManualIncludeRouteRequest, user=Depends(req
 
 
 @app.post("/customers/{customer_id}/status", response_model=CustomerStatusEventResponse)
-def update_customer_status_event(customer_id: str, status: ClientStatus, user: str = "frontend", _auth=Depends(require_auth)):
+def update_customer_status_event(customer_id: str, status: ClientStatus, user: str = "frontend"):
     action = "CLIENTE_INATIVADO" if status == ClientStatus.INATIVO else "STATUS_CLIENTE_ALTERADO"
     append_event(
         customer_id=customer_id,
@@ -504,7 +342,7 @@ def update_customer_status_event(customer_id: str, status: ClientStatus, user: s
 
 
 @app.post("/customers/{customer_id}/visit-day", response_model=CustomerVisitDayEventResponse)
-def log_visit_day_change(customer_id: str, day: str, week: int, user: str = "frontend", _auth=Depends(require_auth)):
+def log_visit_day_change(customer_id: str, day: str, week: int, user: str = "frontend"):
     append_event(
         customer_id=customer_id,
         action="ALTERACAO_DIA_VISITA",
@@ -515,7 +353,7 @@ def log_visit_day_change(customer_id: str, day: str, week: int, user: str = "fro
 
 
 @app.post("/customers/{customer_id}/coordinates", response_model=CustomerCoordinateUpdateResponse)
-def update_customer_coordinates(customer_id: int, payload: CustomerCoordinateUpdateRequest, db: Session = Depends(get_db), user=Depends(require_auth)):
+def update_customer_coordinates(customer_id: int, payload: CustomerCoordinateUpdateRequest, db: Session = Depends(get_db)):
     customer = db.get(CustomerModel, customer_id)
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
@@ -545,7 +383,7 @@ def update_customer_coordinates(customer_id: int, payload: CustomerCoordinateUpd
 
 
 @app.post("/customers/{customer_id}/geocode", response_model=CustomerGeocodingResponse)
-async def geocode_customer_address(customer_id: int, payload: CustomerGeocodingRequest, db: Session = Depends(get_db), user=Depends(require_auth)):
+async def geocode_customer_address(customer_id: int, payload: CustomerGeocodingRequest, db: Session = Depends(get_db)):
     """
     Geocodifica endereço de cliente usando Nominatim (OpenStreetMap).
     
@@ -611,7 +449,7 @@ def list_events(limit: int = 200):
 
 
 @app.post("/exportar-clientes", response_model=ExportCustomersResponse)
-def export_customers_backend(request: ExportCustomersRequest, user=Depends(require_auth)):
+def export_customers_backend(request: ExportCustomersRequest):
     append_event(
         customer_id="bulk",
         action="EXPORTACAO_CLIENTES",
@@ -627,15 +465,13 @@ def export_customers_backend(request: ExportCustomersRequest, user=Depends(requi
 
 @app.get("/simulation/scenario", response_model=SimulationScenarioResponse)
 def simulation_scenario():
-    # Endpoints /simulation/* são para teste isolado do mapa com simulation_store.py.
-    # Eles não substituem o fluxo de integração CRM -> /plan/*.
-    summary = get_simulation_summary()
     return {
         "status": "ready",
         "clients": {
-            "ATIVO": summary.get("ativos", 0),
-            "INATIVO": summary.get("inativos", 0),
-            "SEM_COORDENADA": 0,
+            "ATIVO": 120,
+            "NOVO": 18,
+            "INATIVO": 14,
+            "SEM_COORDENADA": 9,
         },
         "checks": [
             "integracao_crm",
@@ -645,54 +481,6 @@ def simulation_scenario():
             "exportacao_base",
         ],
     }
-
-
-@app.get("/simulation/customers")
-def simulation_customers():
-    # Fonte dedicada de dados simulados (standalone) para o modo SIMULATION do mapa.
-    customers = get_simulation_customers()
-    app_logger.info(
-        "simulation_customers_delivered",
-        extra={
-            "total": len(customers),
-            "ddds": sorted(list({str(item.get("ddd")) for item in customers if item.get("ddd") is not None})),
-        },
-    )
-    return {
-        "items": customers,
-        "total": len(customers),
-    }
-
-
-@app.put("/simulation/assignments")
-def simulation_assignments(payload: dict):
-    updates = payload.get("updates") if isinstance(payload, dict) else []
-    updates = updates if isinstance(updates, list) else []
-    updated_count = apply_assignment_updates(updates)
-    sample_ids = [str(item.get("client_id")) for item in updates[:5] if isinstance(item, dict)]
-    app_logger.info(
-        "simulation_assignments_updated",
-        extra={
-            "received": len(updates),
-            "updated": updated_count,
-            "sample_client_ids": sample_ids,
-        },
-    )
-    return {"status": "ok", "updated": updated_count}
-
-
-@app.get("/simulation/summary")
-def simulation_summary():
-    summary = get_simulation_summary()
-    app_logger.info(
-        "simulation_summary_requested",
-        extra={
-            "total": int(summary.get("total", 0)),
-            "ativos": int(summary.get("ativos", 0)),
-            "inativos": int(summary.get("inativos", 0)),
-        },
-    )
-    return summary
 
 
 @app.get("/plan/advanced/history", response_model=AdvancedPlanHistoryResponse)
@@ -759,124 +547,4 @@ def get_advanced_plan_history_item(history_id: int, db: Session = Depends(get_db
         created_at=(record.created_at or datetime.utcnow()).isoformat(),
         payload=payload,
         result=result,
-    )
-
-
-# ── Route Versioning Endpoints ──────────────────────────────────────────────────
-
-def _rv_to_item(rv: RouteVersion) -> RouteVersionItem:
-    return RouteVersionItem(
-        id=rv.id,
-        session_id=rv.session_id,
-        version=rv.version,
-        route_type=rv.route_type,
-        driver_id=rv.driver_id,
-        total_distance_km=rv.total_distance_km,
-        total_time_min=rv.total_time_min,
-        total_cost=rv.total_cost,
-        created_at=(rv.created_at or datetime.utcnow()).isoformat(),
-        label=rv.label,
-    )
-
-
-def _rv_to_detail(rv: RouteVersion) -> RouteVersionDetailResponse:
-    try:
-        customers = json.loads(rv.customers_json or "[]")
-    except json.JSONDecodeError:
-        customers = []
-    try:
-        route_order = json.loads(rv.route_order_json or "[]")
-    except json.JSONDecodeError:
-        route_order = []
-    try:
-        result = json.loads(rv.result_json or "{}")
-    except json.JSONDecodeError:
-        result = {}
-
-    item = _rv_to_item(rv)
-    return RouteVersionDetailResponse(
-        **item.model_dump(),
-        customers=customers,
-        route_order=route_order,
-        result=result,
-    )
-
-
-@app.get("/routes/versions", response_model=RouteVersionListResponse)
-def list_route_versions(
-    session_id: Optional[int] = None,
-    route_type: Optional[str] = None,
-    driver_id: Optional[str] = None,
-    limit: int = 50,
-    db: Session = Depends(get_db),
-):
-    safe_limit = max(1, min(limit, 200))
-    q = db.query(RouteVersion)
-    if session_id is not None:
-        q = q.filter(RouteVersion.session_id == session_id)
-    if route_type:
-        q = q.filter(RouteVersion.route_type == route_type)
-    if driver_id:
-        q = q.filter(RouteVersion.driver_id == driver_id)
-    records = q.order_by(RouteVersion.created_at.desc()).limit(safe_limit).all()
-    return RouteVersionListResponse(items=[_rv_to_item(r) for r in records])
-
-
-@app.get("/routes/versions/{version_id}", response_model=RouteVersionDetailResponse)
-def get_route_version(version_id: int, db: Session = Depends(get_db)):
-    rv = db.get(RouteVersion, version_id)
-    if not rv:
-        raise HTTPException(status_code=404, detail="Route version not found")
-    return _rv_to_detail(rv)
-
-
-@app.get("/routes/versions/compare/{id_a}/{id_b}", response_model=RouteVersionCompareResponse)
-def compare_route_versions(id_a: int, id_b: int, db: Session = Depends(get_db)):
-    rv_a = db.get(RouteVersion, id_a)
-    rv_b = db.get(RouteVersion, id_b)
-    if not rv_a or not rv_b:
-        raise HTTPException(status_code=404, detail="One or both versions not found")
-
-    detail_a = _rv_to_detail(rv_a)
-    detail_b = _rv_to_detail(rv_b)
-
-    set_a = set(str(c.get("id", "")) for c in detail_a.customers)
-    set_b = set(str(c.get("id", "")) for c in detail_b.customers)
-
-    diff = {
-        "distance_delta_km": round((detail_b.total_distance_km or 0) - (detail_a.total_distance_km or 0), 2),
-        "time_delta_min": round((detail_b.total_time_min or 0) - (detail_a.total_time_min or 0), 2),
-        "cost_delta": round((detail_b.total_cost or 0) - (detail_a.total_cost or 0), 2),
-        "customers_added": list(set_b - set_a),
-        "customers_removed": list(set_a - set_b),
-        "route_order_changed": detail_a.route_order != detail_b.route_order,
-    }
-
-    return RouteVersionCompareResponse(version_a=detail_a, version_b=detail_b, diff=diff)
-
-
-@app.post("/routes/versions/{version_id}/restore", response_model=RouteVersionRestoreResponse)
-def restore_route_version(version_id: int, db: Session = Depends(get_db), user=Depends(require_auth)):
-    original = db.get(RouteVersion, version_id)
-    if not original:
-        raise HTTPException(status_code=404, detail="Route version not found")
-
-    new_rv = _save_route_version(
-        db,
-        session_id=original.session_id,
-        route_type=original.route_type,
-        driver_id=original.driver_id,
-        customers=json.loads(original.customers_json or "[]"),
-        route_order=json.loads(original.route_order_json or "[]"),
-        result=json.loads(original.result_json or "{}"),
-        total_distance_km=original.total_distance_km,
-        total_time_min=original.total_time_min,
-        total_cost=original.total_cost,
-        label=f"Restaurado da v{original.version} (id={original.id})",
-    )
-
-    return RouteVersionRestoreResponse(
-        status="restored",
-        restored_version_id=original.id,
-        new_version_id=new_rv.id,
     )

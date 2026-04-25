@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Route, Settings, Zap, MapPin } from 'lucide-react';
+import { LayoutDashboard, Users, Route, Settings, Zap, MapPin, Activity } from 'lucide-react';
 import { useSession } from '../contexts/SessionContext.jsx';
 import SessionSelector from './SessionSelector.jsx';
 
 const NAV_ITEMS = [
-  { to: '/',         label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/clientes', label: 'Clientes',  icon: Users },
-  { to: '/roteirizacao', label: 'Roteirização', icon: Route },
+  { to: '/',             label: 'Dashboard',        icon: LayoutDashboard },
+  { to: '/controle',     label: 'Torre de Controle', icon: Activity },
+  { to: '/clientes',     label: 'Clientes',         icon: Users },
+  { to: '/roteirizacao', label: 'Roteirização',     icon: Route },
 ];
 
 export default function Sidebar() {

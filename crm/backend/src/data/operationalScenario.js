@@ -106,6 +106,30 @@ const CITY_PROFILES = [
   },
 ];
 
+const SELLER_NAMES = [
+  'Ana Paula Martins', 'Bruno Almeida', 'Carla Nogueira', 'Diego Costa',
+  'Fernanda Ribeiro', 'Gustavo Lima', 'Helena Souza', 'Igor Mendes',
+];
+
+// ── Territory code normalization ────────────────────────────────────────────
+// Canonical persisted format: {STATE}-{DDD}-{NN}  (e.g. MT-65-01)
+// Accepts: 'MT-65-A' (letter→number), 'MT-65-01' (pass-through), raw string (pass-through)
+function normalizeTerritory(raw) {
+  if (!raw) return null;
+  const s = String(raw).trim();
+  const m = s.match(/^([A-Z]{2})-(\d{2,3})-([A-Za-z0-9]+)$/);
+  if (m) {
+    let seq = m[3];
+    if (/^[A-Za-z]$/.test(seq)) {
+      seq = String(seq.toUpperCase().charCodeAt(0) - 64).padStart(2, '0');
+    } else {
+      seq = String(parseInt(seq, 10) || seq).padStart(2, '0');
+    }
+    return `${m[1]}-${m[2]}-${seq}`;
+  }
+  return s;
+}
+
 const COMPANY_PREFIX = [
   'Comercial', 'Distribuidora', 'Atacado', 'Mercantil', 'Rede', 'Grupo', 'Prime', 'Nova',
 ];
@@ -280,7 +304,8 @@ function buildScenarioCustomers() {
         status,
         eligible_for_routing: status === STATUS.ATIVO,
         last_visit_at: daysAgoIso(lastVisitDays),
-        seller_name: distributeBySeller(profile.sellers, i, profile.total),
+        territory_code: normalizeTerritory(distributeBySeller(profile.sellers, i, profile.total)),
+        seller_name: SELLER_NAMES[i % SELLER_NAMES.length],
         region_key: profile.regionKey,
         density_profile: profile.density,
         access_mode: profile.accessMode || null,
@@ -322,7 +347,7 @@ function buildOperationalInsights(customers = []) {
   const cities = new Map();
 
   customers.forEach((customer) => {
-    const seller = String(customer.seller_name || 'SEM_VENDEDOR');
+    const seller = String(customer.territory_code || customer.seller_name || 'SEM_TERRITORIO');
     sellers.set(seller, (sellers.get(seller) || 0) + 1);
 
     const region = String(customer.ddd || 'SEM_DDD');
@@ -462,6 +487,23 @@ const DDD65_PROFILES = [
 
 const DDD65_NO_COORD_COUNT = 98;
 
+// Build deterministic driver→territory mapping for DDD65
+// All DDD65 profiles share state=MT, ddd=65.
+// Unique drivers get sequential territory codes: MT-65-01, MT-65-02, ...
+const DDD65_DRIVER_TERRITORY = (() => {
+  const map = {};
+  let seq = 1;
+  DDD65_PROFILES.forEach((profile) => {
+    profile.drivers.forEach((driverCode) => {
+      if (!map[driverCode]) {
+        map[driverCode] = `MT-65-${String(seq).padStart(2, '0')}`;
+        seq += 1;
+      }
+    });
+  });
+  return map;
+})();
+
 const DDD65_SELLERS = [
   'Marcos Oliveira', 'Tatiana Ramos', 'Felipe Azevedo', 'Juliana Moura',
   'Ricardo Santos', 'Priscila Lima', 'Anderson Silva', 'Camila Ferreira',
@@ -510,6 +552,7 @@ function generateDdd65Scenario() {
         status,
         eligible_for_routing: eligible,
         last_visit_at: daysAgoIso(lastVisitDays),
+        territory_code: DDD65_DRIVER_TERRITORY[allDrivers[i % allDrivers.length]],
         seller_name: DDD65_SELLERS[i % DDD65_SELLERS.length],
         region_key: 'MT-65',
         density_profile: profile.density,
@@ -563,6 +606,7 @@ function generateDdd65Scenario() {
       status: 'SEM_COORDENADA',
       eligible_for_routing: false,
       last_visit_at: daysAgoIso(30 + (k % 60)),
+      territory_code: DDD65_DRIVER_TERRITORY[profile.drivers[k % profile.drivers.length]],
       seller_name: DDD65_SELLERS[k % DDD65_SELLERS.length],
       region_key: 'MT-65',
       density_profile: profile.density,

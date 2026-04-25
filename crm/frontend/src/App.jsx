@@ -5,6 +5,7 @@ import Layout from './components/Layout.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Customers from './pages/Customers.jsx';
 import Roteirizacao from './pages/Roteirizacao.jsx';
+import ControlTower from './pages/ControlTower.jsx';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           <Layout>
             <Routes>
               <Route path="/"             element={<Dashboard />} />
+              <Route path="/controle"     element={<ControlTower />} />
               <Route path="/clientes"     element={<Customers />} />
               <Route path="/roteirizacao" element={<Roteirizacao />} />
             </Routes>

@@ -80,11 +80,10 @@ class SessionRegion(SessionRegionBase):
 
 class ManualPlanClientSnapshot(BaseModel):
     id: str
-    week: Optional[int] = None
-    day: Optional[str] = None
-    driverId: Optional[str] = None
-    driverName: Optional[str] = None
-    sequence: Optional[int] = None
+    week: int
+    day: str
+    driverId: str
+    sequence: int
 
 
 class ManualPlanSnapshot(BaseModel):
@@ -383,40 +382,3 @@ class SimulationScenarioResponse(BaseModel):
     status: str
     clients: Dict[str, int]
     checks: List[str]
-
-
-# ── Route Versioning ────────────────────────────────────────────────────────────
-
-class RouteVersionItem(BaseModel):
-    id: int
-    session_id: Optional[int]
-    version: int
-    route_type: str
-    driver_id: Optional[str]
-    total_distance_km: Optional[float]
-    total_time_min: Optional[float]
-    total_cost: Optional[float]
-    created_at: str
-    label: Optional[str]
-
-
-class RouteVersionListResponse(BaseModel):
-    items: List[RouteVersionItem]
-
-
-class RouteVersionDetailResponse(RouteVersionItem):
-    customers: List[Dict[str, Any]]
-    route_order: List[Any]
-    result: Dict[str, Any]
-
-
-class RouteVersionCompareResponse(BaseModel):
-    version_a: RouteVersionDetailResponse
-    version_b: RouteVersionDetailResponse
-    diff: Dict[str, Any]
-
-
-class RouteVersionRestoreResponse(BaseModel):
-    status: str
-    restored_version_id: int
-    new_version_id: int

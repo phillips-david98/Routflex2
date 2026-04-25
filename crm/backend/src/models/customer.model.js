@@ -1,6 +1,8 @@
+
 const store = require('../data/mockStore');
 const { query } = require('../config/database');
 const { validateCpfCnpj, isValidCoordinate } = require('../utils/validators');
+const { evaluateCustomerAlerts } = require('./customeralert.model');
 
 const IS_MOCK = process.env.USE_MOCK !== 'false';
 
@@ -112,11 +114,17 @@ async function findByCpfCnpj(cpfCnpj, sessionId) {
 
 async function create(data) {
   if (IS_MOCK) return store.create(data, data.session_id);
-  
+
   try {
-    const lat = data.lat ? parseFloat(data.lat) : null;
-    const lon = data.lon ? parseFloat(data.lon) : null;
-    
+    let lat = null;
+    let lon = null;
+    if (data.lat !== undefined && data.lat !== null && data.lat !== '') {
+      lat = parseFloat(data.lat);
+    }
+    if (data.lon !== undefined && data.lon !== null && data.lon !== '') {
+      lon = parseFloat(data.lon);
+    }
+
     if (isNaN(lat) && lat !== null) {
       const err = new Error('Latitude deve ser um número válido.');
       err.code = '22P02';
@@ -127,17 +135,29 @@ async function create(data) {
       err.code = '22P02';
       throw err;
     }
-    
+
     const status = !isValidCoordinate(lat, lon) ? 'SEM_COORDENADA' : (data.status || 'ATIVO');
     const eligible = status === 'ATIVO' && isValidCoordinate(lat, lon);
-    
+
     const res = await query(
-      `INSERT INTO crm_customers (name,phone,ddd,cpf_cnpj,address,number,neighborhood,city,state,zip_code,lat,lon,status,eligible_for_routing,notes,session_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`,
+      `INSERT INTO crm_customers (name,phone,ddd,cpf_cnpj,address,number,neighborhood,city,state,zip_code,lat,lon,status,eligible_for_routing,notes,session_id,territory_code,seller_name)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING *`,
       [data.name, data.phone, data.ddd, data.cpf_cnpj, data.address, data.number, data.neighborhood,
-       data.city, data.state, data.zip_code, lat, lon, status, eligible, data.notes || null, data.session_id || null]
+       data.city, data.state, data.zip_code, lat, lon, status, eligible, data.notes || null, data.session_id || null,
+       data.territory_code || null, data.seller_name || null]
     );
-    return normalizeRow(res.rows[0]);
+    const customer = normalizeRow(res.rows[0]);
+    // Garante que customer.session_id está presente
+    try {
+      await evaluateCustomerAlerts(customer);
+    } catch (err) {
+      console.error('[CRM_ALERTS] Falha ao avaliar alertas do cliente', {
+        customerId: customer?.id,
+        sessionId: customer?.session_id,
+        error: err?.message || err,
+      });
+    }
+    return customer;
   } catch (err) {
     // Re-throw com contexto
     err.context = 'customer_model_create';
@@ -149,21 +169,40 @@ async function update(id, data) {
   if (IS_MOCK) return store.update(id, data, data.session_id || null);
   const current = await findById(id, data.session_id);
   if (!current) return null;
-  const lat = data.lat !== undefined ? (data.lat ? parseFloat(data.lat) : null) : current.lat;
-  const lon = data.lon !== undefined ? (data.lon ? parseFloat(data.lon) : null) : current.lon;
+  let lat = current.lat;
+  let lon = current.lon;
+  if (data.lat !== undefined && data.lat !== null && data.lat !== '') {
+    lat = parseFloat(data.lat);
+  }
+  if (data.lon !== undefined && data.lon !== null && data.lon !== '') {
+    lon = parseFloat(data.lon);
+  }
   const requestedStatus = data.status !== undefined ? data.status : current.status;
   const status = !isValidCoordinate(lat, lon) ? 'SEM_COORDENADA' : requestedStatus;
   const eligible = status === 'ATIVO' && isValidCoordinate(lat, lon);
   const res = await query(
     `UPDATE crm_customers SET name=$1,phone=$2,ddd=$3,cpf_cnpj=$4,address=$5,number=$6,neighborhood=$7,
-     city=$8,state=$9,zip_code=$10,lat=$11,lon=$12,status=$13,eligible_for_routing=$14,notes=$15,last_updated=NOW()
-     WHERE id=$16 RETURNING *`,
+     city=$8,state=$9,zip_code=$10,lat=$11,lon=$12,status=$13,eligible_for_routing=$14,notes=$15,
+     territory_code=$16,seller_name=$17,last_updated=NOW()
+     WHERE id=$18 RETURNING *`,
     [data.name ?? current.name, data.phone ?? current.phone, data.ddd ?? current.ddd,
      data.cpf_cnpj ?? current.cpf_cnpj, data.address ?? current.address, data.number ?? current.number,
      data.neighborhood ?? current.neighborhood, data.city ?? current.city, data.state ?? current.state,
-     data.zip_code ?? current.zip_code, lat, lon, status, eligible, data.notes ?? current.notes, id]
+     data.zip_code ?? current.zip_code, lat, lon, status, eligible, data.notes ?? current.notes,
+     data.territory_code ?? current.territory_code, data.seller_name ?? current.seller_name, id]
   );
-  return normalizeRow(res.rows[0]);
+  const customer = normalizeRow(res.rows[0]);
+  // Garante que customer.session_id está presente
+  try {
+    await evaluateCustomerAlerts(customer);
+  } catch (err) {
+    console.error('[CRM_ALERTS] Falha ao avaliar alertas do cliente', {
+      customerId: customer?.id,
+      sessionId: customer?.session_id,
+      error: err?.message || err,
+    });
+  }
+  return customer;
 }
 
 async function remove(id, sessionId) {
