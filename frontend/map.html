@@ -485,9 +485,17 @@ body.login-active .app-shell {
 /* Map/toolbar: hide planner, instruments, focus strip */
 [data-view-mode="analytics"] .planner-dock { display: none !important; }
 [data-view-mode="analytics"] #manual-planning-panel { display: none !important; }
-[data-view-mode="analytics"] .instruments-hub { display: none !important; }
+/* Analytics: keep instruments hub visible so INS is accessible */
+/* NAV / LAS / RGL are visually muted and pointer-events disabled */
 [data-view-mode="analytics"] .focus-strip { display: none !important; }
 [data-view-mode="analytics"] #section-actions { display: none !important; }
+[data-view-mode="analytics"] #toggle-nav-btn,
+[data-view-mode="analytics"] #toggle-lasso-btn,
+[data-view-mode="analytics"] #toggle-ruler-btn {
+  opacity: 0.28;
+  pointer-events: none;
+  cursor: default;
+}
 
 .status-tile {
   padding: 10px 12px;
@@ -1894,6 +1902,59 @@ body.login-active .app-shell {
   shape-rendering: optimizeSpeed;
 }
 
+/* ── Ruler tool ───────────────────────────────────────────────── */
+
+/* Zero-size anchor div that holds the label as a child */
+.ruler-label-anchor {
+  overflow: visible !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Distance label — child of anchor, uses own-width % for centering */
+.ruler-label {
+  display: inline-block;
+  transform: translateX(-50%) translateY(-140%);
+  background: rgba(4, 13, 24, 0.94);
+  border: 2px solid #FFD700;
+  border-radius: 7px;
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 5px 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.60), 0 0 0 1px rgba(255, 215, 0, 0.18);
+  letter-spacing: 0.01em;
+}
+
+/* Point markers A and B */
+.ruler-point {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 50%;
+  background: rgba(4, 13, 24, 0.94);
+  border: 2px solid #FFD700;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.65);
+}
+.ruler-point-b {
+  border-color: #52d0ff;
+  box-shadow: 0 0 0 2px rgba(82, 208, 255, 0.22), 0 2px 8px rgba(0, 0, 0, 0.65);
+}
+
+/* Ruler crosshair cursor while mode is active */
+.leaflet-container.ruler-mode,
+.leaflet-container.ruler-mode .leaflet-grab {
+  cursor: crosshair !important;
+}
+
 .territory-shape.is-assignment-target {
   filter: drop-shadow(0 0 14px rgba(82, 208, 255, 0.38)) drop-shadow(0 0 26px rgba(82, 208, 255, 0.24));
   animation: assignmentPolygonGlow 1.15s ease-in-out infinite alternate;
@@ -2108,6 +2169,163 @@ body.login-active .app-shell {
 
 .route-item {
   cursor: pointer;
+}
+
+.route-item.route-portfolio-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px 15px;
+}
+
+.route-portfolio-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.route-portfolio-code {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #f4fbff;
+}
+
+.route-portfolio-subtitle {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.route-portfolio-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.route-portfolio-status::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.route-portfolio-status.status-ok {
+  color: #8ff0b8;
+  background: rgba(38, 196, 113, 0.16);
+}
+
+.route-portfolio-status.status-atencao {
+  color: #ffd58a;
+  background: rgba(255, 187, 71, 0.16);
+}
+
+.route-portfolio-status.status-divergente {
+  color: #ff9f9f;
+  background: rgba(255, 107, 107, 0.16);
+}
+
+.route-portfolio-main {
+  display: grid;
+  gap: 2px;
+}
+
+.route-portfolio-value {
+  font-size: 1.75rem;
+  line-height: 1;
+  font-weight: 800;
+  color: #f7fbff;
+}
+
+.route-portfolio-label {
+  color: var(--muted);
+  font-size: 0.83rem;
+}
+
+.route-portfolio-quality {
+  display: grid;
+  gap: 6px;
+}
+
+.route-portfolio-quality-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.route-portfolio-quality-line strong {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #eef8ff;
+}
+
+.route-portfolio-bar {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.route-portfolio-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(107, 231, 164, 0.95), rgba(79, 209, 197, 0.92));
+}
+
+.route-portfolio-bar-fill.status-atencao {
+  background: linear-gradient(90deg, rgba(255, 208, 102, 0.95), rgba(255, 170, 64, 0.92));
+}
+
+.route-portfolio-bar-fill.status-divergente {
+  background: linear-gradient(90deg, rgba(255, 132, 132, 0.95), rgba(255, 103, 103, 0.92));
+}
+
+.route-portfolio-pendencias {
+  display: grid;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+.route-portfolio-pendencias-title {
+  color: #dceef8;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.route-portfolio-pendencias-list {
+  display: grid;
+  gap: 4px;
+}
+
+.route-portfolio-pendencia {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.route-portfolio-pendencia strong {
+  display: inline;
+  margin: 0;
+  color: #f6fbff;
+}
+
+.route-portfolio-pendencia.is-empty {
+  color: #a7d8b9;
 }
 
 .route-item.is-selected,
@@ -2585,6 +2803,224 @@ body.login-active .app-shell {
   background: rgba(36, 72, 116, 0.96);
   box-shadow: 0 0 0 1px rgba(125, 214, 255, 0.22), 0 0 20px rgba(82, 208, 255, 0.34);
 }
+
+/* PAR: discrete indicator that territorial mode is active — NOT an active tool state */
+.instrument-btn.is-mode-territorial {
+  border-color: rgba(82, 208, 255, 0.36);
+  background: rgba(20, 40, 64, 0.88);
+}
+.instrument-btn.is-mode-territorial .instrument-glyph {
+  background: rgba(82, 208, 255, 0.18);
+  border-color: rgba(82, 208, 255, 0.45);
+}
+
+/* INS: active state for Insight mode tool */
+.instrument-btn.is-insight-active {
+  border-color: rgba(100, 220, 100, 0.82);
+  background: rgba(18, 64, 22, 0.96);
+  box-shadow: 0 0 0 1px rgba(80, 200, 80, 0.22), 0 0 18px rgba(60, 180, 60, 0.30);
+}
+.leaflet-container.insight-mode,
+.leaflet-container.insight-mode .leaflet-grab { cursor: crosshair !important; }
+
+/* ── Insight Modal (INS) ────────────────────────────────────── */
+#ins-modal-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9490;
+  backdrop-filter: blur(2px);
+}
+#ins-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(530px, 96vw);
+  max-height: min(88vh, 760px);
+  background: rgba(5, 14, 26, 0.99);
+  border: 1px solid rgba(82, 208, 255, 0.28);
+  border-radius: 12px;
+  box-shadow: 0 20px 72px rgba(0,0,0,0.88), 0 0 0 1px rgba(82,208,255,0.06);
+  z-index: 9500;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: inherit;
+}
+.ins-modal-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid rgba(82, 208, 255, 0.14);
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ins-modal-title-block { flex: 1; min-width: 0; }
+.ins-modal-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #d8eeff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+.ins-modal-sub {
+  font-size: 0.74rem;
+  color: #4e6a80;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#ins-panel-close {
+  background: none;
+  border: none;
+  color: #4e6a80;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  margin-top: -1px;
+}
+#ins-panel-close:hover { color: #ccdae8; }
+.ins-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(82, 208, 255, 0.12);
+  flex-shrink: 0;
+  padding: 0 14px;
+  gap: 0;
+}
+.ins-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #4a6070;
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 12px 7px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.ins-tab:hover { color: #8cb8d4; }
+.ins-tab.is-active { color: #52d0ff; border-bottom-color: #52d0ff; }
+.ins-tab-panel { display: none; }
+.ins-tab-panel.is-active { display: block; }
+.ins-panel-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 14px 18px 8px;
+}
+.ins-field { margin-bottom: 12px; }
+.ins-field label {
+  display: block;
+  font-size: 0.70rem;
+  color: #5a7a94;
+  margin-bottom: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.ins-field input,
+.ins-field select,
+.ins-field textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(82, 208, 255, 0.18);
+  border-radius: 6px;
+  color: #c8dcf0;
+  font-size: 0.84rem;
+  padding: 7px 9px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+  resize: vertical;
+}
+.ins-field select option { background: #07121f; color: #c8dcf0; }
+.ins-field input:focus,
+.ins-field select:focus,
+.ins-field textarea:focus { border-color: rgba(82, 208, 255, 0.50); }
+.ins-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ins-currency-row { display: grid; grid-template-columns: 90px 1fr; gap: 8px; }
+.ins-obs-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.ins-obs-item {
+  background: rgba(255,255,255,0.04);
+  border-radius: 5px;
+  padding: 6px 28px 6px 9px;
+  font-size: 0.80rem;
+  color: #a8c0d8;
+  position: relative;
+  word-break: break-word;
+  line-height: 1.45;
+}
+.ins-obs-del {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  background: none;
+  border: none;
+  color: #3a5060;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  line-height: 1;
+}
+.ins-obs-del:hover { color: #cc2244; }
+.ins-obs-add-row { display: flex; flex-direction: column; gap: 6px; }
+.ins-action-btn {
+  align-self: flex-end;
+  background: rgba(82, 208, 255, 0.10);
+  border: 1px solid rgba(82, 208, 255, 0.34);
+  border-radius: 5px;
+  color: #52d0ff;
+  font-size: 0.77rem;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.ins-action-btn:hover { background: rgba(82, 208, 255, 0.22); }
+.ins-hist-list { display: flex; flex-direction: column; gap: 5px; }
+.ins-hist-item {
+  background: rgba(255,255,255,0.03);
+  border-radius: 5px;
+  padding: 7px 10px;
+  font-size: 0.77rem;
+  color: #6a8aaa;
+  border-left: 2px solid rgba(82,208,255,0.18);
+}
+.ins-hist-ts { font-size: 0.70rem; color: #3a5060; margin-bottom: 2px; }
+.ins-hist-empty { font-size: 0.78rem; color: #3a5060; font-style: italic; }
+.ins-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px 13px;
+  border-top: 1px solid rgba(82, 208, 255, 0.09);
+  flex-shrink: 0;
+}
+.ins-timestamp { font-size: 0.70rem; color: #3a5060; }
+.ins-save-btn {
+  background: rgba(82, 208, 255, 0.16);
+  border: 1px solid rgba(82, 208, 255, 0.46);
+  border-radius: 6px;
+  color: #52d0ff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.ins-save-btn:hover { background: rgba(82, 208, 255, 0.30); }
 
 .instrument-glyph {
   width: 26px;
@@ -3129,6 +3565,76 @@ body.login-active .app-shell {
   font-size: 0.74rem;
 }
 
+/* ── Cycle x Day matrix table (Detalhamento por ciclo/dia) ── */
+.cycle-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 420px;
+  table-layout: auto;
+}
+.cycle-matrix-table thead th {
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 0.70rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9fc0de;
+  border-bottom: 1px solid rgba(148, 194, 238, 0.16);
+  background: rgba(11, 24, 40, 0.65);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.cycle-matrix-table thead th:first-child { text-align: left; }
+.cycle-matrix-table thead th + th { border-left: 1px solid rgba(148, 194, 238, 0.15); }
+.cycle-matrix-table tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(148, 194, 238, 0.08);
+  color: #d9ebff;
+  font-size: 0.79rem;
+  text-align: center;
+  white-space: nowrap;
+}
+.cycle-matrix-table tbody td:first-child {
+  text-align: left;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+}
+.cycle-matrix-table tbody td + td { border-left: 1px solid rgba(148, 194, 238, 0.12); }
+.cycle-matrix-table tbody tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.cycle-matrix-table tbody tr:hover td { background: rgba(82, 208, 255, 0.08); }
+.cycle-matrix-table tfoot td {
+  padding: 8px 10px;
+  border-top: 2px solid rgba(148, 194, 238, 0.28);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #f5fbff;
+  text-align: center;
+  background: rgba(11, 24, 40, 0.55);
+}
+.cycle-matrix-table tfoot td:first-child { text-align: left; color: #9fc0de; font-weight: 400; }
+.cycle-matrix-table tfoot td + td { border-left: 1px solid rgba(148, 194, 238, 0.15); }
+.cycle-matrix-table td.is-active-week { background: rgba(82, 208, 255, 0.08) !important; }
+.cycle-matrix-table th.is-active-day,
+.cycle-matrix-table td.is-active-day { background: rgba(82, 208, 255, 0.08) !important; }
+.cycle-matrix-table td.is-active-week.is-active-day { background: rgba(82, 208, 255, 0.20) !important; }
+.cycle-matrix-label-km {
+  display: block;
+  font-size: 0.66rem;
+  color: #7fb8d8;
+  font-weight: 400;
+  margin-top: 2px;
+}
+.cycle-matrix-divergence {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(255, 200, 60, 0.10);
+  border: 1px solid rgba(255, 200, 60, 0.28);
+  border-radius: 8px;
+  color: #ffd060;
+  font-size: 0.73rem;
+}
+
 body.manual-planning-mode .app-shell {
   padding: 10px;
 }
@@ -3319,6 +3825,25 @@ body.manual-planning-mode .manual-planning-panel {
 
 .leaflet-marker-icon.is-drop-flash .route-marker-circle {
   animation: assignmentDropFlashMarker 0.34s ease-out;
+}
+
+/* ── Insight mode marker rings ───────────────────────────────── */
+.route-marker-circle.marker-insight-none {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  opacity: 0.54 !important;
+}
+.route-marker-circle.marker-insight-has,
+.route-marker-circle.marker-insight-normal {
+  box-shadow: 0 0 0 2.5px rgba(82, 208, 255, 0.80), 0 2px 8px rgba(0,0,0,0.28);
+}
+.route-marker-circle.marker-insight-oportunidade {
+  box-shadow: 0 0 0 2.5px rgba(34, 197, 94, 0.88), 0 0 10px rgba(34, 197, 94, 0.30), 0 2px 8px rgba(0,0,0,0.28);
+}
+.route-marker-circle.marker-insight-risco {
+  box-shadow: 0 0 0 2.5px rgba(239, 68, 68, 0.88), 0 0 10px rgba(239, 68, 68, 0.30), 0 2px 8px rgba(0,0,0,0.28);
+}
+.route-marker-circle.marker-insight-alerta {
+  box-shadow: 0 0 0 2.5px rgba(234, 179, 8, 0.88), 0 0 10px rgba(234, 179, 8, 0.30), 0 2px 8px rgba(0,0,0,0.28);
 }
 
 .assignment-drag-ghost {
@@ -3830,6 +4355,19 @@ body.login-active .routex-ai-panel { display:none !important; }
   cursor:pointer; transition:background .14s,border-color .14s,color .14s;
 }
 .ai-quick-btn:hover { background:rgba(82,208,255,.13); border-color:rgba(82,208,255,.48); color:#fff; }
+.ai-action-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.ai-action-btn {
+  padding:7px 12px; border-radius:12px; border:1px solid rgba(82,208,255,.22);
+  background:rgba(82,208,255,.08); color:#d7f2ff; font:inherit; font-size:.74rem;
+  cursor:pointer; transition:background .14s,border-color .14s,color .14s, transform .14s;
+}
+.ai-action-btn:hover { background:rgba(82,208,255,.15); border-color:rgba(82,208,255,.52); color:#fff; transform:translateY(-1px); }
+.ai-action-btn.is-primary {
+  background:rgba(82,208,255,.18); border-color:rgba(82,208,255,.48); color:#fff;
+}
+.ai-action-btn.is-secondary {
+  background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.14); color:#d5e7f5;
+}
 .ai-input-row {
   display:flex; align-items:center; gap:8px;
   padding:11px 13px 13px;
@@ -3951,8 +4489,8 @@ body.login-active .routex-ai-panel { display:none !important; }
         <button class="mode-btn" data-mode="operational" type="button" title="Roteirização e sequenciamento">
           <span class="mode-icon">▶</span> Operacional
         </button>
-        <button class="mode-btn" data-mode="analytics" type="button" title="Métricas e análises">
-          <span class="mode-icon">◩</span> Análises
+        <button class="mode-btn" data-mode="analytics" type="button" title="Inteligência comercial">
+          <span class="mode-icon">◩</span> Inteligência
         </button>
       </div>
       <button class="route-action primary" id="open-crm-btn" type="button">Abrir CRM</button>
@@ -4305,9 +4843,9 @@ body.login-active .routex-ai-panel { display:none !important; }
               <span class="instrument-glyph">CFG</span>
               <span class="instrument-label">Config.</span>
             </button>
-            <button class="instrument-btn" type="button" title="Regua">
+            <button class="instrument-btn" id="toggle-ruler-btn" type="button" title="Régua">
               <span class="instrument-glyph">RGL</span>
-              <span class="instrument-label">Regua</span>
+              <span class="instrument-label">Régua</span>
             </button>
             <button class="instrument-btn" type="button" title="Metricas">
               <span class="instrument-glyph">MET</span>
@@ -4320,6 +4858,10 @@ body.login-active .routex-ai-panel { display:none !important; }
             <button class="instrument-btn" type="button" title="Barreiras">
               <span class="instrument-glyph">BAR</span>
               <span class="instrument-label">Barreira</span>
+            </button>
+            <button class="instrument-btn" id="toggle-insight-btn" type="button" title="Modo Insight — análise comercial">
+              <span class="instrument-glyph">INS</span>
+              <span class="instrument-label">Insight</span>
             </button>
           </div>
         </div>
@@ -4666,6 +5208,95 @@ body.login-active .routex-ai-panel { display:none !important; }
   </div>
 </aside>
 
+<!-- ══ INSIGHT MODAL (INS) ══════════════════════════════════ -->
+<div id="ins-modal-scrim" style="display:none;"></div>
+<div id="ins-panel" style="display:none;" role="dialog" aria-modal="true" aria-label="Ficha de Inteligência do Cliente">
+  <div class="ins-modal-header">
+    <div class="ins-modal-title-block">
+      <div id="ins-panel-title" class="ins-modal-title">Cliente</div>
+      <div id="ins-panel-subtitle" class="ins-modal-sub"></div>
+    </div>
+    <button id="ins-panel-close" type="button" title="Fechar">&times;</button>
+  </div>
+  <div class="ins-tabs" role="tablist">
+    <button class="ins-tab is-active" type="button" data-tab="classificacao" role="tab">Classificação</button>
+    <button class="ins-tab" type="button" data-tab="comercial" role="tab">Comercial</button>
+    <button class="ins-tab" type="button" data-tab="observacoes" role="tab">Observações</button>
+    <button class="ins-tab" type="button" data-tab="historico" role="tab">Histórico</button>
+  </div>
+  <div class="ins-panel-body">
+    <!-- Tab: Classificação -->
+    <div id="ins-tab-classificacao" class="ins-tab-panel is-active">
+      <div class="ins-row">
+        <div class="ins-field">
+          <label for="ins-categoria">Categoria</label>
+          <select id="ins-categoria">
+            <option value="">— selecione —</option>
+            <option value="A">A — Alta prioridade</option>
+            <option value="B">B — Média prioridade</option>
+            <option value="C">C — Baixa prioridade</option>
+          </select>
+        </div>
+        <div class="ins-field">
+          <label for="ins-status">Status</label>
+          <select id="ins-status">
+            <option value="normal">Normal</option>
+            <option value="oportunidade">Oportunidade</option>
+            <option value="risco">Risco</option>
+            <option value="alerta">Alerta</option>
+          </select>
+        </div>
+      </div>
+      <div class="ins-field">
+        <label for="ins-operador">Operador</label>
+        <input type="text" id="ins-operador" placeholder="Nome do operador">
+      </div>
+    </div>
+    <!-- Tab: Comercial -->
+    <div id="ins-tab-comercial" class="ins-tab-panel">
+      <div class="ins-field">
+        <label id="ins-faturamento-label">Faturamento estimado (R$)</label>
+        <div class="ins-currency-row">
+          <select id="ins-moeda">
+            <option value="BRL">BRL R$</option>
+            <option value="USD">USD $</option>
+            <option value="EUR">EUR €</option>
+          </select>
+          <input type="number" id="ins-faturamento" min="0" step="0.01" placeholder="0,00" aria-labelledby="ins-faturamento-label">
+        </div>
+      </div>
+      <div class="ins-field">
+        <label for="ins-mix-produto">Mix / Produto principal</label>
+        <input type="text" id="ins-mix-produto" placeholder="Ex: Linha Premium, Produto X...">
+      </div>
+      <div class="ins-field">
+        <label for="ins-concorrente">Concorrente presente</label>
+        <select id="ins-concorrente">
+          <option value="">— não informado —</option>
+          <option value="sim">Sim</option>
+          <option value="nao">Não</option>
+        </select>
+      </div>
+    </div>
+    <!-- Tab: Observações -->
+    <div id="ins-tab-observacoes" class="ins-tab-panel">
+      <div id="ins-obs-list" class="ins-obs-list"></div>
+      <div class="ins-obs-add-row">
+        <textarea id="ins-obs-input" rows="3" placeholder="Nova observação..."></textarea>
+        <button type="button" id="ins-obs-add-btn" class="ins-action-btn">+ Adicionar observação</button>
+      </div>
+    </div>
+    <!-- Tab: Histórico -->
+    <div id="ins-tab-historico" class="ins-tab-panel">
+      <div id="ins-hist-list" class="ins-hist-list"></div>
+    </div>
+  </div>
+  <div class="ins-panel-footer">
+    <span id="ins-ultima-atualizacao" class="ins-timestamp">Não salvo ainda</span>
+    <button type="button" id="ins-save-btn" class="ins-save-btn">Salvar ficha</button>
+  </div>
+</div>
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="js/config.js"></script>
 <script src="js/logger.js"></script>
@@ -4927,6 +5558,12 @@ function _schedulePlanningAutosave(ddd) {
 }
 
 function _flushPlanningForDDD(ddd) {
+  // CORREÇÃO 1: Suspender autosave se houver drag ativo (estado intermediário)
+  if (state.dragClientId) {
+    _autosaveDirtyDDDs.add(String(ddd));
+    _schedulePlanningAutosave(null);
+    return;
+  }
   var numDdd = Number(ddd);
   var dddClients = clients.filter(function(c) { return c.ddd === numDdd; });
   if (!dddClients.length) return;
@@ -4961,7 +5598,10 @@ function _flushPlanningForDDD(ddd) {
     // Fallback: localStorage
     try {
       localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(payload));
-    } catch(e) {}
+    } catch(e) {
+      // CORREÇÃO 2: Falha dupla (backend + localStorage) — avisar o usuário
+      updatePlannerHint('⚠️ Autosave falhou: backend offline e armazenamento local indisponível. Salve manualmente com CTRL+S.');
+    }
   });
 }
 
@@ -5659,7 +6299,8 @@ function deleteSelectedPlanningSession() {
   deleteRealPlanningSessionForDDD({ skipConfirm: true });
 }
 
-function promoteActiveSimulationToRealSession() {
+// CORREÇÃO 4: função async para suportar persistência imediata após promoção
+async function promoteActiveSimulationToRealSession() {
   captureActivePlanningSessionSnapshot();
   const ddd = String(state.selectedDDD);
   const activeSessionId = state.activePlanningSessionByDDD[ddd] || state.activePlanningSessionId;
@@ -5713,7 +6354,10 @@ function promoteActiveSimulationToRealSession() {
     source: 'routing-control-tower'
   });
 
-  updatePlannerHint(`Simulação promovida para Produção DDD ${ddd}. O estado anterior foi preservado em ${backupSimulationId}.`);
+  // CORREÇÃO 4: Persistir imediatamente o plano REAL após promoção
+  markPlanAsDirty();
+  updatePlannerHint(`Simulação promovida para Produção DDD ${ddd}. Salvando...`);
+  await savePlanningAdjustments();
 }
 
 function revertRealPlanningSession() {
@@ -5916,6 +6560,7 @@ function _applyPlanningAssignments(savedClients, numDdd) {
   (savedClients || []).forEach(function(item) {
     byId.set(item.id, item);
   });
+  var previousUnsavedFlag = state.hasUnsavedPlanChanges;
   patchClients(
     function(client) {
       return client.ddd === numDdd && byId.has(client.id);
@@ -5931,6 +6576,7 @@ function _applyPlanningAssignments(savedClients, numDdd) {
       if (typeof item.sequence === 'number') client.sequence = item.sequence;
     }
   );
+  state.hasUnsavedPlanChanges = previousUnsavedFlag;
 }
 
 async function loadSavedPlanningAdjustments() {
@@ -6031,6 +6677,11 @@ async function savePlanningAdjustments() {
 
   // Cancelar autosave pendente para este DDD
   _autosaveDirtyDDDs.delete(ddd);
+  // CORREÇÃO 3: Cancelar timer pendente para evitar PUT concorrente com CTRL+S
+  if (_autosaveTimer) {
+    clearTimeout(_autosaveTimer);
+    _autosaveTimer = null;
+  }
 
   try {
     const response = await fetch(`${BACKEND_API_BASE}/manual-plan/${encodeURIComponent(ddd)}`, {
@@ -7613,6 +8264,16 @@ function setNavButtonState() {
 
 function toggleNavTool() {
   state.navToolActive = !state.navToolActive;
+  if (state.navToolActive) {
+    // Deactivate conflicting tools when NAV turns on
+    if (state.rulerModeActive) clearRuler();
+    if (state.lassoModeActive) {
+      state.lassoModeActive = false;
+      clearLassoSelection({ skipRender: true });
+      setLassoButtonState();
+    }
+    if (state.insightModeActive) toggleInsightMode(false);
+  }
   syncMapDragging();
   setNavButtonState();
   if (state.navToolActive) {
@@ -7628,6 +8289,355 @@ function deactivateNavTool() {
   syncMapDragging();
   setNavButtonState();
   updatePlannerHint('Navegação desativada. Mapa travado para operação.');
+}
+
+/* ── Ruler tool (RGL) ────────────────────────────────────────── */
+let _rulerShadowLine = null;
+let _rulerLine = null;
+let _rulerTooltip = null;
+let _rulerStartMarker = null;
+let _rulerEndMarker = null;
+
+function _rulerDistanceKm(p1, p2) {
+  const R = 6371;
+  const dLat = (p2.lat - p1.lat) * Math.PI / 180;
+  const dLon = (p2.lng - p1.lng) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180)
+    * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function _rulerTotalKm(pts) {
+  let total = 0;
+  for (let i = 1; i < pts.length; i++) {
+    total += _rulerDistanceKm(pts[i - 1], pts[i]);
+  }
+  return total;
+}
+
+function _clearRulerLayers() {
+  if (_rulerShadowLine)  { map.removeLayer(_rulerShadowLine);  _rulerShadowLine = null; }
+  if (_rulerLine)        { map.removeLayer(_rulerLine);        _rulerLine = null; }
+  if (_rulerTooltip)     { map.removeLayer(_rulerTooltip);     _rulerTooltip = null; }
+  if (_rulerStartMarker) { map.removeLayer(_rulerStartMarker); _rulerStartMarker = null; }
+  if (_rulerEndMarker)   { map.removeLayer(_rulerEndMarker);   _rulerEndMarker = null; }
+}
+
+function clearRuler() {
+  _clearRulerLayers();
+  state.rulerPoints = [];
+  state.rulerModeActive = false;
+  const btn = document.getElementById('toggle-ruler-btn');
+  if (btn) btn.classList.remove('is-active');
+  map.getContainer().classList.remove('ruler-mode');
+}
+
+function _drawRuler() {
+  const pts = state.rulerPoints;
+  if (pts.length < 2) return;
+  const lastPt = pts[pts.length - 1];
+  const segments = pts.length - 1;
+
+  // Shadow line over all points
+  if (_rulerShadowLine) map.removeLayer(_rulerShadowLine);
+  _rulerShadowLine = L.polyline(pts, {
+    color: '#000000',
+    weight: 9,
+    opacity: 0.55,
+    interactive: false,
+    pane: 'overlayPane'
+  }).addTo(map);
+
+  // Main dashed gold line over all points
+  if (_rulerLine) map.removeLayer(_rulerLine);
+  _rulerLine = L.polyline(pts, {
+    color: '#FFD700',
+    weight: 5,
+    opacity: 1,
+    dashArray: '10 8',
+    interactive: false,
+    pane: 'overlayPane'
+  }).addTo(map);
+
+  // Total distance label at last point
+  const totalKm = _rulerTotalKm(pts);
+  const labelText = totalKm < 1
+    ? `📏 Total: ${Math.round(totalKm * 1000)} m`
+    : `📏 Total: ${totalKm.toFixed(2)} km`;
+
+  if (_rulerTooltip) map.removeLayer(_rulerTooltip);
+  _rulerTooltip = L.marker(lastPt, {
+    icon: L.divIcon({
+      className: 'ruler-label-anchor',
+      html: `<div class="ruler-label">${labelText}</div>`,
+      iconSize: [0, 0],
+      iconAnchor: [0, 0]
+    }),
+    interactive: false,
+    zIndexOffset: 1100
+  }).addTo(map);
+
+  // End marker at last point — shows segment count when > 1
+  if (_rulerEndMarker) map.removeLayer(_rulerEndMarker);
+  _rulerEndMarker = L.marker(lastPt, {
+    icon: L.divIcon({
+      className: 'ruler-point ruler-point-b',
+      html: segments === 1 ? 'B' : String(segments),
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    }),
+    interactive: false,
+    zIndexOffset: 1000
+  }).addTo(map);
+}
+
+function handleRulerClick(e) {
+  if (!e || !e.latlng) return;
+  state.rulerPoints.push(e.latlng);
+  const pts = state.rulerPoints;
+
+  if (pts.length === 1) {
+    // First point: place marker A, no line yet
+    _clearRulerLayers();
+    _rulerStartMarker = L.marker(e.latlng, {
+      icon: L.divIcon({
+        className: 'ruler-point ruler-point-a',
+        html: 'A',
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+      }),
+      interactive: false,
+      zIndexOffset: 1000
+    }).addTo(map);
+    updatePlannerHint('Régua: ponto A definido. Continue clicando para adicionar trechos. ESC para sair.');
+  } else {
+    // 2nd point and beyond: redraw full polyline with updated total
+    _drawRuler();
+    const totalKm = _rulerTotalKm(pts);
+    const segments = pts.length - 1;
+    const distLabel = totalKm < 1
+      ? `${Math.round(totalKm * 1000)} m`
+      : `${totalKm.toFixed(2)} km`;
+    updatePlannerHint(`📏 Total: ${distLabel} — ${segments} trecho${segments > 1 ? 's' : ''}. Continue clicando ou ESC para sair.`);
+  }
+}
+
+function toggleRulerMode(force) {
+  const activate = (force !== undefined) ? Boolean(force) : !state.rulerModeActive;
+
+  if (!activate) {
+    clearRuler();
+    updatePlannerHint('Régua desativada.');
+    return;
+  }
+
+  // Deactivate conflicting tools before activating
+  if (state.navToolActive) deactivateNavTool();
+  if (state.lassoModeActive) {
+    state.lassoModeActive = false;
+    clearLassoSelection({ skipRender: true });
+  }
+  if (state.insightModeActive) toggleInsightMode(false);
+
+  clearRuler();  // clean any previous ruler state
+  state.rulerModeActive = true;
+  state.rulerPoints = [];
+  const btn = document.getElementById('toggle-ruler-btn');
+  if (btn) btn.classList.add('is-active');
+  map.getContainer().classList.add('ruler-mode');
+  updatePlannerHint('Régua ativa: clique para definir o ponto A. ESC para cancelar.');
+}
+
+/* ── Insight Mode (INS) ─────────────────────────────────────── */
+let _insClientId = null;   // ID do cliente aberto no modal INS
+let _insSnapshot = null;  // snapshot dos campos ao abrir (para diff no histórico)
+
+function _getInsightCategoryColor(clientId) {
+  const ins = state.clientInsights[clientId];
+  if (!ins || !ins.categoria) return null;
+  if (ins.categoria === 'A') return '#22c55e'; // verde — alta prioridade
+  if (ins.categoria === 'B') return '#eab308'; // amarelo — média prioridade
+  if (ins.categoria === 'C') return '#ef4444'; // vermelho — baixa prioridade
+  return null;
+}
+
+function _getOrCreateInsight(clientId) {
+  if (!state.clientInsights[clientId]) {
+    state.clientInsights[clientId] = {
+      faturamento: 0,
+      categoria: '',
+      status: 'normal',
+      moeda: 'BRL',
+      mixProduto: '',
+      concorrente: '',
+      observacoes: [],
+      historico: [],
+      ultimaAtualizacao: null,
+      operador: ''
+    };
+  }
+  return state.clientInsights[clientId];
+}
+
+function hasClientInsightData(clientId) {
+  var ins = state.clientInsights[clientId];
+  if (!ins) return false;
+  return Boolean(
+    ins.faturamento ||
+    ins.categoria ||
+    (ins.status && ins.status !== 'normal') ||
+    ins.mixProduto ||
+    ins.concorrente ||
+    (ins.observacoes && ins.observacoes.length > 0)
+  );
+}
+
+function getClientInsightStatus(clientId) {
+  var ins = state.clientInsights[clientId];
+  if (!ins) return null;
+  return ins.status || null;
+}
+
+function _getInsightClass(clientId) {
+  if (!hasClientInsightData(clientId)) return 'marker-insight-none';
+  var status = getClientInsightStatus(clientId) || 'normal';
+  return 'marker-insight-' + status;
+}
+
+function setInsightButtonState() {
+  const btn = document.getElementById('toggle-insight-btn');
+  if (btn) btn.classList.toggle('is-insight-active', Boolean(state.insightModeActive));
+}
+
+function closeInsightPanel() {
+  const panel = document.getElementById('ins-panel');
+  const scrim = document.getElementById('ins-modal-scrim');
+  if (panel) panel.style.display = 'none';
+  if (scrim) scrim.style.display = 'none';
+  _insClientId = null;
+}
+
+function _renderInsObsList(observacoes) {
+  const list = document.getElementById('ins-obs-list');
+  if (!list) return;
+  list.innerHTML = observacoes.map(function(obs, i) {
+    return '<div class="ins-obs-item">' + sanitizeText(obs) +
+      '<button class="ins-obs-del" data-idx="' + i + '" title="Remover">&times;</button></div>';
+  }).join('');
+  list.querySelectorAll('.ins-obs-del').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var idx = parseInt(btn.dataset.idx, 10);
+      var ins = state.clientInsights[_insClientId];
+      if (ins && !isNaN(idx)) { ins.observacoes.splice(idx, 1); _renderInsObsList(ins.observacoes); }
+    });
+  });
+}
+
+function openInsightPanel(client) {
+  _insClientId = client.id;
+  var ins = _getOrCreateInsight(client.id);
+  var panel = document.getElementById('ins-panel');
+  var scrim = document.getElementById('ins-modal-scrim');
+  if (!panel) return;
+
+  // Header
+  document.getElementById('ins-panel-title').textContent = sanitizeText(client.name || String(client.id));
+  var sub = [client.city, client.neighborhood, client.driverId ? 'Mot. ' + client.driverId : '']
+    .filter(Boolean).join(' · ');
+  document.getElementById('ins-panel-subtitle').textContent = sanitizeText(sub);
+
+  // Tab: Classificação
+  document.getElementById('ins-categoria').value = ins.categoria || '';
+  document.getElementById('ins-status').value = ins.status || 'normal';
+  document.getElementById('ins-operador').value = ins.operador || '';
+
+  // Tab: Comercial
+  document.getElementById('ins-moeda').value = ins.moeda || 'BRL';
+  document.getElementById('ins-faturamento').value = ins.faturamento || '';
+  document.getElementById('ins-mix-produto').value = ins.mixProduto || '';
+  document.getElementById('ins-concorrente').value = ins.concorrente || '';
+  _updateFaturamentoLabel(ins.moeda || 'BRL');
+
+  // Tab: Observações
+  document.getElementById('ins-obs-input').value = '';
+  _renderInsObsList(ins.observacoes);
+
+  // Tab: Histórico
+  _renderInsHistList(ins.historico || []);
+
+  // Timestamp
+  document.getElementById('ins-ultima-atualizacao').textContent = ins.ultimaAtualizacao
+    ? 'Salvo: ' + new Date(ins.ultimaAtualizacao).toLocaleString('pt-BR')
+    : 'Não salvo ainda';
+
+  // Snapshot for history diff
+  _insSnapshot = { categoria: ins.categoria, status: ins.status, faturamento: ins.faturamento,
+    moeda: ins.moeda, mixProduto: ins.mixProduto, concorrente: ins.concorrente, operador: ins.operador };
+
+  // Reset to first tab
+  _switchInsTab('classificacao');
+
+  // Show
+  if (scrim) scrim.style.display = 'block';
+  panel.style.display = 'flex';
+}
+
+function _renderInsHistList(historico) {
+  var list = document.getElementById('ins-hist-list');
+  if (!list) return;
+  if (!historico || !historico.length) {
+    list.innerHTML = '<div class="ins-hist-empty">Nenhum registro ainda.</div>';
+    return;
+  }
+  list.innerHTML = historico.slice().reverse().map(function(entry) {
+    var ts = entry.ts ? new Date(entry.ts).toLocaleString('pt-BR') : '';
+    return '<div class="ins-hist-item">' +
+      '<div class="ins-hist-ts">' + sanitizeText(ts) + (entry.operador ? ' · ' + sanitizeText(entry.operador) : '') + '</div>' +
+      sanitizeText(entry.resumo || 'Ficha atualizada') +
+      '</div>';
+  }).join('');
+}
+
+function _switchInsTab(tabId) {
+  document.querySelectorAll('.ins-tab').forEach(function(btn) {
+    btn.classList.toggle('is-active', btn.dataset.tab === tabId);
+  });
+  document.querySelectorAll('.ins-tab-panel').forEach(function(panel) {
+    panel.classList.toggle('is-active', panel.id === 'ins-tab-' + tabId);
+  });
+}
+
+function _updateFaturamentoLabel(moeda) {
+  var lbl = document.getElementById('ins-faturamento-label');
+  if (!lbl) return;
+  var symbols = { BRL: 'R$', USD: 'US$', EUR: '€' };
+  lbl.textContent = 'Faturamento estimado (' + (symbols[moeda] || moeda) + ')';
+}
+
+function toggleInsightMode(force) {
+  var activate = (force !== undefined) ? Boolean(force) : !state.insightModeActive;
+  state.insightModeActive = activate;
+  if (!activate) {
+    closeInsightPanel();
+    map.getContainer().classList.remove('insight-mode');
+    setInsightButtonState();
+    updatePlannerHint('Modo Insight desativado.');
+    updateMarkerIconsOnly();
+    return;
+  }
+  // Desativar ferramentas conflitantes ao ativar INS
+  if (state.navToolActive) deactivateNavTool();
+  if (state.rulerModeActive) clearRuler();
+  if (state.lassoModeActive) {
+    state.lassoModeActive = false;
+    clearLassoSelection({ skipRender: true });
+    setLassoButtonState();
+  }
+  map.getContainer().classList.add('insight-mode');
+  setInsightButtonState();
+  updatePlannerHint('Modo Insight ativo: clique em um cliente para visualizar e editar seu perfil comercial. ESC para sair.');
+  updateMarkerIconsOnly();
 }
 
 function clearLassoSelection(options = {}) {
@@ -8443,6 +9453,10 @@ function toggleLassoMode() {
     clearLassoSelection({ skipRender: true });
     updatePlannerHint('Modo Laço desativado.');
   } else {
+    // Deactivate conflicting tools when LAS turns on
+    if (state.rulerModeActive) clearRuler();
+    if (state.navToolActive) deactivateNavTool();
+    if (state.insightModeActive) toggleInsightMode(false);
     state.lassoSelectionIds.clear();
     updatePlannerHint('Modo Laço ativo: desenhe o contorno, selecione os PDVs e arraste um selecionado para a rota alvo (dia/semana). Latitude e longitude não mudam.');
   }
@@ -9664,7 +10678,7 @@ function renderManualCharts(manualScope) {
   `).join('');
 }
 
-function renderManualDayDetail(manualScope) {
+function renderManualDayDetail(manualScope, focusedDriverId) {
   const container = document.getElementById('manual-day-detail-grid');
   if (!container) {
     return;
@@ -9675,6 +10689,83 @@ function renderManualDayDetail(manualScope) {
     return;
   }
 
+  const weeks = [1, 2, 3, 4];
+  const weekdays = ['SEG', 'TER', 'QUA', 'QUI', 'SEX'];
+
+  // ── Matrix path: use the official eligible-client scope (no inativo, no blocked) ──
+  if (focusedDriverId && typeof _buildDayMatrixForPanel === 'function') {
+    const mx = _buildDayMatrixForPanel(focusedDriverId);
+
+    // Detect scope divergence vs. what manualScope counted
+    const manualScopedCount = manualScope.scopedClients
+      ? manualScope.scopedClients.filter((c) => c.driverId === focusedDriverId).length
+      : null;
+    const divergence = manualScopedCount !== null && mx.totalCount !== manualScopedCount;
+
+    const thDays = weekdays.map((d) => {
+      const isActiveDay = state.activeDays.has(d);
+      return `<th class="${isActiveDay ? 'is-active-day' : ''}">${d}</th>`;
+    }).join('');
+
+    const bodyRows = weeks.map((w) => {
+      const isActiveWeek = state.activeWeeks.has(w);
+      const wt = mx.weekTotals[w];
+      const weekClass = isActiveWeek ? 'is-active-week' : '';
+
+      const tds = weekdays.map((d) => {
+        const cell = mx.matrix[w][d];
+        const isActiveDay = state.activeDays.has(d);
+        const cellClass = [isActiveWeek ? 'is-active-week' : '', isActiveDay ? 'is-active-day' : ''].filter(Boolean).join(' ');
+        if (cell.count === 0) {
+          return `<td class="${cellClass}">—</td>`;
+        }
+        return `<td class="${cellClass}">${cell.count}<span class="cycle-matrix-label-km">${cell.distance.toFixed(0)} km</span></td>`;
+      }).join('');
+
+      return `<tr>
+        <td class="${weekClass}"><strong>S${w}</strong></td>
+        ${tds}
+        <td class="${weekClass}">${wt.count > 0 ? wt.count : '—'}</td>
+        <td class="${weekClass} manual-day-km">${wt.distance > 0 ? wt.distance.toFixed(0) + ' km' : '—'}</td>
+      </tr>`;
+    }).join('');
+
+    const footTds = weekdays.map((d) => {
+      const dt = mx.dayTotals[d];
+      const isActiveDay = state.activeDays.has(d);
+      return `<td class="${isActiveDay ? 'is-active-day' : ''}">${dt.count > 0 ? dt.count : '—'}<span class="cycle-matrix-label-km">${dt.distance > 0 ? dt.distance.toFixed(0) + ' km' : ''}</span></td>`;
+    }).join('');
+
+    const divergenceHtml = divergence
+      ? `<div class="cycle-matrix-divergence">Aten&ccedil;&atilde;o: escopo divergente &mdash; matriz: ${mx.totalCount} cl., recorte atual: ${manualScopedCount} cl.</div>`
+      : '';
+
+    container.innerHTML = `
+      <table class="manual-day-detail-table cycle-matrix-table">
+        <thead>
+          <tr>
+            <th>CICLO</th>
+            ${thDays}
+            <th>TOTAL</th>
+            <th>KM</th>
+          </tr>
+        </thead>
+        <tbody>${bodyRows}</tbody>
+        <tfoot>
+          <tr>
+            <td>TOTAL</td>
+            ${footTds}
+            <td><strong>${mx.totalCount}</strong></td>
+            <td class="manual-day-km">${mx.totalDistance > 0 ? mx.totalDistance.toFixed(0) + ' km' : '—'}</td>
+          </tr>
+        </tfoot>
+      </table>
+      ${divergenceHtml}
+    `;
+    return;
+  }
+
+  // ── Fallback: original flat table (no focused driver resolved) ──
   const rows = days.map((day) => {
     const stats = manualScope.dayStats[day] || { distance: 0, clients: 0, totalTime: 0, serviceTime: 0 };
     const roadMinutes = Math.max(0, (stats.totalTime || 0) - (stats.serviceTime || 0));
@@ -9712,7 +10803,15 @@ function renderManualPlanningPanel(filteredClients, routeGroups, selectedRoute) 
   const routeInfo = document.getElementById('manual-route-info');
   const manualScope = getManualAdjustmentScope(filteredClients, routeGroups);
   renderManualCharts(manualScope);
-  renderManualDayDetail(manualScope);
+
+  // Resolve focused driver for the matrix (single-driver scope → use that driver;
+  // multi-driver fallback → selectedRoute driver or state.focusDriverId)
+  const focusedDriverId = manualScope.drivers.length === 1
+    ? manualScope.drivers[0].driver.id
+    : (state.focusDriverId
+        || (selectedRoute && selectedRoute.driver ? selectedRoute.driver.id : null));
+
+  renderManualDayDetail(manualScope, focusedDriverId);
   const selectedStop = selectedRoute ? selectedRoute.clients.find((client) => client.id === state.selectedStopId) : null;
   const totalDistance = manualScope.totalDistance;
   const totalClients = manualScope.scopedClients.length;
@@ -9799,17 +10898,62 @@ function renderRouteList(routeGroups) {
 
     container.innerHTML = dddDrivers.map((driver) => {
       const portfolio = getDriverPortfolio(driver.id);
+      const integrity = typeof _buildDriverIntegrityReport === 'function'
+        ? _buildDriverIntegrityReport(driver.id)
+        : null;
       const primaryRoute = routeGroups.find((route) => route.driver && route.driver.id === driver.id) || null;
       const territoryLabel = portfolio.territories.length
         ? portfolio.territories.join(', ')
         : 'Sem territorio vinculado';
+      const integrityPct = integrity ? integrity.integrityPct : 100;
+      const integrityStatus = integrity ? integrity.integrityStatus : 'OK';
+      const integrityClass = integrityStatus === 'DIVERGENTE'
+        ? 'status-divergente'
+        : integrityStatus === 'ATENCAO'
+          ? 'status-atencao'
+          : 'status-ok';
+      const driverCodeLabel = `MT ${getDriverShortCode(driver.id).replace(/\s*-\s*/g, '-')}`;
+      const integrityStatusLabel = integrityStatus === 'ATENCAO' ? 'ATENÇÃO' : integrityStatus;
+      const clampedIntegrityPct = Math.max(0, Math.min(100, integrityPct));
+      const pendingItems = [];
+
+      if (portfolio.noCoordCount > 0) {
+        pendingItems.push(`<div class="route-portfolio-pendencia"><strong>${portfolio.noCoordCount}</strong> sem coordenada</div>`);
+      }
+      if (portfolio.inactiveCount > 0) {
+        pendingItems.push(`<div class="route-portfolio-pendencia"><strong>${portfolio.inactiveCount}</strong> inativos</div>`);
+      } else if (portfolio.hiddenByStatusCount > 0) {
+        pendingItems.push(`<div class="route-portfolio-pendencia"><strong>${portfolio.hiddenByStatusCount}</strong> ocultos</div>`);
+      }
+      if (!pendingItems.length) {
+        pendingItems.push('<div class="route-portfolio-pendencia is-empty">Sem pendencias operacionais</div>');
+      }
 
       return `
-        <div class="route-item ${driver.id === selectedDriverId ? 'is-selected' : ''}" data-driver-id="${driver.id}" ${primaryRoute ? `data-route-id="${primaryRoute.routeId}"` : ''}>
-          <strong>${getDriverShortCode(driver.id)} -> ${portfolio.stopCount} clientes</strong>
-          <div class="route-meta">
-            <span>${driver.name}</span>
-            <span>${territoryLabel}</span>
+        <div class="route-item route-portfolio-card ${driver.id === selectedDriverId ? 'is-selected' : ''}" data-driver-id="${driver.id}" ${primaryRoute ? `data-route-id="${primaryRoute.routeId}"` : ''}>
+          <div class="route-portfolio-header">
+            <div>
+              <div class="route-portfolio-code">${driverCodeLabel}</div>
+              <div class="route-portfolio-subtitle">${driver.name}</div>
+            </div>
+            <span class="route-portfolio-status ${integrityClass}">${integrityStatusLabel}</span>
+          </div>
+          <div class="route-portfolio-main">
+            <div class="route-portfolio-value">${portfolio.stopCount}</div>
+            <div class="route-portfolio-label">aptos para visita</div>
+          </div>
+          <div class="route-portfolio-quality">
+            <div class="route-portfolio-quality-line">
+              <span>Aptidão da carteira</span>
+              <strong>${clampedIntegrityPct}% prontos</strong>
+            </div>
+            <div class="route-portfolio-bar" aria-hidden="true">
+              <div class="route-portfolio-bar-fill ${integrityClass}" style="width:${clampedIntegrityPct}%"></div>
+            </div>
+          </div>
+          <div class="route-portfolio-pendencias">
+            <div class="route-portfolio-pendencias-title">Pendencias</div>
+            <div class="route-portfolio-pendencias-list">${pendingItems.join('')}</div>
           </div>
           <div class="inline-meta">
             <span class="inline-pill">${driver.city || 'Cidade n/d'}</span>
@@ -10528,17 +11672,18 @@ function focusMapOnDDD(ddd, options = {}) {
 
 const _iconCache = new Map();
 const MAX_ICON_CACHE = 500;
-function createMarkerIcon(displayContent, color, active, selected) {
-  const key = `${displayContent}|${color}|${active ? 1 : 0}|${selected ? 1 : 0}`;
+function createMarkerIcon(displayContent, color, active, selected, insightClass) {
+  const key = `${displayContent}|${color}|${active ? 1 : 0}|${selected ? 1 : 0}|${insightClass || ''}`;
   let icon = _iconCache.get(key);
   if (!icon) {
     if (_iconCache.size >= MAX_ICON_CACHE) {
       // FIFO eviction: delete oldest entry
       _iconCache.delete(_iconCache.keys().next().value);
     }
+    const insClass = insightClass ? ` ${insightClass}` : '';
     icon = L.divIcon({
       className: 'route-marker-icon',
-      html: `<div class="route-marker-circle ${selected ? 'is-lasso-selected' : ''}" style="background:${color}; transform:${active ? 'scale(1.14)' : 'scale(1)'}; opacity:${active ? '1' : '0.88'};">${displayContent}</div>`,
+      html: `<div class="route-marker-circle ${selected ? 'is-lasso-selected' : ''}${insClass}" style="background:${color}; transform:${active ? 'scale(1.14)' : 'scale(1)'}; opacity:${active ? '1' : '0.88'};">${displayContent}</div>`,
       iconSize: [28, 28],
       iconAnchor: [14, 14]
     });
@@ -11070,6 +12215,12 @@ function getClientMapColor(client, route) {
   if (ct === 'inativo')        return '#D32F2F';
   if (ct === 'novo')            return '#FF69B4';
   if (ct === 'sem_coordenada')  return '#9e9e9e';
+  if (isActiveEquivalentClientType(ct) && !client.day) return '#FF69B4';
+  // Modo Insight — cor por categoria comercial
+  if (state.insightModeActive) {
+    const ic = _getInsightCategoryColor(client.id);
+    return ic || '#52d0ff';
+  }
   // Modo semana/ciclo — cor por semana (operational only)
   if (state.weekColorMode && state.viewMode === 'operational') {
     const w = parseInt(client.week, 10);
@@ -11302,6 +12453,12 @@ function _ensureClientMarkerBaseEvents(marker) {
       return;
     }
 
+    // INS mode: intercept click to open insight panel instead of normal flow
+    if (state.insightModeActive) {
+      openInsightPanel(marker._rfxClient);
+      return;
+    }
+
     const client = marker._rfxClient;
     const route = marker._rfxRoute;
     const now = Date.now();
@@ -11313,6 +12470,7 @@ function _ensureClientMarkerBaseEvents(marker) {
 
     if (isDouble) {
       if (state._clientClickTimer) { clearTimeout(state._clientClickTimer); state._clientClickTimer = null; }
+      if (state.viewMode === 'territorial') return;
       if (!marker._rfxIsSpecial && route) {
         state.selectedRouteId = route.routeId;
         state.selectedStopId = client.id;
@@ -11396,9 +12554,10 @@ function updateMarkerIconsOnly() {
       displayContent = getMarkerDisplayContent(client, route, index);
       color = getClientMapColor(client, route);
     }
-    const newIconKey = `${displayContent}|${color}|${isActive ? 1 : 0}|${isLassoSelected ? 1 : 0}`;
+    const insightClass = (state.insightModeActive && ct === 'ativo') ? _getInsightClass(client.id) : '';
+    const newIconKey = `${displayContent}|${color}|${isActive ? 1 : 0}|${isLassoSelected ? 1 : 0}|${insightClass}`;
     if (newIconKey !== entry.iconKey) {
-      m.setIcon(createMarkerIcon(displayContent, color, isActive, isLassoSelected));
+      m.setIcon(createMarkerIcon(displayContent, color, isActive, isLassoSelected, insightClass));
       entry.iconKey = newIconKey;
       _iconUpdated++;
     } else {
@@ -11478,7 +12637,7 @@ function renderMap(filteredClients, routeGroups) {
 
     const isSelectedRoute = route.routeId === state.selectedRouteId;
     const isFocusedDriver = state.focusDriverId && route.driver.id === state.focusDriverId;
-    const shouldDrawLine = isOperational && (isSelectedRoute || isFocusedDriver || _fewDriversMode);
+    const shouldDrawLine = isOperational && !state.insightModeActive && (isSelectedRoute || isFocusedDriver || _fewDriversMode);
 
     // --- Polylines (diff-based via _polylineRegistry) ---
     const routeId = route.routeId;
@@ -11560,7 +12719,8 @@ function renderMap(filteredClients, routeGroups) {
       const isOperational = state.viewMode === 'operational';
       const canDrag = isOperational || isSelectedRoute || state.lassoModeActive || isTerritorial;
       const isInteractive = isActive || isLassoSelected || canDrag || isFocusedDriver || isSelectedRoute;
-      const iconKey = `${markerDisplayContent}|${markerColor}|${isActive ? 1 : 0}|${isLassoSelected ? 1 : 0}`;
+      const insightClass = state.insightModeActive ? _getInsightClass(client.id) : '';
+      const iconKey = `${markerDisplayContent}|${markerColor}|${isActive ? 1 : 0}|${isLassoSelected ? 1 : 0}|${insightClass}`;
 
       desiredMarkers.set(client.id, {
         client, route, index,
@@ -11571,7 +12731,7 @@ function renderMap(filteredClients, routeGroups) {
         draggable: canDrag,
         displayContent: markerDisplayContent,
         color: markerColor,
-        isActive, isLassoSelected
+        isActive, isLassoSelected, insightClass
       });
     });
   });
@@ -11597,10 +12757,11 @@ function renderMap(filteredClients, routeGroups) {
   const specialClientsForMap = allSpecialVisible.slice(0, remainingSlots);
   specialClientsForMap.forEach((client) => {
     const color = getClientMapColor(client, null);
-    const label = client.clientType === 'inativo' ? 'I' : 'N';
+    const _spCt = (client.clientType || 'ativo').toLowerCase();
+    const label = _spCt === 'inativo' ? 'I' : (_spCt === 'ativo' && !client.day) ? 'D' : 'N';
     const isLassoSelected = state.lassoSelectionIds.has(client.id);
     const isActive = client.id === state.selectedStopId;
-    const iconKey = `${label}|${color}|${isActive ? 1 : 0}|${isLassoSelected ? 1 : 0}`;
+    const iconKey = `${label}|${color}|${isActive ? 1 : 0}|${isLassoSelected ? 1 : 0}|`;
 
     desiredMarkers.set(client.id, {
       client, route: null, index: 0,
@@ -11610,7 +12771,7 @@ function renderMap(filteredClients, routeGroups) {
       interactive: false,
       draggable: false,
       displayContent: label,
-      color, isActive, isLassoSelected
+      color, isActive, isLassoSelected, insightClass: ''
     });
   });
 
@@ -11645,7 +12806,7 @@ function renderMap(filteredClients, routeGroups) {
 
       // Update icon only if visual state changed
       if (existing.iconKey !== desired.iconKey) {
-        m.setIcon(createMarkerIcon(desired.displayContent, desired.color, desired.isActive, desired.isLassoSelected));
+        m.setIcon(createMarkerIcon(desired.displayContent, desired.color, desired.isActive, desired.isLassoSelected, desired.insightClass || ''));
         existing.iconKey = desired.iconKey;
         _diffIconUpdated++;
       } else {
@@ -11674,7 +12835,7 @@ function renderMap(filteredClients, routeGroups) {
       _diffCreated++;
       // ── CREATE new marker ──
       const m = L.marker([desired.client.lat, desired.client.lon], {
-        icon: createMarkerIcon(desired.displayContent, desired.color, desired.isActive, desired.isLassoSelected),
+        icon: createMarkerIcon(desired.displayContent, desired.color, desired.isActive, desired.isLassoSelected, desired.insightClass || ''),
         draggable: false,
         autoPan: false,
         autoPanOnFocus: false
@@ -12140,7 +13301,8 @@ function syncTerritoryViewUI() {
   const button = document.getElementById('open-params-btn');
   const optimizeBtn = document.getElementById('optimize-plan-btn');
   if (button) {
-    button.classList.toggle('is-active', isTerritorial);
+    button.classList.toggle('is-mode-territorial', isTerritorial);
+    button.classList.remove('is-active'); // PAR is never an active tool
   }
   if (optimizeBtn) {
     optimizeBtn.disabled = isTerritorial;
@@ -12391,9 +13553,16 @@ function switchViewMode(newMode) {
       subtitleEl.textContent = 'Roteirização: defina dias, semanas, sequência e execute o planejamento por motorista.';
       break;
     case 'analytics':
-      titleEl.textContent = 'Modo Análises';
-      subtitleEl.textContent = 'Métricas e indicadores: km, cobertura, densidade e visão gerencial da operação.';
+      titleEl.textContent = 'Modo Inteligência';
+      subtitleEl.textContent = 'Camada de inteligência comercial: contexto, observações e leitura estratégica dos clientes.';
       break;
+  }
+
+  // Insight mode: auto-activate when entering analytics, auto-deactivate when leaving
+  if (newMode === 'analytics') {
+    toggleInsightMode(true);
+  } else if (previousMode === 'analytics' && state.insightModeActive) {
+    toggleInsightMode(false);
   }
 
   // Re-run pipeline for the new mode — preserve viewport (user controls pan)
@@ -12974,7 +14143,11 @@ document.getElementById('map').addEventListener('drop', (event) => {
   assignDriverFromMapDrop(driverId);
 });
 
-map.on('click', () => {
+map.on('click', (e) => {
+  if (state.rulerModeActive) {
+    handleRulerClick(e);
+    return;
+  }
   closeDriverManagerModal();
 });
 
@@ -12991,6 +14164,74 @@ document.getElementById('toggle-map-menu-btn').onclick = toggleMapMenuVisibility
 document.getElementById('toggle-instruments-btn').onclick = toggleInstrumentsPanel;
 document.getElementById('toggle-nav-btn').onclick = toggleNavTool;
 document.getElementById('toggle-lasso-btn').onclick = toggleLassoMode;
+document.getElementById('toggle-ruler-btn').onclick = toggleRulerMode;
+document.getElementById('toggle-insight-btn').onclick = toggleInsightMode;
+
+// INS modal — persistent event listeners (bound once at startup)
+document.getElementById('ins-panel-close').addEventListener('click', closeInsightPanel);
+
+// Click-outside: scrim → close panel (keep INS mode active)
+document.getElementById('ins-modal-scrim').addEventListener('click', closeInsightPanel);
+
+// Tab switching
+document.querySelector('.ins-tabs').addEventListener('click', function(e) {
+  var btn = e.target.closest('.ins-tab');
+  if (btn && btn.dataset.tab) _switchInsTab(btn.dataset.tab);
+});
+
+// Moeda → update faturamento label dynamically
+document.getElementById('ins-moeda').addEventListener('change', function() {
+  _updateFaturamentoLabel(this.value);
+});
+
+document.getElementById('ins-save-btn').addEventListener('click', function() {
+  if (!_insClientId) return;
+  var ins = _getOrCreateInsight(_insClientId);
+  var prev = _insSnapshot || {};
+
+  // Read all fields
+  ins.categoria   = document.getElementById('ins-categoria').value;
+  ins.status      = document.getElementById('ins-status').value;
+  ins.operador    = sanitizeText(document.getElementById('ins-operador').value.trim());
+  ins.moeda       = document.getElementById('ins-moeda').value;
+  ins.faturamento = parseFloat(document.getElementById('ins-faturamento').value) || 0;
+  ins.mixProduto  = sanitizeText(document.getElementById('ins-mix-produto').value.trim());
+  ins.concorrente = document.getElementById('ins-concorrente').value;
+  ins.ultimaAtualizacao = new Date().toISOString();
+
+  // Build history entry from diff
+  var changed = [];
+  if (ins.categoria !== prev.categoria) changed.push('categoria');
+  if (ins.status !== prev.status) changed.push('status');
+  if (ins.faturamento !== (prev.faturamento || 0)) changed.push('faturamento');
+  if (ins.moeda !== prev.moeda) changed.push('moeda');
+  if (ins.mixProduto !== (prev.mixProduto || '')) changed.push('mix/produto');
+  if (ins.concorrente !== (prev.concorrente || '')) changed.push('concorrente');
+  if (ins.operador !== (prev.operador || '')) changed.push('operador');
+  var resumo = changed.length
+    ? 'Alterado: ' + changed.join(', ')
+    : 'Ficha salva sem alterações';
+  if (!ins.historico) ins.historico = [];
+  ins.historico.push({ ts: ins.ultimaAtualizacao, operador: ins.operador, resumo: resumo });
+  _insSnapshot = { categoria: ins.categoria, status: ins.status, faturamento: ins.faturamento,
+    moeda: ins.moeda, mixProduto: ins.mixProduto, concorrente: ins.concorrente, operador: ins.operador };
+
+  document.getElementById('ins-ultima-atualizacao').textContent =
+    'Salvo: ' + new Date(ins.ultimaAtualizacao).toLocaleString('pt-BR');
+  _renderInsHistList(ins.historico);
+  updateMarkerIconsOnly();
+});
+
+document.getElementById('ins-obs-add-btn').addEventListener('click', function() {
+  if (!_insClientId) return;
+  var textarea = document.getElementById('ins-obs-input');
+  var text = textarea.value.trim();
+  if (!text) return;
+  var ins = _getOrCreateInsight(_insClientId);
+  ins.observacoes.push(sanitizeText(text));
+  textarea.value = '';
+  _renderInsObsList(ins.observacoes);
+});
 
 function syncStatusLegendToggles() {
   const activeEl = document.getElementById('toggle-status-ativo');
@@ -13162,6 +14403,18 @@ document.addEventListener('keydown', (event) => {
     return;
   }
 
+  if (event.key === 'Escape' && state.rulerModeActive) {
+    event.preventDefault();
+    toggleRulerMode(false);
+    return;
+  }
+
+  if (event.key === 'Escape' && state.insightModeActive) {
+    event.preventDefault();
+    toggleInsightMode(false);
+    return;
+  }
+
   if (event.key === 'Escape' && state.lassoModeActive) {
     event.preventDefault();
     clearLassoSelection({ skipRender: true });
@@ -13255,6 +14508,13 @@ async function initializeApp() {
 
   // Fase 2: carrega planejamento DDD-scoped (backend → localStorage → legacy)
   await loadPlanningForDDD(state.selectedDDD);
+  captureActivePlanningSessionSnapshot();
+  if (_autosaveTimer) {
+    clearTimeout(_autosaveTimer);
+    _autosaveTimer = null;
+  }
+  _autosaveDirtyDDDs.clear();
+  markPlanAsSaved();
 
   calculateRoutes({ skipFitBounds: true });
   await loadAdvancedHistory();
@@ -13295,6 +14555,7 @@ const AI_QUICK = [
   { label:'🧭 Sugerir NOVOS', q:'sugerir alocação dos clientes novos' },
 ];
 const aiUI = { open:false, ready:false, busy:false };
+window._rfxPendingVisitScheduleSuggestion = null;
 const AI_MAX_CLIENTES_DIA = 20;
 const AI_DAY_ALIASES = {
   SEG: ['seg', 'segunda', 'segunda feira', '2a', '2 feira'],
@@ -14408,6 +15669,31 @@ function _aiPush(from, text) {
   box.appendChild(w);
   box.scrollTop = box.scrollHeight;
 }
+function _aiPushActionCard(text, actions) {
+  const box = document.getElementById('ai-messages');
+  const w = document.createElement('div');
+  w.className = 'ai-msg from-ai';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'ai-bubble';
+  bubble.innerHTML = _aiMd(text);
+
+  const actionRow = document.createElement('div');
+  actionRow.className = 'ai-action-row';
+  (actions || []).forEach((entry, index) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'ai-action-btn ' + (index === 0 ? 'is-primary' : 'is-secondary');
+    button.textContent = entry.label;
+    button.addEventListener('click', () => window._aiHandleAction(entry.action));
+    actionRow.appendChild(button);
+  });
+
+  bubble.appendChild(actionRow);
+  w.appendChild(bubble);
+  box.appendChild(w);
+  box.scrollTop = box.scrollHeight;
+}
 function _aiShowTyping() {
   const box = document.getElementById('ai-messages');
   const el = document.createElement('div');
@@ -14426,6 +15712,119 @@ function _aiDoAction(action, confirmMsg) {
   if (action === 'CENTER')     centerCurrentRoute();
   if (action === 'CLEAR')      clearSelection();
 }
+window._aiHandleAction = function(action) {
+  if (action === 'cancelVisitScheduleSuggestion') {
+    window._rfxPendingVisitScheduleSuggestion = null;
+    _aiPush('ai', 'Sugestão cancelada. Nenhuma alteração foi aplicada.');
+    return;
+  }
+
+  if (action === 'applyVisitScheduleSuggestion') {
+    const preview = window._rfxPendingVisitScheduleSuggestion;
+    if (!preview) {
+      _aiPush('ai', 'Nenhuma sugestão pendente encontrada para aplicar.');
+      return;
+    }
+
+    if (typeof window._rfxApplyVisitScheduleSuggestion !== 'function') {
+      _aiPush('ai', 'A função de aplicação da sugestão não está disponível neste build.');
+      return;
+    }
+
+    const result = window._rfxApplyVisitScheduleSuggestion(preview);
+    window._rfxPendingVisitScheduleSuggestion = null;
+    _aiPush('ai', result && result.message ? result.message : 'Não foi possível aplicar a sugestão.');
+  }
+};
+
+function _aiTryVisitScheduleBalanceCommand(query) {
+  const q = _aiNorm(query);
+  const hasIntent = /(balancear|distribuir|organizar|roteirizar|redistribuir)/.test(q);
+  const hasSubject = /(dia|dias|agenda|semana|semanas|visita|visitas)/.test(q);
+  const hasDriverCue = /(motorista|territorio|território)/.test(q) || Boolean(_aiExtractScopeDriverFromQuery(query).driverId);
+
+  if (!(hasIntent && hasSubject && hasDriverCue)) {
+    return null;
+  }
+
+  const scope = _aiResolveScopeDriver(query);
+  if (scope.error) {
+    return {
+      handled: true,
+      response: scope.error
+    };
+  }
+
+  const driverId = scope.scopeDriverId;
+  if (!driverId || typeof window._rfxSuggestVisitSchedule !== 'function') {
+    return {
+      handled: true,
+      response: 'Não consegui gerar a sugestão de agenda para o motorista informado.'
+    };
+  }
+
+  const preview = window._rfxSuggestVisitSchedule(driverId);
+  if (!preview || !preview.distribuicao) {
+    return {
+      handled: true,
+      response: 'A sugestão de agenda não pôde ser gerada neste momento.'
+    };
+  }
+
+  window._rfxPendingVisitScheduleSuggestion = preview;
+
+  const driverLabel = preview.driverCode ? ('MT ' + String(preview.driverCode).replace(/\s*-\s*/g, '-')) : scope.scopeLabel;
+  const mediaLabel = Number(preview.mediaPorJanela || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const ignored = (preview.auditBase && preview.auditBase.ignorados) || { noCoord: 0, inactive: 0, blocked: 0 };
+  const impacto = preview.impacto || { totalClientes: preview.totalClientes, totalMudancas: 0, totalPreservados: preview.totalClientes, percentualMudanca: 0 };
+  const changedItems = Array.isArray(preview.diff)
+    ? preview.diff.filter((item) => item.mudou)
+    : [];
+  const changedPreviewLines = changedItems.slice(0, 6).map((item) => (
+    `• ${item.nome} (${item.clientId}) — ${item.dayAtual}/S${item.weekAtual} -> ${item.daySugerido}/S${item.weekSugerida}`
+  ));
+  const changedHiddenCount = Math.max(0, changedItems.length - changedPreviewLines.length);
+
+  let response = `**PREVIEW de balanceamento para ${driverLabel}**\n\n`;
+  response += `Encontrei **${preview.totalClientes} clientes aptos**.\n\n`;
+  response += `**Distribuição sugerida:**\n`;
+  response += `• 4 ciclos: S1-S4\n`;
+  response += `• 5 dias úteis: SEG-SEX\n`;
+  response += `• ${preview.totalJanelas} janelas de visita\n`;
+  response += `• média: ${mediaLabel} clientes por janela\n`;
+  response += `• menor janela: ${preview.resumo.menorJanela}\n`;
+  response += `• maior janela: ${preview.resumo.maiorJanela}\n`;
+  response += `• desvio: ${String(preview.resumo.desvio).replace('.', ',')}\n`;
+  response += `\n**Impacto:**\n`;
+  response += `• ${impacto.totalClientes} clientes analisados\n`;
+  response += `• ${impacto.totalMudancas} clientes mudariam de semana/dia\n`;
+  response += `• ${impacto.totalPreservados} permaneceriam onde estão\n`;
+  response += `• ${String(impacto.percentualMudanca).replace('.', ',')}% de mudança estimada\n\n`;
+  if (changedPreviewLines.length) {
+    response += `**Clientes que mudariam:**\n`;
+    response += `${changedPreviewLines.join('\n')}\n`;
+    if (changedHiddenCount > 0) {
+      response += `• ... e mais ${changedHiddenCount} cliente(s)\n`;
+    }
+    response += `\n`;
+  }
+  response += `**Ignorados:**\n`;
+  response += `• ${ignored.noCoord} sem coordenada\n`;
+  response += `• ${ignored.inactive} inativos\n`;
+  response += `• ${ignored.blocked} bloqueados\n\n`;
+  response += `**O mapa ainda NÃO foi alterado.**\n\n`;
+  response += `Deseja aplicar essa sugestão?`;
+
+  return {
+    handled: true,
+    response,
+    actionCard: [
+      { label: 'Aplicar sugestão', action: 'applyVisitScheduleSuggestion' },
+      { label: 'Cancelar', action: 'cancelVisitScheduleSuggestion' }
+    ]
+  };
+}
+
 function aiSend(query) {
   query = (query || '').trim();
   if (!query || aiUI.busy) return;
@@ -14435,13 +15834,20 @@ function aiSend(query) {
   const btn = document.getElementById('ai-send');
   inp.value = ''; inp.disabled = true; btn.disabled = true;
   _aiShowTyping();
+  const visitScheduleCommand = _aiTryVisitScheduleBalanceCommand(query);
   const suggestNewCommand = _aiTrySuggestNewClientsCommand(query);
   const smartSplitCommand = _aiTrySmartSplitCommand(query);
   const smartCommand = _aiTryBulkScheduleCommand(query);
   const entry = _aiFind(query);
   setTimeout(() => {
     _aiHideTyping();
-    if (suggestNewCommand && suggestNewCommand.handled) {
+    if (visitScheduleCommand && visitScheduleCommand.handled) {
+      if (visitScheduleCommand.actionCard) {
+        _aiPushActionCard(visitScheduleCommand.response, visitScheduleCommand.actionCard);
+      } else {
+        _aiPush('ai', visitScheduleCommand.response);
+      }
+    } else if (suggestNewCommand && suggestNewCommand.handled) {
       _aiPush('ai', suggestNewCommand.response);
       if (suggestNewCommand.run) {
         const result = suggestNewCommand.run();

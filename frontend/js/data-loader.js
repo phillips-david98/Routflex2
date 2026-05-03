@@ -40,7 +40,9 @@ async function loadCustomersFromSimulation() {
       source: 'simulation_store.py'
     });
 
-    return items.map(mapSimulationCustomerToClient);
+    const mapped = items.map(mapSimulationCustomerToClient);
+    _logTerritoryAuditSummary(`simulation/${items.length}`);
+    return mapped;
   } catch (error) {
     logger.error('[FLOW SIMULATION] falha ao carregar clientes do Python', {
       message: error && error.message ? error.message : String(error)
@@ -50,11 +52,150 @@ async function loadCustomersFromSimulation() {
   }
 }
 
+// ════════════════════════════════════════════════════════════════
+// TERRITORY → DRIVER RESOLUTION
+// Converts territory_code (e.g. "MT-65-03") to the correct driverId.
+// Round-robin is used ONLY as a final fallback with a console.warn.
+// ════════════════════════════════════════════════════════════════
+
+// Audit counters — reset per load batch, logged after the batch finishes.
+const _territoryAudit = { matched: 0, fallback: 0 };
+
+// Normalizes any territory/driver code to a comparable canonical string.
+// Examples: "MT-65-03" → "MT-65-03", "MT 65 - 3" → "MT-65-03", "03" → "03"
+function normalizeTerritoryKey(value) {
+  if (!value) return '';
+  return String(value)
+    .toUpperCase()
+    .replace(/\s+/g, '')                  // remove spaces
+    .replace(/_/g, '-')                   // underscore → dash
+    .replace(/MT65/g, 'MT-65')            // "MT65" → "MT-65"
+    .replace(/([A-Z]{2})(\d{2,3})-/g, '$1-$2-') // "MT65-" → "MT-65-" (already handled above, safety)
+    .replace(/-0*(\d+)$/, (_, n) => '-' + String(parseInt(n, 10)).padStart(2, '0')) // normalize trailing number: -3 → -03
+    .trim();
+}
+
+// Returns the numeric slot suffix from a territory/driver code (e.g. "MT-65-03" → "03", "DRV-65-003" → "03").
+function _extractSlotFromCode(code) {
+  const m = String(code || '').match(/(\d{1,3})$/);
+  if (!m) return null;
+  return String(parseInt(m[1], 10)).padStart(2, '0');
+}
+
+// Tries to resolve the correct driver from source territory fields.
+// Priority:
+//   1. source.territory_code
+//   2. source.territoryCode
+//   3. source.driver_base (if it encodes a driver code like MOT-CBA-03)
+//   4. source.seller_name (if it matches a driver name)
+//   5. Round-robin fallback (with warning)
+function resolveDriverFromTerritory(source, dddDrivers, fallbackIndex) {
+  if (!dddDrivers || dddDrivers.length === 0) return null;
+
+  const candidateCodes = [
+    source.territory_code,
+    source.territoryCode,
+  ].filter(Boolean);
+
+  // Build a lookup: normalized slot ("03") → driver, and normalized full code → driver.
+  // Driver name format: "MT 65 - 03" → slot "03"; driver id: "DRV-65-003" → slot "003" → int 3 → "03".
+  const bySlot = new Map();
+  const byNormFull = new Map();
+  dddDrivers.forEach((driver) => {
+    const nameSlot = _extractSlotFromCode(driver.name);   // "MT 65 - 03" → "03"
+    const idSlot = _extractSlotFromCode(driver.id);       // "DRV-65-003" → "03"
+    const normId = normalizeTerritoryKey(driver.id);
+    const normName = normalizeTerritoryKey(driver.name);
+    if (nameSlot && !bySlot.has(nameSlot)) bySlot.set(nameSlot, driver);
+    if (idSlot && !bySlot.has(idSlot)) bySlot.set(idSlot, driver);
+    byNormFull.set(normId, driver);
+    byNormFull.set(normName, driver);
+  });
+
+  for (const raw of candidateCodes) {
+    const norm = normalizeTerritoryKey(raw);
+    if (!norm) continue;
+
+    // 1a. Exact normalized full match (e.g. "MT-65-03" matches driver name "MT 65 - 03" normalized)
+    if (byNormFull.has(norm)) {
+      _territoryAudit.matched++;
+      return byNormFull.get(norm);
+    }
+
+    // 1b. Slot-only match: extract trailing number and look up
+    const slot = _extractSlotFromCode(norm);
+    if (slot && bySlot.has(slot)) {
+      _territoryAudit.matched++;
+      return bySlot.get(slot);
+    }
+
+    // 1c. Partial suffix match: check if any driver's normalized code ends with norm
+    for (const [key, driver] of byNormFull) {
+      if (key.endsWith(norm) || norm.endsWith(key)) {
+        _territoryAudit.matched++;
+        return driver;
+      }
+    }
+  }
+
+  // Try driver_base: "MOT-CBA-03" → slot "03"
+  if (source.driver_base) {
+    const slot = _extractSlotFromCode(source.driver_base);
+    if (slot && bySlot.has(slot)) {
+      _territoryAudit.matched++;
+      return bySlot.get(slot);
+    }
+  }
+
+  // Try seller_name exact match against driver name
+  if (source.seller_name) {
+    const normSeller = normalizeTerritoryKey(source.seller_name);
+    for (const [key, driver] of byNormFull) {
+      if (key === normSeller) {
+        _territoryAudit.matched++;
+        return driver;
+      }
+    }
+  }
+
+  // ── Fallback: round-robin (original behavior) ──
+  const fallback = dddDrivers[fallbackIndex % Math.max(dddDrivers.length, 1)] || dddDrivers[0];
+  _territoryAudit.fallback++;
+  const clientGroupId = source.client_id || source.id || `#${fallbackIndex}`;
+  console.warn('[DATA MAP] territory_code sem match; usando fallback round-robin', {
+    clientGroupId,
+    territory_code: source.territory_code || source.territoryCode || null,
+    driver_base: source.driver_base || null,
+    seller_name: source.seller_name || null,
+    fallbackDriver: fallback ? fallback.name : null
+  });
+  return fallback;
+}
+
+// Logs a summary of territory resolution quality after a batch load.
+function _logTerritoryAuditSummary(batchLabel) {
+  const total = _territoryAudit.matched + _territoryAudit.fallback;
+  const matchPct = total > 0 ? Math.round((_territoryAudit.matched / total) * 100) : 0;
+  if (total > 0) {
+    console.info(`[DATA MAP] territory mapping (${batchLabel})`, {
+      matchedByTerritory: _territoryAudit.matched,
+      matchedByFallback: _territoryAudit.fallback,
+      total,
+      matchPct: matchPct + '%',
+    });
+    if (_territoryAudit.fallback > 0) {
+      console.warn(`[DATA MAP] ${_territoryAudit.fallback} cliente(s) sem territory_code — polígonos podem ficar distorcidos`);
+    }
+  }
+  _territoryAudit.matched = 0;
+  _territoryAudit.fallback = 0;
+}
+
 // ── Mapeamento: formato simulation_store.py → formato interno do mapa ──────
 function mapSimulationCustomerToClient(source, index) {
   const ddd = Number(source.ddd || state.selectedDDD || 65);
   const dddDrivers = getDriversByDDD(ddd);
-  const assignedDriver = dddDrivers[index % Math.max(dddDrivers.length, 1)] || dddDrivers[0] || null;
+  const assignedDriver = resolveDriverFromTerritory(source, dddDrivers, index);
   const rawStatus = String(source.status || 'ATIVO').toUpperCase();
   const clientType = rawStatus === 'SEM_COORDENADA'
     ? 'sem_coordenada'
@@ -163,7 +304,9 @@ async function loadCustomersFromCRMForDDD(ddd) {
       source: 'CRM mockStore/PostgreSQL'
     });
 
-    return allItems.map(mapRealCustomerToClient);
+    const mapped = allItems.map(mapRealCustomerToClient);
+    _logTerritoryAuditSummary(`crm/${allItems.length}`);
+    return mapped;
   } catch (error) {
     logger.error(`[FLOW REAL] falha ao carregar clientes do CRM`, {
       page: currentPage,
@@ -172,7 +315,9 @@ async function loadCustomersFromCRMForDDD(ddd) {
     });
     if (allItems.length > 0) {
       logger.warn(`[FLOW REAL] retornando ${allItems.length} clientes parciais`);
-      return allItems.map(mapRealCustomerToClient);
+      const partial = allItems.map(mapRealCustomerToClient);
+      _logTerritoryAuditSummary(`crm-partial/${allItems.length}`);
+      return partial;
     }
     return [];
   }
@@ -273,7 +418,7 @@ function applyFallbacks(validCustomers, invalidCustomers) {
 function mapRealCustomerToClient(source, index) {
   const ddd = Number(source.ddd || state.selectedDDD || 65);
   const dddDrivers = getDriversByDDD(ddd);
-  const assignedDriver = dddDrivers[index % Math.max(dddDrivers.length, 1)] || dddDrivers[0] || null;
+  const assignedDriver = resolveDriverFromTerritory(source, dddDrivers, index);
   const rawStatus = String(source.status || 'ATIVO').toUpperCase();
   const clientType = rawStatus === 'SEM_COORDENADA'
     ? 'sem_coordenada'
