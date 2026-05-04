@@ -182,21 +182,17 @@ function inferRegionLabelByDDD(ddd) {
   return stateLabels[uf] || 'Nova sessão';
 }
 const driverBases = {
-  38: { city: 'Montes Claros', neighborhood: 'Centro', address: 'Rua da Base 38', lat: -16.7364, lon: -43.8617, vehicle: 'carro' },
   61: { city: 'Brasilia', neighborhood: 'Asa Sul', address: 'SQS Operacional 61', lat: -15.7801, lon: -47.9292, vehicle: 'carro' },
   62: { city: 'Anapolis', neighborhood: 'Jundiai', address: 'Rua dos Condutores 62', lat: -16.3265, lon: -48.9522, vehicle: 'pickup' },
   64: { city: 'Rio Verde', neighborhood: 'Setor Central', address: 'Avenida das Rotas 64', lat: -17.7927, lon: -50.9192, vehicle: 'pesado' },
   65: { city: 'Cuiaba', neighborhood: 'Jardim Cuiaba', address: 'Rua da Base 65', lat: -15.6014, lon: -56.0979, vehicle: 'moto' },
-  66: { city: 'Tangara da Serra', neighborhood: 'Centro', address: 'Travessa Operacional 66', lat: -14.6229, lon: -57.4932, vehicle: 'carro' },
-  93: { city: 'Santarem', neighborhood: 'Centro', address: 'Rua da Base 93', lat: -2.4385, lon: -54.6996, vehicle: 'carro' }
+  66: { city: 'Tangara da Serra', neighborhood: 'Centro', address: 'Travessa Operacional 66', lat: -14.6229, lon: -57.4932, vehicle: 'carro' }
 };
 const territories = ['urbano', 'interior', 'rodovia', 'fronteira'];
 const priorities = ['Alta', 'Media', 'Baixa'];
 const windows = ['08:00-10:00', '10:00-12:00', '13:00-15:00', '15:00-18:00'];
 const dddDriverSlots = {
-  38: 4,
-  65: 6,
-  93: 3
+  65: 6
 };
 const MAX_WEEKS = 8;
 const MAX_MAP_RENDER_POINTS = 3000;
