@@ -96,7 +96,9 @@ function getClientMapVisibility(client, options = {}) {
     };
   }
 
-  const vehicleOk = state.vehicleFilter === 'all' || client.vehicle === state.vehicleFilter;
+  const _clientDriver = getDriverById(client.driverId);
+  const vehicleOk = state.vehicleFilter === 'all'
+    || ((_clientDriver ? _clientDriver.vehicle : client.vehicle) === state.vehicleFilter);
   const territoryOk = state.territoryFilter === 'all' || client.territory === state.territoryFilter;
   const curvOk = state.curvFilters.size === 0 || state.curvFilters.has(client.curva);
   const weekOk = state.activeWeeks.has(client.week);
@@ -116,12 +118,12 @@ function getClientMapVisibility(client, options = {}) {
   const dayOk = !includeDayFilter || state.activeDays.has(client.day);
 
   if (isActiveEq && !client.day) {
-    const visible = state.showNewClients;
+    const visible = true;
     return {
       visible,
-      bucket: visible ? 'special' : null,
+      bucket: 'special',
       noCoord: false,
-      hiddenByStatus: !visible,
+      hiddenByStatus: false,
       matchesBaseFilters: true,
       inactive: false
     };

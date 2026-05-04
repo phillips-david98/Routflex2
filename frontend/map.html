@@ -3499,20 +3499,20 @@ body.login-active .app-shell {
   border-radius: 14px;
   border: 1px solid rgba(148, 194, 238, 0.14);
   background: rgba(255,255,255,0.03);
-  overflow: auto;
+  overflow: hidden;
 }
 
 .manual-day-detail-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 480px;
+  min-width: 0;
   table-layout: fixed;
 }
 
 .manual-day-detail-table thead th {
-  padding: 10px 12px;
+  padding: 6px 8px;
   text-align: left;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #9fc0de;
@@ -3524,10 +3524,10 @@ body.login-active .app-shell {
 }
 
 .manual-day-detail-table tbody td {
-  padding: 9px 12px;
+  padding: 6px 8px;
   border-bottom: 1px solid rgba(148, 194, 238, 0.08);
   color: #d9ebff;
-  font-size: 0.79rem;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 
@@ -3542,7 +3542,7 @@ body.login-active .app-shell {
 
 .manual-day-detail-table thead th:nth-child(n+2),
 .manual-day-detail-table tbody td:nth-child(n+2) {
-  text-align: right;
+  text-align: center;
 }
 
 .manual-day-detail-table tbody tr:hover td {
@@ -3569,14 +3569,14 @@ body.login-active .app-shell {
 .cycle-matrix-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 420px;
-  table-layout: auto;
+  min-width: 0;
+  table-layout: fixed;
 }
 .cycle-matrix-table thead th {
-  padding: 8px 10px;
+  padding: 5px 6px;
   text-align: center;
-  font-size: 0.70rem;
-  letter-spacing: 0.06em;
+  font-size: 0.67rem;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #9fc0de;
   border-bottom: 1px solid rgba(148, 194, 238, 0.16);
@@ -3585,13 +3585,13 @@ body.login-active .app-shell {
   top: 0;
   z-index: 1;
 }
-.cycle-matrix-table thead th:first-child { text-align: left; }
+.cycle-matrix-table thead th:first-child { text-align: left; min-width: 42px; }
 .cycle-matrix-table thead th + th { border-left: 1px solid rgba(148, 194, 238, 0.15); }
 .cycle-matrix-table tbody td {
-  padding: 8px 10px;
+  padding: 5px 6px;
   border-bottom: 1px solid rgba(148, 194, 238, 0.08);
   color: #d9ebff;
-  font-size: 0.79rem;
+  font-size: 0.75rem;
   text-align: center;
   white-space: nowrap;
 }
@@ -3599,31 +3599,28 @@ body.login-active .app-shell {
   text-align: left;
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
+  color: #9fc0de;
 }
 .cycle-matrix-table tbody td + td { border-left: 1px solid rgba(148, 194, 238, 0.12); }
 .cycle-matrix-table tbody tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
-.cycle-matrix-table tbody tr:hover td { background: rgba(82, 208, 255, 0.08); }
+.cycle-matrix-table tbody tr:hover td { background: rgba(82, 208, 255, 0.06); }
 .cycle-matrix-table tfoot td {
-  padding: 8px 10px;
+  padding: 5px 6px;
   border-top: 2px solid rgba(148, 194, 238, 0.28);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #f5fbff;
   text-align: center;
   background: rgba(11, 24, 40, 0.55);
 }
-.cycle-matrix-table tfoot td:first-child { text-align: left; color: #9fc0de; font-weight: 400; }
+.cycle-matrix-table tfoot td:first-child { text-align: left; color: #9fc0de; font-weight: 600; }
 .cycle-matrix-table tfoot td + td { border-left: 1px solid rgba(148, 194, 238, 0.15); }
-.cycle-matrix-table td.is-active-week { background: rgba(82, 208, 255, 0.08) !important; }
-.cycle-matrix-table th.is-active-day,
-.cycle-matrix-table td.is-active-day { background: rgba(82, 208, 255, 0.08) !important; }
-.cycle-matrix-table td.is-active-week.is-active-day { background: rgba(82, 208, 255, 0.20) !important; }
+.cycle-matrix-table th.is-active-week { background: rgba(82, 208, 255, 0.10) !important; color: #7fd8ff; }
+.cycle-matrix-table td.is-active-week { background: rgba(82, 208, 255, 0.07) !important; }
+.cycle-matrix-table tr.is-active-day td { background: rgba(82, 208, 255, 0.05) !important; }
+.cycle-matrix-table tr.is-active-day td.is-active-week { background: rgba(82, 208, 255, 0.18) !important; }
 .cycle-matrix-label-km {
-  display: block;
-  font-size: 0.66rem;
-  color: #7fb8d8;
-  font-weight: 400;
-  margin-top: 2px;
+  display: none;
 }
 .cycle-matrix-divergence {
   margin-top: 8px;
@@ -4394,6 +4391,7 @@ body.login-active .routex-ai-panel { display:none !important; }
   .routex-ai-panel { bottom:88px; right:16px; }
   .ai-fab-label small { display:none; }
 }
+
 </style>
 </head>
 <body class="login-active">
@@ -6828,9 +6826,9 @@ function renderDriverManagerPanel() {
 
     return `
     <button type="button" draggable="true" class="driver-list-item ${isActive ? 'is-active' : ''}" data-driver-id="${driver.id}">
-      <strong>${driver.name}</strong>
+      <strong>${driver.name} <span class="driver-edit-btn" data-edit-id="${driver.id}" title="Editar motorista">&#9998;</span></strong>
       <span>${driver.city} | ${driver.phone} | resp.: ${driver.responsavel || '-'}</span>
-      <em>${portfolio.stopCount} PDVs | ${territoryLabel} | ${portfolio.totalDistance.toFixed(0)} km</em>
+      <em>${portfolio.stopCount} PDVs | ${driver.vehicle || '\u2014'} | ${territoryLabel} | ${portfolio.totalDistance.toFixed(0)} km</em>
     </button>
   `;
   }).join('');
@@ -6839,6 +6837,11 @@ function renderDriverManagerPanel() {
 
   Array.from(container.querySelectorAll('.driver-list-item')).forEach((button) => {
     button.onclick = (event) => {
+      if (event.target.classList.contains('driver-edit-btn')) {
+        event.stopPropagation();
+        openDriverEditModal(event.target.dataset.editId);
+        return;
+      }
       const driverId = button.dataset.driverId;
       if (event.altKey && driverId !== 'all') {
         // ALT+click: toggle multi-select
@@ -9628,6 +9631,7 @@ function openClientPopup(client, latlng, options = {}) {
   const shouldReusePopup = Boolean(options.preserveQueue && popup);
   if (!shouldReusePopup) {
     closeClientPopup({ preserveQueue: options.preserveQueue });
+    if (document.getElementById('pdv-detail-popup')) return; // close cancelled by draft guard
     popup = document.createElement('div');
     popup.className = 'pdv-popup';
     popup.id = 'pdv-detail-popup';
@@ -9643,6 +9647,7 @@ function openClientPopup(client, latlng, options = {}) {
   const tradeName = client.nomeFantasia || client.tradeName || client.name;
   state._popupClientId = client.id;
   state._popupLatlng = latlng;
+  state.pdvEditDraft = { clientId: client.id, week: client.week || null, day: client.day || null };
   const email = `pdv${String(client.id).replace(/\D/g,'').replace(/^0+/,'')}@clientes.com.br`;
   const colaborador = _simCollaborators[(seed + client.ddd) % _simCollaborators.length];
   const cidade = _simCities[client.ddd] || `DDD ${client.ddd}`;
@@ -9652,13 +9657,13 @@ function openClientPopup(client, latlng, options = {}) {
   const allWeeks = Array.from({ length: state.weekCount }, (_, index) => index + 1);
   const weekBtns = allWeeks.map(w => {
     const isCur = w === client.week ? ' is-current' : '';
-    return `<button class="pdv-day-btn${isCur}" data-week="${w}" onclick="changePdvWeek('${client.id}',${w})">S${w}</button>`;
+    return `<button class="pdv-day-btn${isCur}" data-week="${w}" onclick="setPdvDraftWeek('${client.id}',${w})">S${w}</button>`;
   }).join('');
 
   const allDays = ['SEG','TER','QUA','QUI','SEX','SAB','DOM'];
   const dayBtns = allDays.map(d => {
     const isCur = d === client.day ? ' is-current' : '';
-    return `<button class="pdv-day-btn${isCur}" data-day="${d}" onclick="changePdvDay('${client.id}','${d}')">${d}</button>`;
+    return `<button class="pdv-day-btn${isCur}" data-day="${d}" onclick="setPdvDraftDay('${client.id}','${d}')">${d}</button>`;
   }).join('');
 
   const row = (label, value) =>
@@ -9700,6 +9705,11 @@ function openClientPopup(client, latlng, options = {}) {
     `
     : '';
 
+  const saveBtnSection = `
+    <div class="pdv-popup-day-section" style="padding-top:8px; border-top:1px solid rgba(86,146,198,0.15);">
+      <button class="pdv-day-btn" id="pdv-save-visit-btn" onclick="savePdvDraft('${client.id}')" style="width:100%; background:rgba(0,119,204,0.85); color:#fff; font-weight:700; font-size:0.72rem; padding:6px 10px; border-color:rgba(0,119,204,0.6);">Salvar visita</button>
+    </div>`;
+
   popup.innerHTML = `
     <div class="pdv-popup-header">
       <div class="pdv-popup-header-title">
@@ -9713,7 +9723,8 @@ function openClientPopup(client, latlng, options = {}) {
     </div>
     <div class="pdv-popup-rows">
       ${row('Nome Fantasia', tradeName)}
-      ${row('Código CRM', crmCode)}
+      ${row('CRM real', client.crmCode || client.crm_code || client.clientGroupId || client.code || '&mdash;')}
+      ${row('Código interno', crmCode)}
       ${row('Endereço', endDisplay)}
       ${row('Cidade / Bairro', cidade)}
       ${row('Telefone', phone)}
@@ -9734,6 +9745,7 @@ function openClientPopup(client, latlng, options = {}) {
       <div class="pdv-popup-days">${dayBtns}</div>
     </div>
     ${lassoNavSection}
+    ${saveBtnSection}
     ${statusBanner}
     <div class="pdv-popup-crm-note">
       <span class="pdv-popup-crm-tag">CRM</span>
@@ -9772,6 +9784,17 @@ function openClientPopup(client, latlng, options = {}) {
 }
 
 function closeClientPopup(options = {}) {
+  if (!options.skipDraftCheck && state.pdvEditDraft) {
+    const _draft = state.pdvEditDraft;
+    const _dc = clients.find(function(c) { return c.id === _draft.clientId; });
+    if (_dc) {
+      const _isDirty = _draft.day !== _dc.day || Number(_draft.week) !== Number(_dc.week);
+      if (_isDirty && !confirm('Existem alterações de visita não salvas. Deseja descartar?')) {
+        return;
+      }
+    }
+  }
+  state.pdvEditDraft = null;
   if (state._popupDragMoveHandler) {
     document.removeEventListener('mousemove', state._popupDragMoveHandler);
     state._popupDragMoveHandler = null;
@@ -9845,6 +9868,101 @@ function ensureInactiveManualConfirmation(clientsToCheck, options = {}) {
   return true;
 }
 
+function setPdvDraftWeek(clientId, newWeek) {
+  if (!state.pdvEditDraft || state.pdvEditDraft.clientId !== clientId) return;
+  const w = Number(newWeek);
+  if (Number(state.pdvEditDraft.week) === w) {
+    state.pdvEditDraft.week = null;
+    state.pdvEditDraft.day = null;
+  } else {
+    state.pdvEditDraft.week = w;
+  }
+  refreshDraftButtons();
+}
+
+function setPdvDraftDay(clientId, newDay) {
+  if (!state.pdvEditDraft || state.pdvEditDraft.clientId !== clientId) return;
+  state.pdvEditDraft.day = (state.pdvEditDraft.day === newDay) ? null : newDay;
+  refreshDraftButtons();
+}
+
+function refreshDraftButtons() {
+  const popup = document.getElementById('pdv-detail-popup');
+  if (!popup || !state.pdvEditDraft) return;
+  const week = state.pdvEditDraft.week;
+  const day = state.pdvEditDraft.day;
+  const clientId = state.pdvEditDraft.clientId;
+  popup.querySelectorAll('[data-week]').forEach(function(btn) {
+    btn.classList.toggle('is-current', Number(btn.dataset.week) === Number(week));
+  });
+  popup.querySelectorAll('[data-day]').forEach(function(btn) {
+    btn.classList.toggle('is-current', btn.dataset.day === day);
+  });
+  const visitLabel = popup.querySelector('#pdv-popup-visit-label');
+  if (visitLabel) {
+    const client = clients.find(function(c) { return c.id === clientId; });
+    const ddd = client ? client.ddd : state.selectedDDD;
+    if (week && day) {
+      visitLabel.textContent = 'S' + week + ' / ' + day + ' \u2022 ' + ddd;
+    } else {
+      visitLabel.textContent = 'Sem visita definida \u2022 ' + ddd;
+    }
+  }
+}
+
+function savePdvDraft(clientId) {
+  const draft = state.pdvEditDraft;
+  const client = clients.find(function(c) { return c.id === clientId; });
+  if (!client || !draft || draft.clientId !== clientId) return;
+  const ct = client.clientType || 'ativo';
+  const draftDay = draft.day || null;
+  const draftWeek = draft.week ? Number(draft.week) : null;
+  const origDay = client.day || null;
+  const origWeek = client.week ? Number(client.week) : null;
+
+  console.log('[savePdvDraft] id=' + client.id
+    + ' | ANTES: ct=' + ct + ' week=' + origWeek + ' day=' + origDay
+    + ' | DRAFT: week=' + draftWeek + ' day=' + draftDay);
+
+  // No change — just close
+  if (draftDay === origDay && draftWeek === origWeek) {
+    console.log('[savePdvDraft] sem alteração, fechando');
+    closeClientPopup({ skipDraftCheck: true });
+    return;
+  }
+
+  // Build patch: always apply week + day together from draft
+  const patch = { day: draftDay, week: draftWeek };
+  if (ct === 'inativo') patch.manualRouteInclude = !!(draftDay && draftWeek);
+  if (ct === 'novo') patch.eligibleForRouting = !!(draftDay && draftWeek);
+
+  patchClient(client.id, patch);
+
+  // Ensure active filter sets include the new values so client is not filtered out
+  if (draftWeek) state.activeWeeks.add(draftWeek);
+  if (draftDay) state.activeDays.add(draftDay);
+
+  markDriverAsAdjusted(client.driverId);
+  markPlanAsDirty();
+
+  // Diagnóstico pós-patch
+  const _classified = classifyClients();
+  const _inFiltered = _classified.filtered.some(function(c) { return c.id === clientId; });
+  const _inSpecial = _classified.special.some(function(c) { return c.id === clientId; });
+  const _inTerritorial = _classified.territorial.some(function(c) { return c.id === clientId; });
+  console.log('[savePdvDraft] DEPOIS: week=' + client.week + ' day=' + client.day
+    + ' | filtered=' + _inFiltered + ' special=' + _inSpecial + ' territorial=' + _inTerritorial);
+
+  applyFilters({ skipFitBounds: true });
+  postBackendEvent('/customers/' + encodeURIComponent(client.id)
+    + '/visit-day?day=' + encodeURIComponent(draftDay || '')
+    + '&week=' + encodeURIComponent(draftWeek || '')
+    + '&user=frontend', {});
+  updatePlannerHint(draftDay && draftWeek ? 'Visita definida: S' + draftWeek + ' / ' + draftDay + '.' : 'Visita removida para este cliente.');
+  state.pdvEditDraft = null;
+  closeClientPopup({ skipDraftCheck: true });
+}
+
 function changePdvDay(clientId, newDay) {
   const client = clients.find(c => c.id === clientId);
   if (!client) return;
@@ -9855,6 +9973,7 @@ function changePdvDay(clientId, newDay) {
   }
 
   if (client.day === newDay) {
+    if (ct !== 'inativo' && !confirm('Deseja deixar este cliente sem dia de visita?')) return;
     var _patch = { day: null };
     if (ct === 'inativo') {
       _patch.manualRouteInclude = false;
@@ -9927,6 +10046,7 @@ function changePdvWeek(clientId, newWeek) {
   }
 
   if (client.week === newWeek) {
+    if (ct !== 'inativo' && !confirm('Deseja deixar este cliente sem semana/dia de visita?')) return;
     var _patch = { week: null, day: null };
     if (ct === 'inativo') {
       _patch.manualRouteInclude = false;
@@ -10157,8 +10277,8 @@ function handleMarkerDragStart(event, client) {
   }
 
   state.dragClientId = client.id;
-  state.dragTargetWeek = client.week;
-  state.dragTargetDay = client.day;
+  state.dragTargetWeek = client.week || null;
+  state.dragTargetDay = client.day || null;
   state.dragHoverWeek = null;
   state.dragHoverDay = null;
   state.dragRouteTarget = null;
@@ -10166,7 +10286,11 @@ function handleMarkerDragStart(event, client) {
   syncPlannerDropState();
   syncDriverListDragState();
   _cacheDropTargetRects();
-  updatePlannerHint(`Rebalanceando ${client.name}. Arraste para um motorista na lista ou para a semana e o dia desejados.`);
+  const _isD = !client.day && isActiveEquivalentClientType(client.clientType || 'ativo');
+  updatePlannerHint(_isD
+    ? `${client.name} sem dia — arraste para S1–S4 ou SEG–DOM para agendar visita.`
+    : `Rebalanceando ${client.name}. Arraste para um motorista na lista ou para a semana e o dia desejados.`
+  );
 }
 
 let _dragRAFPending = false;
@@ -10402,12 +10526,23 @@ function handleMarkerDragEnd(event, client, dropLatLng = null) {
   }
 
   const sourceDriverId = client.driverId;
-  const targetWeek = state.dragTargetWeek || client.week;
-  const targetDay = state.dragTargetDay || client.day;
+  // For D clients (no day/week), resolve fallback from drop target or active panel filters
+  const _resolvedWeek = state.dragTargetWeek
+    || (state.dragHoverWeek != null ? state.dragHoverWeek : null)
+    || (state.activeWeeks.size > 0 ? Math.min(...Array.from(state.activeWeeks)) : 1);
+  const _resolvedDay = state.dragTargetDay
+    || (state.dragHoverDay != null ? state.dragHoverDay : null)
+    || null;
+  const targetWeek = _resolvedWeek;
+  const targetDay = _resolvedDay || client.day || null;
   const targetDriverId = state.dragRouteTarget && state.dragHoverWeek === null && state.dragHoverDay === null
     ? state.dragRouteTarget.driverId
     : client.driverId;
-  const changed = targetWeek !== client.week || targetDay !== client.day || targetDriverId !== client.driverId;
+  // changed = true if any field differs, OR if client was a D marker gaining a day/week
+  const _wasD = !client.day && isActiveEquivalentClientType(client.clientType || 'ativo');
+  const changed = _wasD
+    ? (targetDay !== null || targetWeek !== null)
+    : (targetWeek !== client.week || targetDay !== client.day || targetDriverId !== client.driverId);
 
   if (changed) {
     const ct = client.clientType || 'ativo';
@@ -10418,6 +10553,13 @@ function handleMarkerDragEnd(event, client, dropLatLng = null) {
     }
     if (ct === 'inativo' && !ensureInactiveManualConfirmation([client])) {
       clearManualRebalanceState('Inclusão manual de cliente inativo cancelada.');
+      applyFilters({ skipFitBounds: true });
+      return;
+    }
+    // D client dropped without hitting a day button: week-only partial — keep as D with week assigned
+    // D client dropped without any target: nothing to apply
+    if (_wasD && !targetDay && !targetWeek) {
+      clearManualRebalanceState(`Solte ${client.name} sobre um botão de semana ou dia para agendar.`);
       applyFilters({ skipFitBounds: true });
       return;
     }
@@ -10447,17 +10589,25 @@ function handleMarkerDragEnd(event, client, dropLatLng = null) {
     // Single-client drag: do NOT propagate to other weeks/occurrences.
     // normalizeCurveScheduleForClient is only for explicit popup controls.
 
-    state.activeWeeks.add(targetWeek);
-    state.activeDays.add(targetDay);
+    if (targetWeek) state.activeWeeks.add(targetWeek);
+    if (targetDay) state.activeDays.add(targetDay);
     state.selectedRouteId = createRouteId(client.ddd, targetDriverId, targetWeek, targetDay);
     state.selectedStopId = client.id;
     state.plannerStatus = 'draft';
-    clearManualRebalanceState(`${client.name} reprogramado para S${targetWeek} | ${targetDay}. A latitude e longitude foram preservadas.`);
+    const _hint = (targetDay && targetWeek)
+      ? `${client.name} reprogramado para S${targetWeek} | ${targetDay}. A latitude e longitude foram preservadas.`
+      : targetWeek
+        ? `${client.name} atribuído à S${targetWeek}. Arraste para um dia para completar o agendamento.`
+        : `${client.name} atribuído a ${targetDay}. Semana definida como S${targetWeek}.`;
+    clearManualRebalanceState(_hint);
     applyFilters({ skipFitBounds: true });
     return;
   }
 
-  clearManualRebalanceState(`Nenhuma alteracao aplicada em ${client.name}. A visita permaneceu em S${client.week} | ${client.day}.`);
+  const _noChangHint = (client.day && client.week)
+    ? `Nenhuma alteracao aplicada em ${client.name}. A visita permaneceu em S${client.week} | ${client.day}.`
+    : `${client.name} permanece sem visita definida.`;
+  clearManualRebalanceState(_noChangHint);
   applyFilters({ skipFitBounds: true });
 }
 
@@ -10702,38 +10852,37 @@ function renderManualDayDetail(manualScope, focusedDriverId) {
       : null;
     const divergence = manualScopedCount !== null && mx.totalCount !== manualScopedCount;
 
-    const thDays = weekdays.map((d) => {
-      const isActiveDay = state.activeDays.has(d);
-      return `<th class="${isActiveDay ? 'is-active-day' : ''}">${d}</th>`;
+    // Transposed layout: days = rows, weeks = columns
+    const allDays = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
+    const matrixDays = new Set(['SEG', 'TER', 'QUA', 'QUI', 'SEX']); // matrix only covers weekdays
+
+    const thWeeks = weeks.map((w) => {
+      const isActiveWeek = state.activeWeeks.has(w);
+      return `<th class="${isActiveWeek ? 'is-active-week' : ''}">S${w}</th>`;
     }).join('');
 
-    const bodyRows = weeks.map((w) => {
-      const isActiveWeek = state.activeWeeks.has(w);
-      const wt = mx.weekTotals[w];
-      const weekClass = isActiveWeek ? 'is-active-week' : '';
+    const bodyRows = allDays.map((d) => {
+      const isActiveDay = state.activeDays.has(d);
+      const rowClass = isActiveDay ? 'is-active-day' : '';
+      const dt = matrixDays.has(d) ? mx.dayTotals[d] : { count: 0, distance: 0 };
 
-      const tds = weekdays.map((d) => {
-        const cell = mx.matrix[w][d];
-        const isActiveDay = state.activeDays.has(d);
-        const cellClass = [isActiveWeek ? 'is-active-week' : '', isActiveDay ? 'is-active-day' : ''].filter(Boolean).join(' ');
-        if (cell.count === 0) {
-          return `<td class="${cellClass}">—</td>`;
-        }
-        return `<td class="${cellClass}">${cell.count}<span class="cycle-matrix-label-km">${cell.distance.toFixed(0)} km</span></td>`;
+      const tds = weeks.map((w) => {
+        const isActiveWeek = state.activeWeeks.has(w);
+        const cellClass = isActiveWeek ? 'is-active-week' : '';
+        const count = matrixDays.has(d) ? mx.matrix[w][d].count : 0;
+        return `<td class="${cellClass}">${count}</td>`;
       }).join('');
 
-      return `<tr>
-        <td class="${weekClass}"><strong>S${w}</strong></td>
-        ${tds}
-        <td class="${weekClass}">${wt.count > 0 ? wt.count : '—'}</td>
-        <td class="${weekClass} manual-day-km">${wt.distance > 0 ? wt.distance.toFixed(0) + ' km' : '—'}</td>
-      </tr>`;
+      const totalTd = `<td><strong>${dt.count}</strong></td>`;
+      const kmTd = `<td class="manual-day-km">${dt.distance > 0 ? dt.distance.toFixed(0) + ' km' : '0 km'}</td>`;
+
+      return `<tr class="${rowClass}"><td>${d}</td>${tds}${totalTd}${kmTd}</tr>`;
     }).join('');
 
-    const footTds = weekdays.map((d) => {
-      const dt = mx.dayTotals[d];
-      const isActiveDay = state.activeDays.has(d);
-      return `<td class="${isActiveDay ? 'is-active-day' : ''}">${dt.count > 0 ? dt.count : '—'}<span class="cycle-matrix-label-km">${dt.distance > 0 ? dt.distance.toFixed(0) + ' km' : ''}</span></td>`;
+    const footWeeks = weeks.map((w) => {
+      const isActiveWeek = state.activeWeeks.has(w);
+      const cellClass = isActiveWeek ? 'is-active-week' : '';
+      return `<td class="${cellClass}">${mx.weekTotals[w].count}</td>`;
     }).join('');
 
     const divergenceHtml = divergence
@@ -10744,8 +10893,8 @@ function renderManualDayDetail(manualScope, focusedDriverId) {
       <table class="manual-day-detail-table cycle-matrix-table">
         <thead>
           <tr>
-            <th>CICLO</th>
-            ${thDays}
+            <th>DIA</th>
+            ${thWeeks}
             <th>TOTAL</th>
             <th>KM</th>
           </tr>
@@ -10754,9 +10903,9 @@ function renderManualDayDetail(manualScope, focusedDriverId) {
         <tfoot>
           <tr>
             <td>TOTAL</td>
-            ${footTds}
+            ${footWeeks}
             <td><strong>${mx.totalCount}</strong></td>
-            <td class="manual-day-km">${mx.totalDistance > 0 ? mx.totalDistance.toFixed(0) + ' km' : '—'}</td>
+            <td class="manual-day-km">${mx.totalDistance > 0 ? mx.totalDistance.toFixed(0) + ' km' : '0 km'}</td>
           </tr>
         </tfoot>
       </table>
@@ -10765,30 +10914,27 @@ function renderManualDayDetail(manualScope, focusedDriverId) {
     return;
   }
 
-  // ── Fallback: original flat table (no focused driver resolved) ──
-  const rows = days.map((day) => {
-    const stats = manualScope.dayStats[day] || { distance: 0, clients: 0, totalTime: 0, serviceTime: 0 };
-    const roadMinutes = Math.max(0, (stats.totalTime || 0) - (stats.serviceTime || 0));
+  // ── Fallback: simplified flat table (no focused driver resolved) ──
+  const allDaysFallback = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
+  const rows = allDaysFallback.map((day) => {
+    const stats = manualScope.dayStats[day] || { distance: 0, clients: 0 };
+    const isActiveDay = state.activeDays.has(day);
     return `
-      <tr>
+      <tr class="${isActiveDay ? 'is-active-day' : ''}">
         <td class="manual-day-cell">${day}</td>
-        <td>${stats.clients}</td>
-        <td class="manual-day-km">${stats.distance.toFixed(1)} km</td>
-        <td>${formatMinutesToLabel(stats.totalTime)}</td>
-        <td>${formatMinutesToLabel(roadMinutes)}</td>
+        <td>${stats.clients || 0}</td>
+        <td class="manual-day-km">${stats.clients > 0 ? stats.distance.toFixed(0) + ' km' : '0 km'}</td>
       </tr>
     `;
   }).join('');
 
   container.innerHTML = `
-    <table class="manual-day-detail-table">
+    <table class="manual-day-detail-table cycle-matrix-table">
       <thead>
         <tr>
           <th>DIA</th>
-          <th>CLIENTES</th>
-          <th>DISTÂNCIA</th>
-          <th>ATENDIMENTO</th>
-          <th>DESLOCAMENTO</th>
+          <th>PDVs</th>
+          <th>KM</th>
         </tr>
       </thead>
       <tbody>
@@ -12762,14 +12908,16 @@ function renderMap(filteredClients, routeGroups) {
     const isLassoSelected = state.lassoSelectionIds.has(client.id);
     const isActive = client.id === state.selectedStopId;
     const iconKey = `${label}|${color}|${isActive ? 1 : 0}|${isLassoSelected ? 1 : 0}|`;
+    // Ativo D markers can be dragged to week/day buttons to get scheduled
+    const isDraggableSpecial = _spCt === 'ativo' && !client.day;
 
     desiredMarkers.set(client.id, {
       client, route: null, index: 0,
       isSpecial: true,
       iconKey,
       popupFP: `special|${client.id}`,
-      interactive: false,
-      draggable: false,
+      interactive: isDraggableSpecial,
+      draggable: isDraggableSpecial,
       displayContent: label,
       color, isActive, isLassoSelected, insightClass: ''
     });
@@ -15931,6 +16079,318 @@ document.getElementById('ai-input').addEventListener('keydown', (e) => {
 });
 
 bootstrapApp();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     ROUTflex — Busca de Clientes (ALT+L)
+     Bloco completamente isolado. Não toca no script principal.
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<style>
+/* Container: float no topo-centro, SEM overlay. pointer-events:none para não
+   bloquear o mapa; a caixa interna re-habilita pointer-events. */
+#rf-search-modal {
+  display: none;
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 950;
+  pointer-events: none;
+}
+#rf-search-modal.rf-open { display: block; }
+.rf-search-box {
+  width: min(520px, 92vw);
+  max-height: min(460px, 78vh);
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  border: 1px solid rgba(129,183,231,0.28);
+  background: rgba(4,13,24,0.96);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35);
+  overflow: hidden;
+  pointer-events: auto;
+}
+.rf-search-header {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+#rf-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #e3f1ff;
+  padding: 12px 14px;
+  font-size: 14px;
+  outline: none;
+  min-width: 0;
+}
+#rf-search-input::placeholder { color: #4a6d88; }
+.rf-close-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: #5e8aae;
+  font-size: 16px;
+  padding: 10px 14px;
+  cursor: pointer;
+  line-height: 1;
+}
+.rf-close-btn:hover { color: #e3f1ff; }
+#rf-search-results { overflow-y: auto; flex: 1; padding: 4px 0 6px; }
+.rf-result {
+  padding: 8px 14px; cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.rf-result:hover { background: rgba(82,208,255,0.09); }
+.rf-result-name { font-size: 13px; font-weight: 500; color: #dceeff; }
+.rf-result-meta { font-size: 11px; color: #5e8aae; margin-top: 2px; }
+.rf-result-nocoord { color: #ff6b6b; font-size: 10px; margin-left: 6px; }
+.rf-empty, .rf-overflow {
+  padding: 12px 14px; font-size: 12px; color: #4a6d88; text-align: center;
+}
+.rf-fit-btn {
+  display: block; margin: 5px 14px 4px;
+  padding: 7px 12px; width: calc(100% - 28px);
+  background: rgba(82,208,255,0.10);
+  border: 1px solid rgba(82,208,255,0.28);
+  color: #52d0ff; border-radius: 8px;
+  font-size: 12px; cursor: pointer; text-align: center;
+}
+.rf-fit-btn:hover { background: rgba(82,208,255,0.18); }
+</style>
+
+<div id="rf-search-modal">
+  <div class="rf-search-box">
+    <div class="rf-search-header">
+      <input id="rf-search-input" type="text"
+        placeholder="Buscar cliente, ID, cidade, bairro, motorista..."
+        autocomplete="off" spellcheck="false" />
+      <button id="rf-search-close" class="rf-close-btn" type="button" title="Fechar (ESC)">✕</button>
+    </div>
+    <div id="rf-search-results"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+  var _rft = null;
+  var _rfIdx = null;
+  var _rfIdxVer = -1;
+
+  /* ── Fonte de dados ────────────────────────────────────────────────────────
+     `state` em state.js é declarado com `const` — em browsers modernos,
+     const/let globais NÃO viram propriedades de window. Logo window.state
+     é sempre undefined. Acessamos pelo nome direto. */
+  function getAppState() {
+    try { return (typeof state !== 'undefined') ? state : null; }
+    catch(e) { return null; }
+  }
+
+  function norm(s) {
+    return String(s || '').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  }
+
+  // Calcula o mesmo Código interno exibido no popup (via getClientCrmCode do script principal)
+  function getInternalCodeForSearch(c) {
+    try {
+      if (typeof getClientCrmCode === 'function') {
+        return String(getClientCrmCode(c) || '');
+      }
+    } catch(e) {}
+    return '';
+  }
+
+  function buildIdx() {
+    var st = getAppState();
+    var ver = (st && st._clientMutationCounter) || 0;
+    if (_rfIdx && _rfIdxVer === ver) return _rfIdx;
+    var list = (st && st.clients) || [];
+    console.log('[ALT+L] clientes disponíveis:', list.length, list[0]);
+    _rfIdx = list.map(function(c) {
+      var drv = c.driverName || c.driverId || '';
+      // Todos os valores string do objeto top-level
+      var allVals = Object.keys(c).map(function(k) {
+        var v = c[k];
+        if (v == null || typeof v === 'object') return '';
+        return String(v);
+      }).join(' ');
+      // Código interno do popup (gerado por getClientCrmCode)
+      var internalCode = getInternalCodeForSearch(c);
+      if (internalCode === '102131') {
+        console.log('[ALT+L INTERNAL CODE FOUND]', c, internalCode);
+      }
+      return {
+        c: c, drv: drv,
+        t: norm(allVals + ' ' + internalCode)
+      };
+    });
+    _rfIdxVer = ver;
+    return _rfIdx;
+  }
+
+  function doSearch(q) {
+    if (!q || q.trim().length < 2) return [];
+    var parts = norm(q).split(/\s+/).filter(Boolean);
+    var idx = buildIdx();
+    var out = [];
+    for (var i = 0; i < idx.length; i++) {
+      var e = idx[i];
+      if (parts.every(function(p) { return e.t.indexOf(p) >= 0; })) {
+        out.push(e);
+        if (out.length >= 60) break;
+      }
+    }
+    return out;
+  }
+
+  function esc(s) {
+    return String(s || '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  var _ctColor = { ativo:'#41e4a2', inativo:'#ff6b6b', novo:'#52d0ff', sem_coordenada:'#aaa' };
+  var _ctLabel = { ativo:'Ativo', inativo:'Inativo', novo:'Novo', sem_coordenada:'Sem coord.' };
+
+  function render(entries) {
+    var el = document.getElementById('rf-search-results');
+    if (!el) return;
+    if (!entries.length) {
+      el.innerHTML = '<div class="rf-empty">Nenhum resultado.</div>';
+      return;
+    }
+    var vis = entries.slice(0, 20);
+    var more = entries.length - vis.length;
+    var withCoord = vis.filter(function(e) { return e.c.lat != null && e.c.lon != null; });
+    var html = '';
+    vis.forEach(function(e) {
+      var c = e.c;
+      var ct = c.clientType || 'ativo';
+      var dw = (c.day && c.week) ? ('S'+c.week+'/'+c.day) : (c.day || (c.week ? 'S'+c.week : '\u2014'));
+      var noCoord = (c.lat == null || c.lon == null);
+      html += '<div class="rf-result" data-id="'+esc(c.id)+'">'
+        + '<div class="rf-result-name">'+esc(c.name||c.nomeFantasia||c.id)
+        + ' <span style="font-size:10px;font-weight:600;color:'+(_ctColor[ct]||'#aaa')+'">'+esc(_ctLabel[ct]||ct)+'</span>'
+        + (noCoord ? '<span class="rf-result-nocoord">sem coord.</span>' : '')
+        + '</div>'
+        + '<div class="rf-result-meta">'+esc(c.clientGroupId||c.id)
+        + ' &middot; '+esc(c.city||'\u2014')
+        + (c.neighborhood ? ' &middot; '+esc(c.neighborhood) : '')
+        + ' &middot; '+esc(e.drv||'\u2014')
+        + ' &middot; '+esc(dw)
+        + '</div></div>';
+    });
+    if (more > 0) {
+      html += '<div class="rf-overflow">+ '+more+' n\u00e3o exibido'+(more>1?'s':'')+'. Refine a busca.</div>';
+    }
+    if (withCoord.length > 1) {
+      html += '<button class="rf-fit-btn" id="rf-fit-btn" type="button">Centralizar regi\u00e3o ('+withCoord.length+' clientes)</button>';
+    }
+    el.innerHTML = html;
+    el.querySelectorAll('.rf-result').forEach(function(row) {
+      row.addEventListener('click', function() { focusClient(row.getAttribute('data-id')); });
+    });
+    var fb = document.getElementById('rf-fit-btn');
+    if (fb) fb.addEventListener('click', function() { fitAll(vis.map(function(e){ return e.c; })); });
+  }
+
+  function focusClient(id) {
+    var st = getAppState();
+    var list = (st && st.clients) || [];
+    var c = null;
+    for (var i = 0; i < list.length; i++) { if (list[i].id === id) { c = list[i]; break; } }
+    if (!c) return;
+    // Aceita lat/lon em qualquer alias comum
+    var lat = (c.lat != null) ? Number(c.lat) : (c.latitude != null ? Number(c.latitude) : NaN);
+    var lon = (c.lon != null) ? Number(c.lon) : (c.lng != null ? Number(c.lng) : (c.longitude != null ? Number(c.longitude) : NaN));
+    if (isNaN(lat) || isNaN(lon)) {
+      var row = document.querySelector('#rf-search-results [data-id="'+esc(id)+'"]');
+      if (row) { row.style.background='rgba(255,80,80,0.18)'; setTimeout(function(){ row.style.background=''; },1500); }
+      return;
+    }
+    // Referência ao mapa: const map no escopo global não é window.map
+    var m;
+    try { m = (typeof map !== 'undefined' && map && map.setView) ? map : window.map; } catch(e) { m = window.map; }
+    if (!m || !m.setView) return;
+    var zoom = Math.max((m.getZoom ? m.getZoom() : 14), 16);
+    m.setView([lat, lon], zoom, {animate: true});
+    rfClose();
+    // Destaque temporário: anel ciano por 2 s
+    try {
+      if (typeof L !== 'undefined' && m.addLayer) {
+        var ring = L.circleMarker([lat, lon], {
+          radius: 18,
+          color: '#52d0ff',
+          weight: 2.5,
+          opacity: 0.85,
+          fill: true,
+          fillColor: '#52d0ff',
+          fillOpacity: 0.12,
+          interactive: false
+        }).addTo(m);
+        setTimeout(function() {
+          try { m.removeLayer(ring); } catch(e2) {}
+        }, 2000);
+      }
+    } catch(e) {}
+  }
+
+  function fitAll(clients) {
+    var pts = clients.filter(function(c){ return c.lat != null && c.lon != null; });
+    if (!pts.length || !window.map || !window.map.fitBounds || typeof L === 'undefined') return;
+    window.map.fitBounds(L.latLngBounds(pts.map(function(c){ return [c.lat,c.lon]; })).pad(0.15), {animate:true});
+    rfClose();
+  }
+
+  function rfOpen() {
+    var modal = document.getElementById('rf-search-modal');
+    var input = document.getElementById('rf-search-input');
+    var results = document.getElementById('rf-search-results');
+    if (!modal) return;
+    modal.classList.add('rf-open');
+    if (results) results.innerHTML = '';
+    if (input) { input.value = ''; input.focus(); }
+    buildIdx();
+  }
+
+  function rfClose() {
+    var modal = document.getElementById('rf-search-modal');
+    if (modal) modal.classList.remove('rf-open');
+    if (_rft) { clearTimeout(_rft); _rft = null; }
+  }
+
+  function rfIsOpen() {
+    var modal = document.getElementById('rf-search-modal');
+    return modal ? modal.classList.contains('rf-open') : false;
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.altKey && e.key.toLowerCase() === 'l') {
+      e.preventDefault();
+      rfIsOpen() ? rfClose() : rfOpen();
+      return;
+    }
+    if (e.key === 'Escape' && rfIsOpen()) {
+      e.preventDefault();
+      rfClose();
+    }
+  });
+
+  document.getElementById('rf-search-close').addEventListener('click', rfClose);
+
+  document.getElementById('rf-search-input').addEventListener('input', function(e) {
+    var q = e.target.value;
+    if (_rft) clearTimeout(_rft);
+    _rft = setTimeout(function() { _rft = null; render(doSearch(q)); }, 260);
+  });
+
+  document.getElementById('rf-search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { e.preventDefault(); rfClose(); }
+  });
+})();
 </script>
 </body>
 </html>

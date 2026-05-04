@@ -75,6 +75,7 @@ const state = {
   _baseClickTimer: null,
   _popupClientId: null,
   _popupLatlng: null,
+  pdvEditDraft: null,
   _popupDragMoveHandler: null,
   _popupDragUpHandler: null,
   _clientClickTimer: null,
