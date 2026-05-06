@@ -112,6 +112,47 @@ def write_manual_plan_snapshot(payload: dict):
     MANUAL_PLAN_FILE.write_text(json.dumps(payload, ensure_ascii=True, indent=2), encoding="utf-8")
 
 
+# ── Persistência DDD-scoped ────────────────────────────────────────────────
+MANUAL_PLAN_DATA_DIR = Path(__file__).resolve().parent / "data"
+
+
+def _get_ddd_plan_file(ddd: str) -> Path:
+    # Valida DDD: apenas 2 dígitos numéricos — previne path traversal
+    if not ddd.isdigit() or len(ddd) != 2:
+        raise ValueError(f"DDD invalido: {ddd!r}")
+    return MANUAL_PLAN_DATA_DIR / f"manual_plan_{ddd}.json"
+
+
+def read_manual_plan_snapshot_ddd(ddd: str):
+    try:
+        plan_file = _get_ddd_plan_file(ddd)
+    except ValueError:
+        return None
+    if not plan_file.exists():
+        return None
+    try:
+        return json.loads(plan_file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def write_manual_plan_snapshot_ddd(ddd: str, payload: dict):
+    plan_file = _get_ddd_plan_file(ddd)
+    MANUAL_PLAN_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    plan_file.write_text(json.dumps(payload, ensure_ascii=True, indent=2), encoding="utf-8")
+
+
+def delete_manual_plan_snapshot_ddd(ddd: str) -> bool:
+    try:
+        plan_file = _get_ddd_plan_file(ddd)
+    except ValueError:
+        return False
+    if plan_file.exists():
+        plan_file.unlink()
+        return True
+    return False
+
+
 @app.get("/manual-plan")
 def get_manual_plan():
     snapshot = read_manual_plan_snapshot()
@@ -132,6 +173,99 @@ def delete_manual_plan():
     if MANUAL_PLAN_FILE.exists():
         MANUAL_PLAN_FILE.unlink()
     return {"status": "deleted"}
+
+
+# ── Endpoints DDD-scoped ───────────────────────────────────────────────────
+@app.get("/manual-plan/{ddd}")
+def get_manual_plan_ddd(ddd: str):
+    try:
+        _get_ddd_plan_file(ddd)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"DDD invalido: {ddd!r}")
+    snapshot = read_manual_plan_snapshot_ddd(ddd)
+    if snapshot is None:
+        return {"version": 1, "savedAt": None, "clients": []}
+    app_logger.info(f"[PLAN][DDD {ddd}] loaded", extra={"clients_count": len(snapshot.get("clients", []))})
+    return snapshot
+
+
+@app.put("/manual-plan/{ddd}", response_model=ManualPlanSaveResponse)
+def save_manual_plan_ddd(ddd: str, snapshot: ManualPlanSnapshot):
+    try:
+        _get_ddd_plan_file(ddd)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"DDD invalido: {ddd!r}")
+    payload = snapshot.model_dump()
+    write_manual_plan_snapshot_ddd(ddd, payload)
+    app_logger.info(f"[PLAN][DDD {ddd}] saved", extra={"clients_count": len(payload.get("clients", []))})
+    return {"status": "saved", "savedAt": payload["savedAt"], "count": len(payload["clients"])}
+
+
+@app.delete("/manual-plan/{ddd}", response_model=GenericStatusResponse)
+def delete_manual_plan_ddd(ddd: str):
+    try:
+        _get_ddd_plan_file(ddd)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"DDD invalido: {ddd!r}")
+    delete_manual_plan_snapshot_ddd(ddd)
+    app_logger.info(f"[PLAN][DDD {ddd}] deleted")
+    return {"status": "deleted"}
+
+
+# ── Planejamento publicado (read-only, consumo externo: CRM / Palm / Torre) ──
+
+def _build_current_planning_response(ddd: str, snapshot: dict | None) -> dict:
+    """Transforma o snapshot bruto do manual-plan em payload estruturado para consumo externo."""
+    if snapshot is None or not snapshot.get("clients"):
+        return {
+            "ddd": ddd,
+            "status": "draft_available",
+            "source": "manual-plan",
+            "savedAt": None,
+            "totalAssignments": 0,
+            "assignments": [],
+        }
+
+    assignments = [
+        {
+            "clientId": c.get("id", ""),
+            "driverId": c.get("driverId", ""),
+            "driverName": c.get("driverName", ""),
+            "week": c.get("week", 1),
+            "day": str(c.get("day", "")).upper(),
+            "sequence": c.get("sequence", 0),
+        }
+        for c in snapshot.get("clients", [])
+    ]
+
+    return {
+        "ddd": ddd,
+        "status": "draft_available",
+        "source": "manual-plan",
+        "savedAt": snapshot.get("savedAt"),
+        "totalAssignments": len(assignments),
+        "assignments": assignments,
+    }
+
+
+@app.get("/planning/{ddd}/current")
+def get_current_planning(ddd: str):
+    """
+    Retorna o planejamento atual do DDD em formato estruturado para consumo externo
+    (CRM, Palm, Torre). Read-only — não altera o manual-plan persistido.
+    """
+    try:
+        _get_ddd_plan_file(ddd)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"DDD invalido: {ddd!r}")
+
+    snapshot = read_manual_plan_snapshot_ddd(ddd)
+    response = _build_current_planning_response(ddd, snapshot)
+    app_logger.info(
+        f"[PLANNING][DDD {ddd}] current fetched",
+        extra={"total_assignments": response["totalAssignments"]},
+    )
+    return response
 
 
 @app.post("/sessions", response_model=SessionRegionSchema)

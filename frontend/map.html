@@ -6065,6 +6065,11 @@ function switchPlanningSession(sessionId, options = {}) {
   applyPlanningSnapshotToCurrentClients(snapshot, target.ddd);
   normalizeAllCurveSchedules();
 
+  // Sincronizar state.mode com o tipo da sessão selecionada
+  state.mode = target.tipo_sessao === 'SIMULACAO' ? 'SIMULATION' : 'REAL';
+  try { sessionStorage.setItem('rfx:mode', state.mode); } catch (_) {}
+  updateDataModeUI();
+
   state.activePlanningSessionId = sessionId;
   state.activePlanningSessionByDDD[target.ddd] = sessionId;
   state.selectedDDD = String(target.ddd);
@@ -6100,6 +6105,90 @@ function initializePlanningSessions() {
   renderPlanningSessionSelector();
 }
 
+// Reidrata sessão de simulação salva (rfx:sim:data:{ddd} + rfx:sim:active:{ddd}).
+// Popula planningSessionSnapshots['DDD_{ddd}'] com o plano real salvo no localStorage.
+// Chamada durante _restoreSimulationSession para evitar que snapshots['DDD_65'] fique
+// contaminado com defaults de simulation_store.
+// NÃO aplica em state.clients. NÃO chama render. NÃO chama applyFilters.
+function _hydrateRealSnapshotForDDD(ddd) {
+  try {
+    const raw = localStorage.getItem(`ROUTflex:plan:ddd:${ddd}`);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.clients) || !parsed.clients.length) return;
+    planningSessionSnapshots.set(getRealSessionIdForDDD(ddd), parsed.clients);
+  } catch (_) {
+    // localStorage inacessível ou JSON inválido — mantém snapshot existente
+  }
+}
+
+// Chamada no boot quando state.mode === 'SIMULATION' em vez de captureActivePlanningSessionSnapshot.
+// Retorna true se restauração bem-sucedida, false em qualquer falha (fallback silencioso para REAL session).
+// NÃO chama applyFilters — renderMap + calculateRoutes do boot já cobrem.
+// NÃO chama switchPlanningSession — evita render prematuro e captura de snapshot errada.
+function _restoreSimulationSession() {
+  if (state.mode !== 'SIMULATION') return false;
+
+  const ddd = String(state.selectedDDD);
+
+  try {
+    // Guard 1: chave ausente
+    const raw = localStorage.getItem(`rfx:sim:data:${ddd}`);
+    if (!raw) return false;
+
+    // Guard 2: JSON inválido — coberto pelo try/catch externo
+    const parsed = JSON.parse(raw);
+
+    // Guard 3: estrutura inválida ou versão desconhecida
+    if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.clients)) return false;
+
+    // Guard 4: array vazio
+    if (!parsed.clients.length) return false;
+
+    // Guard 5: tipo mínimo dos itens
+    const sample = parsed.clients[0];
+    if (typeof sample.id !== 'string' || typeof sample.driverId !== 'string') return false;
+
+    // Guard 6: sessionId ativo ausente
+    const savedSessionId = localStorage.getItem(`rfx:sim:active:${ddd}`);
+    if (!savedSessionId) return false;
+
+    // Guard 7: sessão REAL base deve existir (initializePlanningSessions já criou)
+    if (!planningSessionRegistry.has(getRealSessionIdForDDD(ddd))) return false;
+
+    // Registrar sessão de simulação no registry (sem apagar DDD_65)
+    planningSessionRegistry.set(savedSessionId, {
+      id: savedSessionId,
+      ddd,
+      tipo_sessao: 'SIMULACAO',
+      createdAt: parsed.savedAt || new Date().toISOString(),
+      sourceSessionId: getRealSessionIdForDDD(ddd),
+    });
+
+    // Registrar snapshot com os dados salvos (não defaults)
+    planningSessionSnapshots.set(savedSessionId, parsed.clients);
+
+    // Aplicar snapshot a state.clients sem disparar applyFilters
+    applyPlanningSnapshotToCurrentClients(parsed.clients, ddd);
+
+    // Corrigir snapshots['DDD_65'] contaminado — substituir sim defaults pelo plano real salvo
+    _hydrateRealSnapshotForDDD(ddd);
+
+    // Atualizar estado sem disparar render
+    state.activePlanningSessionId = savedSessionId;
+    state.activePlanningSessionByDDD[ddd] = savedSessionId;
+
+    // Atualizar UI de sessão (sem applyFilters)
+    renderPlanningSessionSelector();
+    updatePlanningSessionStatus(savedSessionId);
+
+    return true;
+  } catch (_) {
+    // Qualquer erro (JSON inválido, storage inacessível, etc.) → fallback silencioso
+    return false;
+  }
+}
+
 
 function createSimulationSessionForActiveDDD(targetDDD = state.selectedDDD, preferredSourceSessionId = null) {
   captureActivePlanningSessionSnapshot();
@@ -6117,6 +6206,9 @@ function createSimulationSessionForActiveDDD(targetDDD = state.selectedDDD, pref
   if (dddSelect) dddSelect.value = ddd;
   state.activePlanningSessionByDDD[ddd] = simulationId;
   renderPlanningSessionSelector();
+  state.mode = 'SIMULATION';
+  try { sessionStorage.setItem('rfx:mode', 'SIMULATION'); } catch (_) {}
+  updateDataModeUI();
   switchPlanningSession(simulationId, { skipCapture: true });
   const simulationLabel = getSessionDisplayLabel(planningSessionRegistry.get(simulationId));
   updatePlannerHint(`${simulationLabel} criada a partir de ${sourceLabel}. Nenhum dado será enviado ao CRM ou banco.`);
@@ -6171,6 +6263,9 @@ function deleteActiveSimulationSessionForDDD(options = {}) {
   }
   state.activePlanningSessionByDDD[ddd] = fallbackSessionId;
   renderPlanningSessionSelector();
+  state.mode = 'REAL';
+  try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch (_) {}
+  updateDataModeUI();
   switchPlanningSession(fallbackSessionId, { skipCapture: true });
   updatePlannerHint(`${getSessionDisplayLabel(meta)} apagada. Sessão ativa retornou para ${fallbackLabel}.`);
 }
@@ -6339,6 +6434,9 @@ async function promoteActiveSimulationToRealSession() {
 
   state.activePlanningSessionByDDD[ddd] = realSessionId;
   renderPlanningSessionSelector();
+  state.mode = 'REAL';
+  try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch (_) {}
+  updateDataModeUI();
   switchPlanningSession(realSessionId, { skipCapture: true });
 
   postBackendEvent('/planning/sessions/promote-simulation', {
@@ -6383,6 +6481,9 @@ function revertRealPlanningSession() {
 
   state.activePlanningSessionByDDD[ddd] = realSessionId;
   renderPlanningSessionSelector();
+  state.mode = 'REAL';
+  try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch (_) {}
+  updateDataModeUI();
   switchPlanningSession(realSessionId, { skipCapture: true });
 
   postBackendEvent('/planning/sessions/revert-real', {
@@ -6632,15 +6733,18 @@ async function savePlanningAdjustments() {
   const isSimulationSession = activeSessionMeta && activeSessionMeta.tipo_sessao === 'SIMULACAO';
   if (isSimulationSession) {
     try {
-      localStorage.setItem(
-        `${PLAN_SAVE_STORAGE_KEY}:sim:${state.activePlanningSessionId}`,
-        JSON.stringify({
-          version: 1,
-          savedAt: new Date().toISOString(),
-          sessionId: state.activePlanningSessionId,
-          clients: planningSessionSnapshots.get(state.activePlanningSessionId) || []
-        })
-      );
+      const ddd = String(state.selectedDDD);
+      const simPayload = JSON.stringify({
+        version: 1,
+        savedAt: new Date().toISOString(),
+        sessionId: state.activePlanningSessionId,
+        clients: planningSessionSnapshots.get(state.activePlanningSessionId) || []
+      });
+      // Chave nova determinística — recuperável após reload
+      localStorage.setItem(`rfx:sim:data:${ddd}`, simPayload);
+      localStorage.setItem(`rfx:sim:active:${ddd}`, state.activePlanningSessionId);
+      // Chave antiga — mantida para compatibilidade
+      localStorage.setItem(`${PLAN_SAVE_STORAGE_KEY}:sim:${state.activePlanningSessionId}`, simPayload);
       markPlanAsSaved();
       updatePlannerHint(`Ajustes salvos apenas na simulação ${state.activePlanningSessionId}. Produção não foi alterada.`);
       applyFilters({ skipFitBounds: true });
@@ -6649,6 +6753,15 @@ async function savePlanningAdjustments() {
       updatePlannerHint('Falha ao salvar ajustes da simulação no navegador.');
       return;
     }
+  }
+
+  // Segurança: nunca salvar no backend de produção em modo SIMULATION.
+  // isSimulationSession verifica a sessão ativa, mas após F5 em SIMULATION
+  // a sessão ativa pode ser REAL (DDD_65) enquanto state.mode ainda é SIMULATION.
+  if (state.mode === 'SIMULATION') {
+    markPlanAsSaved();
+    updatePlannerHint('Modo simulação: nenhum dado de produção foi alterado.');
+    return;
   }
 
   // ── Fase 2: salvar DDD-scoped ──
@@ -7379,7 +7492,8 @@ function scheduleViewportMapRefresh() {
 
     // Viewport diff guard: skip re-render if visible client set barely changed
     if (_lastRenderedClientIds && _lastRenderedClientIds.size > 0) {
-      const { activeClientRenderSet } = selectClientsForMapRender(lastFilterContext.filteredClients);
+      const selectResult = selectClientsForMapRender(lastFilterContext.filteredClients);
+      const { activeClientRenderSet } = selectResult;
       let changed = 0;
       activeClientRenderSet.forEach((id) => {
         if (!_lastRenderedClientIds.has(id)) changed++;
@@ -7392,6 +7506,10 @@ function scheduleViewportMapRefresh() {
         window.__rfxPerf.increment('viewportRefresh.skipped');
         return; // <10% change — skip
       }
+
+      window.__rfxPerf.increment('viewportRefresh.executed');
+      renderMap(lastFilterContext.filteredClients, lastFilterContext.routeGroups, selectResult);
+      return;
     }
 
     window.__rfxPerf.increment('viewportRefresh.executed');
@@ -8004,6 +8122,7 @@ function syncAssignmentDragVisualState(options = {}) {
 }
 
 function cancelAssignmentPointerDrag(message = 'Movimentação cancelada.') {
+  _dragGrid = null;
   clearClientMarkerAssignmentPointerSession();
   state.lassoHoverDriverId = null;
   state.lassoDragTarget = null;
@@ -8788,24 +8907,50 @@ function getDriverTargetFromBase(latlng, ddd) {
 }
 
 function getClosestClientMarkerTarget(latlng, sourceClient) {
-  const ddd = Number(state.selectedDDD);
   const point = map.latLngToLayerPoint(latlng);
-  let bestTarget = null;
   const maxDistancePx = 30;
+  let bestTarget = null;
+  const sourceId = (sourceClient || {}).id;
+  const sourceDriverId = (sourceClient || {}).driverId;
 
+  // Fast path: use spatial grid built at dragstart (O(1) cell lookup)
+  if (_dragGrid) {
+    const cs = _dragGrid.cellSize;
+    const cx = Math.floor(point.x / cs);
+    const cy = Math.floor(point.y / cs);
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        const candidates = _dragGrid.cells.get(`${cx + dx},${cy + dy}`);
+        if (!candidates) continue;
+        for (const { clientId, driverId, pt } of candidates) {
+          if (clientId === sourceId) continue;
+          if (!driverId || driverId === sourceDriverId) continue;
+          const distance = point.distanceTo(pt);
+          if (distance > maxDistancePx) continue;
+          if (!bestTarget || distance < bestTarget.distance) {
+            bestTarget = { driverId, clientId, distance, source: 'marker' };
+          }
+        }
+      }
+    }
+    return bestTarget;
+  }
+
+  // Fallback: full scan (used outside drag, or if grid unavailable)
+  const ddd = Number(state.selectedDDD);
   _markerRegistry.forEach((entry, clientId) => {
     const marker = entry && entry.marker;
     const markerClient = marker && marker._rfxClient;
     if (!marker || !markerClient) {
       return;
     }
-    if (markerClient.id === (sourceClient || {}).id) {
+    if (markerClient.id === sourceId) {
       return;
     }
     if (Number(markerClient.ddd) !== ddd) {
       return;
     }
-    if (!markerClient.driverId || markerClient.driverId === (sourceClient || {}).driverId) {
+    if (!markerClient.driverId || markerClient.driverId === sourceDriverId) {
       return;
     }
     if ((markerClient.clientType || 'ativo') === 'sem_coordenada') {
@@ -10289,12 +10434,40 @@ function handleMarkerDragStart(event, client) {
     ? `${client.name} sem dia — arraste para S1–S4 ou SEG–DOM para agendar visita.`
     : `Rebalanceando ${client.name}. Arraste para um motorista na lista ou para a semana e o dia desejados.`
   );
+
+  if (state.viewMode === 'territorial') {
+    _buildDragGrid();
+  }
 }
 
 let _dragRAFPending = false;
 let _dragRAFEvent = null;
 let _dragRAFClient = null;
 let _dragRAFPreviewLatLng = null;
+
+let _dragGrid = null;
+const _DRAG_GRID_CELL_PX = 60;
+
+function _buildDragGrid() {
+  const ddd = Number(state.selectedDDD);
+  const cells = new Map();
+  _markerRegistry.forEach((entry, clientId) => {
+    const marker = entry && entry.marker;
+    const c = marker && marker._rfxClient;
+    if (!c || !marker) return;
+    if (Number(c.ddd) !== ddd) return;
+    if (!c.driverId) return;
+    if ((c.clientType || 'ativo') === 'sem_coordenada') return;
+
+    const pt = map.latLngToLayerPoint(marker.getLatLng());
+    const cx = Math.floor(pt.x / _DRAG_GRID_CELL_PX);
+    const cy = Math.floor(pt.y / _DRAG_GRID_CELL_PX);
+    const key = `${cx},${cy}`;
+    if (!cells.has(key)) cells.set(key, []);
+    cells.get(key).push({ clientId, driverId: c.driverId, pt });
+  });
+  _dragGrid = { cellSize: _DRAG_GRID_CELL_PX, cells };
+}
 
 function handleMarkerDrag(event, client, previewLatLng = null) {
   if (state.lassoModeActive && state.lassoGroupDragActive && state.lassoSelectionIds.has(client.id)) {
@@ -10426,6 +10599,7 @@ function _processDragFrame() {
 }
 
 function handleMarkerDragEnd(event, client, dropLatLng = null) {
+  _dragGrid = null;
   // Restore map drag and browser interaction
   document.body.classList.remove('rfx-dragging');
   syncMapDragging();
@@ -12720,7 +12894,7 @@ function updateMarkerIconsOnly() {
 // ════════════════════════════════════════════════════════════════
 // renderMap — diff-based marker reconciliation
 // ════════════════════════════════════════════════════════════════
-function renderMap(filteredClients, routeGroups) {
+function renderMap(filteredClients, routeGroups, _precomputedSelect) {
   const _t0_rm = performance.now();
   window.__rfxPerf.count('renderMap.input.clients', filteredClients ? filteredClients.length : 0);
   window.__rfxPerf.count('renderMap.input.routeGroups', routeGroups ? routeGroups.length : 0);
@@ -12763,7 +12937,7 @@ function renderMap(filteredClients, routeGroups) {
     activeClientRenderSet,
     activeRenderLimited,
     viewportMode
-  } = selectClientsForMapRender(filteredClients);
+  } = _precomputedSelect || selectClientsForMapRender(filteredClients);
 
   // === Build desired marker set (no DOM work yet) ===
   const desiredMarkers = new Map();
@@ -13037,15 +13211,9 @@ function renderMap(filteredClients, routeGroups) {
   // Compatibility: keep markers array in sync
   markers = Array.from(_markerRegistry.values()).map((e) => e.marker);
 
-  // Add new markers — buffer DOM if many
+  // Add new markers — batched to avoid long frame blocks on cold load
   if (newMarkersList.length > 0) {
-    if (newMarkersList.length > MARKER_BATCH_SIZE && map.hasLayer(clusterLayer)) {
-      map.removeLayer(clusterLayer);
-    }
-    newMarkersList.forEach((m) => clusterLayer.addLayer(m));
-    if (!map.hasLayer(clusterLayer)) {
-      map.addLayer(clusterLayer);
-    }
+    addMarkersToLayerInBatches(newMarkersList, clusterLayer);
   }
 
   // Track rendered set for viewport diff guard
@@ -13361,16 +13529,22 @@ function calculateRoutes(options = {}) {
 }
 
 let _applyFiltersScheduled = false;
+let _pendingNeedsFitBounds = false;
 
 function applyFilters(options = {}) {
   options = normalizeApplyFiltersOptions(options);
-  if (_applyFiltersScheduled && options.skipFitBounds) {
+  if (!options.skipFitBounds) {
+    _pendingNeedsFitBounds = true;
+  }
+  if (_applyFiltersScheduled) {
     return;
   }
   _applyFiltersScheduled = true;
   Promise.resolve().then(function() {
     _applyFiltersScheduled = false;
-    calculateRoutes(options);
+    const needsFit = _pendingNeedsFitBounds;
+    _pendingNeedsFitBounds = false;
+    calculateRoutes({ ...options, skipFitBounds: !needsFit });
   });
 }
 
@@ -14005,6 +14179,7 @@ async function regenerateScenario() {
   if (state.mode !== 'SIMULATION') {
     state.mode = 'SIMULATION';
   }
+  try { sessionStorage.setItem('rfx:mode', state.mode); } catch (_) {}
   clearSavedPlanningAdjustments();
   closeLassoConfirmModal();
   clearLassoSelection({ skipRender: true });
@@ -14619,6 +14794,7 @@ function updateDataModeUI() {
 
 async function toggleDataMode() {
   state.mode = state.mode === 'SIMULATION' ? 'REAL' : 'SIMULATION';
+  try { sessionStorage.setItem('rfx:mode', state.mode); } catch (_) {}
   updateDataModeUI();
   await initializeApp();
   updatePlannerHint(state.mode === 'SIMULATION'
@@ -14627,6 +14803,15 @@ async function toggleDataMode() {
 }
 
 async function initializeApp() {
+  // Restaurar modo REAL/SIMULATION persistido (sobrevive ao reload da aba)
+  try {
+    const _savedMode = sessionStorage.getItem('rfx:mode');
+    if (_savedMode === 'REAL' || _savedMode === 'SIMULATION') {
+      state.mode = _savedMode;
+      updateDataModeUI();
+    }
+  } catch (_) {}
+
   initializeDrivers();
 
   // Carregar apenas o DDD padrão no boot (lazy loading dos demais ao trocar)
@@ -14654,7 +14839,14 @@ async function initializeApp() {
 
   // Fase 2: carrega planejamento DDD-scoped (backend → localStorage → legacy)
   await loadPlanningForDDD(state.selectedDDD);
-  captureActivePlanningSessionSnapshot();
+  // Em modo SIMULATION a sessão ativa no boot é REAL (DDD_65) com clientes de simulação.
+  // Não capturar: contaminaria o snapshot de produção com defaults de simulação.
+  if (state.mode !== 'SIMULATION') {
+    captureActivePlanningSessionSnapshot();
+  } else {
+    // Etapa 3: reidratar sessão de simulação salva (rfx:sim:data:{ddd} + rfx:sim:active:{ddd})
+    _restoreSimulationSession();
+  }
   if (_autosaveTimer) {
     clearTimeout(_autosaveTimer);
     _autosaveTimer = null;
