@@ -61,3 +61,15 @@ crm/**/mock*/
 crm/**/*mock*.js
 crm/**/*mock*.sql
 crm/**/*backtest*
+# Runtime logs
+backend/event_log.jsonl
+
+# Manual planning snapshots
+backend/data/*.json
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+.venv/
