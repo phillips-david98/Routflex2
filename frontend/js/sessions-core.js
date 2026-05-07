@@ -6,6 +6,18 @@
 const planningSessionRegistry = new Map();
 const planningSessionSnapshots = new Map();
 
+// ── ISOLAMENTO POR SESSÃO ──────────────────────────────────────────────────
+// Cada sessão de cenário tem buffers próprios de clientes e motoristas.
+// Produção continua usando state.clients/state.drivers como hoje (referência viva).
+// Quando ativamos um cenário, fazemos SWAP: salvamos a referência atual no
+// backup de produção e setamos state.clients/state.drivers para o buffer do
+// cenário. Quando voltamos para produção, restauramos a referência original.
+// Isso garante que NENHUMA mutação em modo cenário toque os dados de produção.
+const planningSessionClients = new Map(); // sessionId -> Array<client>  (apenas cenários)
+const planningSessionDrivers = new Map(); // sessionId -> Array<driver>  (apenas cenários)
+let _productionClientsBackup = null;
+let _productionDriversBackup = null;
+
 function buildDriverId(ddd) {
   driverSequence += 1;
   return `DRV-${ddd}-${String(driverSequence).padStart(3, '0')}`;
@@ -145,20 +157,33 @@ function getPlanningSessionsForDDD(ddd) {
     });
 }
 
+// Helpers de tipo de sessão (Fase 1: arquitetura production/scenario).
+// Internamente preservamos `tipo_sessao: 'REAL' | 'SIMULACAO'` por compatibilidade.
+function isProductionSession(sessionMeta) {
+  return Boolean(sessionMeta && sessionMeta.tipo_sessao === 'REAL');
+}
+function isScenarioSession(sessionMeta) {
+  return Boolean(sessionMeta && sessionMeta.tipo_sessao === 'SIMULACAO');
+}
+
 function getSessionDisplayLabel(sessionMeta) {
   if (!sessionMeta) return '';
   if (sessionMeta.tipo_sessao === 'REAL') {
     return `DDD ${sessionMeta.ddd}`;
+  }
+  // Cenário com nome livre tem prioridade na exibição.
+  if (sessionMeta.name && String(sessionMeta.name).trim()) {
+    return String(sessionMeta.name).trim();
   }
   const simulationId = String(sessionMeta.id || '');
   const simMatch = simulationId.match(/^SIMULACAO_DDD_(\d+)_V(\d+)$/);
   if (simMatch) {
     const version = Number(simMatch[2]);
     return version > 1
-      ? `Simulação DDD ${simMatch[1]} #${version}`
-      : `Simulação DDD ${simMatch[1]}`;
+      ? `Cenário DDD ${simMatch[1]} #${version}`
+      : `Cenário DDD ${simMatch[1]}`;
   }
-  return `Simulação DDD ${sessionMeta.ddd}`;
+  return `Cenário DDD ${sessionMeta.ddd}`;
 }
 
 function getSourceSessionDisplayLabel(sourceSessionId) {
@@ -170,11 +195,11 @@ function getSourceSessionDisplayLabel(sourceSessionId) {
 }
 
 function getSessionBadgeText(sessionMeta) {
-  return sessionMeta && sessionMeta.tipo_sessao === 'SIMULACAO' ? 'SIMULAÇÃO' : 'PRODUÇÃO';
+  return isScenarioSession(sessionMeta) ? 'CENÁRIO' : 'PRODUÇÃO';
 }
 
 function getSessionBadgeIcon(sessionMeta) {
-  return sessionMeta && sessionMeta.tipo_sessao === 'SIMULACAO' ? '🟡' : '🟢';
+  return isScenarioSession(sessionMeta) ? '🟡' : '🟢';
 }
 
 function clonePlanningSnapshot(snapshot) {
@@ -193,12 +218,19 @@ function getNextSimulationIdForDDD(ddd) {
   return `SIMULACAO_DDD_${ddd}_V${nextVersion}`;
 }
 
-function createSimulationSessionFromSnapshot(ddd, sourceSessionId, sourceSnapshot) {
+function createSimulationSessionFromSnapshot(ddd, sourceSessionId, sourceSnapshot, options = {}) {
   const simulationId = getNextSimulationIdForDDD(ddd);
+  const name = options && typeof options.name === 'string' ? options.name.trim() : '';
   planningSessionRegistry.set(simulationId, {
     id: simulationId,
     ddd,
     tipo_sessao: 'SIMULACAO',
+    // Metadados arquiteturais (Fase 1):
+    type: 'scenario',
+    name: name || null,
+    isolated: true,
+    allowCRM: false,
+    allowPALM: false,
     createdAt: new Date().toISOString(),
     sourceSessionId: sourceSessionId || getRealSessionIdForDDD(ddd),
   });
