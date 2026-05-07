@@ -4539,7 +4539,7 @@ body.login-active .routex-ai-panel { display:none !important; }
             </div>
 
             <p class="planning-simulation-warning" id="planning-simulation-warning" hidden>
-              Modo simulação ativo. Nenhum dado será salvo ou enviado ao CRM.
+              Modo cenário ativo. Sandbox isolado — nenhum dado será enviado ao CRM ou PALM.
             </p>
 
             <div class="planning-session-dropdown-wrap">
@@ -4560,30 +4560,30 @@ body.login-active .routex-ai-panel { display:none !important; }
             <div class="planning-create-modal" id="planning-create-modal" hidden>
               <div class="planning-create-modal-card" role="dialog" aria-modal="true" aria-labelledby="planning-create-modal-title">
                 <div class="planning-create-header">
-                  <h4 id="planning-create-modal-title">Criar sessão de planejamento ou simulação</h4>
+                  <h4 id="planning-create-modal-title">Criar sessão de produção ou novo cenário</h4>
                   <p>Escolha o tipo de sessão e confirme.</p>
                 </div>
 
                 <div class="planning-create-type-options" role="radiogroup" aria-label="Tipo de sessão">
                   <label class="planning-create-type-option" for="planning-create-type-production">
                     <input id="planning-create-type-production" type="radio" name="planning-create-type" value="production" checked>
-                    <span>Sessão de planejamento</span>
+                    <span>Sessão de Produção</span>
                   </label>
                   <label class="planning-create-type-option" for="planning-create-type-simulation">
                     <input id="planning-create-type-simulation" type="radio" name="planning-create-type" value="simulation">
-                    <span>Simulação</span>
+                    <span>Novo Cenário</span>
                   </label>
                 </div>
 
-                <div class="planning-create-quick-grid" id="planning-create-ddd-field">
+                <div class="planning-create-quick-grid" id="planning-create-input-field">
                   <div class="field">
-                    <label for="planning-create-ddd-input">Número do DDD</label>
-                    <input class="pill-input" id="planning-create-ddd-input" type="text" inputmode="numeric" maxlength="3" placeholder="Ex: 44 ou 96">
+                    <label for="planning-create-input" id="planning-create-input-label">Número do DDD (apenas dígitos)</label>
+                    <input class="pill-input" id="planning-create-input" type="text" inputmode="numeric" maxlength="3" placeholder="Ex: 65, 62, 11" autocomplete="off">
                   </div>
                 </div>
 
                 <div class="planning-create-sim-hint" id="planning-create-sim-hint" hidden>
-                  A simulação será criada automaticamente para o DDD atual: <strong id="planning-create-sim-ddd">DDD 65</strong>.
+                  O cenário é um sandbox isolado: começa totalmente vazio (sem clientes, motoristas ou rotas). Não afeta produção, CRM ou PALM. Use Manutenção para transferir dados da produção.
                 </div>
 
                 <div class="planning-create-modal-actions">
@@ -5954,7 +5954,7 @@ function renderPlanningSessionsPopover() {
 
   const productionSessions = allSessions.filter((session) => session.tipo_sessao !== 'SIMULACAO');
   const simulationSessions = allSessions.filter((session) => session.tipo_sessao === 'SIMULACAO');
-  listEl.innerHTML = `${buildGroup('PRODUÇÃO', productionSessions, false)}${buildGroup('SIMULAÇÃO', simulationSessions, true)}`;
+  listEl.innerHTML = `${buildGroup('PRODUÇÃO', productionSessions, false)}${buildGroup('CENÁRIOS', simulationSessions, true)}`;
 }
 
 function openPlanningSessionsPopover() {
@@ -6008,7 +6008,7 @@ function updatePlanningSessionStatus(sessionId) {
 
   currentSessionLabel.textContent = `${displayLabel} ▼`;
   currentSessionPill.textContent = '(ATIVO)';
-  sessionKindText.textContent = isSimulation ? 'SIMULAÇÃO' : 'PRODUÇÃO';
+  sessionKindText.textContent = isSimulation ? 'CENÁRIO' : 'PRODUÇÃO';
   sessionKindDot.textContent = isSimulation ? '🟡' : '🟢';
   if (simulationWarning) {
     simulationWarning.hidden = !isSimulation;
@@ -6024,7 +6024,7 @@ function updatePlanningSessionActionButtons(sessionId) {
   const current = planningSessionRegistry.get(sessionId);
   const isSimulation = Boolean(current && current.tipo_sessao === 'SIMULACAO');
   deleteSessionBtn.title = isSimulation
-    ? 'Apagar simulação ativa.'
+    ? 'Apagar cenário ativo.'
     : 'Apagar sessão de produção ativa (com confirmação forte).';
 }
 
@@ -6056,17 +6056,102 @@ function switchPlanningSession(sessionId, options = {}) {
   const target = planningSessionRegistry.get(sessionId);
   if (!target) return;
 
+  // Suprimir movimentos automáticos do mapa DURANTE toda a troca de sessão.
+  // Qualquer applyFilters disparado aqui (inclusive o final) usará skipFitBounds:true.
+  const wasSuppressed = state.suppressAutoFit;
+  state.suppressAutoFit = true;
+
+  const previousId = state.activePlanningSessionId;
+  const previousMeta = previousId ? planningSessionRegistry.get(previousId) : null;
   const skipCapture = Boolean(options.skipCapture);
-  if (!skipCapture) {
+
+  // 1. Capturar snapshot da sessão que estamos deixando (apenas para PRODUÇÃO).
+  //    Cenário tem buffer próprio (planningSessionClients) — snapshot é redundante.
+  if (!skipCapture && previousMeta && isProductionSession(previousMeta)) {
     captureActivePlanningSessionSnapshot();
   }
 
-  const snapshot = planningSessionSnapshots.get(sessionId) || [];
-  applyPlanningSnapshotToCurrentClients(snapshot, target.ddd);
+  // 2. SWAP de state.clients/state.drivers para isolar cenário de produção.
+  if (previousMeta && previousMeta.id !== target.id) {
+    if (isScenarioSession(previousMeta)) {
+      // Saímos de um cenário: salvar buffer do cenário (cópia rasa de referência)
+      planningSessionClients.set(previousMeta.id, state.clients);
+      planningSessionDrivers.set(previousMeta.id, state.drivers);
+    } else if (isProductionSession(previousMeta) && _productionClientsBackup === null) {
+      // Saímos de produção SEM ter backup ativo: salvar referência viva.
+      _productionClientsBackup = state.clients;
+      _productionDriversBackup = state.drivers;
+    }
+
+    if (isScenarioSession(target)) {
+      // Entrando em cenário: usar buffer próprio (criar vazio se primeira vez).
+      if (!planningSessionClients.has(target.id)) planningSessionClients.set(target.id, []);
+      if (!planningSessionDrivers.has(target.id)) planningSessionDrivers.set(target.id, []);
+      updateState({ clients: planningSessionClients.get(target.id) });
+      state.drivers = planningSessionDrivers.get(target.id);
+
+      // ── LIMPEZA SÍNCRONA DE CACHES E RENDER ────────────────────────────────
+      // Impede que lastFilterContext / filteredClientsCache / routeGroupsCache
+      // (ainda com dados de produção) sejam usados por scheduleViewportMapRefresh
+      // ou buildCachedRenderContext antes que o applyFilters assíncrono resolva.
+      lastFilterContext = null;
+      updateState({ filteredClientsCache: [], routeGroupsCache: [], selectedRouteCache: null });
+
+      // Limpar polylines de produção do mapa agora (síncrono).
+      _polylineRegistry.forEach((entry) => { try { map.removeLayer(entry.polyline); } catch (_) {} });
+      _polylineRegistry.clear();
+
+      // Limpar markers de produção do mapa agora (síncrono).
+      _markerRegistry.forEach((entry) => { try { clusterLayer.removeLayer(entry.marker); } catch (_) {} });
+      _markerRegistry.clear();
+      markers = [];
+
+      // Limpar territory shapes se existirem.
+      if (_territoryRegistry && _territoryRegistry.size > 0) {
+        _territoryRegistry.forEach((entry) => { try { map.removeLayer(entry.polygon); } catch (_) {} });
+        _territoryRegistry.clear();
+        territoryShapes = [];
+        _territoryShapesCacheKey = null;
+      }
+
+      // Cancelar viewport refresh pendente (baseado em dados de produção).
+      if (viewportRefreshTimer) { window.clearTimeout(viewportRefreshTimer); viewportRefreshTimer = null; }
+
+      // Limpar driver base markers de produção.
+      _driverBaseRegistry.forEach((entry) => { try { map.removeLayer(entry.marker); } catch (_) {} });
+      _driverBaseRegistry.clear();
+      driverMarkers = [];
+
+      // Resetar sentinel de viewport diff guard (evita renderizações espúrias baseadas em IDs de produção).
+      _lastRenderedClientIds = null;
+
+      // Limpar routeLines (referências de polylines para o estado).
+      routeLines = [];
+
+    } else {
+      // Entrando em produção: restaurar backup se existir; senão manter atual.
+      if (_productionClientsBackup !== null) {
+        updateState({ clients: _productionClientsBackup });
+        state.drivers = _productionDriversBackup || [];
+        _productionClientsBackup = null;
+        _productionDriversBackup = null;
+      }
+      // Limpar caches do cenário para forçar recálculo com dados de produção.
+      lastFilterContext = null;
+      updateState({ filteredClientsCache: [], routeGroupsCache: [], selectedRouteCache: null });
+    }
+  }
+
+  // 3. Aplicar snapshot APENAS para sessões de produção (cenário usa buffer próprio).
+  if (isProductionSession(target)) {
+    const snapshot = planningSessionSnapshots.get(sessionId) || [];
+    applyPlanningSnapshotToCurrentClients(snapshot, target.ddd);
+  }
+
   normalizeAllCurveSchedules();
 
   // Sincronizar state.mode com o tipo da sessão selecionada
-  state.mode = target.tipo_sessao === 'SIMULACAO' ? 'SIMULATION' : 'REAL';
+  state.mode = isScenarioSession(target) ? 'SIMULATION' : 'REAL';
   try { sessionStorage.setItem('rfx:mode', state.mode); } catch (_) {}
   updateDataModeUI();
 
@@ -6079,6 +6164,10 @@ function switchPlanningSession(sessionId, options = {}) {
   if (sessionSelect) sessionSelect.value = String(sessionId);
   updatePlanningSessionStatus(sessionId);
   applyFilters({ skipFitBounds: true });
+  // Restaurar flag de supressão APÓS o applyFilters assíncrono ter sido agendado
+  // (ele roda via Promise.resolve().then, então o suppressAutoFit já estará falso
+  // quando o calculateRoutes rodar — mas skipFitBounds:true já garante o bloqueio).
+  state.suppressAutoFit = wasSuppressed;
   updatePlannerHint(`Sessão ativa: ${getSessionDisplayLabel(target)}.`);
 }
 
@@ -6093,6 +6182,11 @@ function initializePlanningSessions() {
       id,
       ddd,
       tipo_sessao: 'REAL',
+      type: 'production',
+      name: null,
+      isolated: false,
+      allowCRM: true,
+      allowPALM: true,
       createdAt: new Date().toISOString(),
       sourceSessionId: null,
     });
@@ -6122,13 +6216,12 @@ function _hydrateRealSnapshotForDDD(ddd) {
   }
 }
 
-// Chamada no boot quando state.mode === 'SIMULATION' em vez de captureActivePlanningSessionSnapshot.
-// Retorna true se restauração bem-sucedida, false em qualquer falha (fallback silencioso para REAL session).
-// NÃO chama applyFilters — renderMap + calculateRoutes do boot já cobrem.
-// NÃO chama switchPlanningSession — evita render prematuro e captura de snapshot errada.
+// Reidrata o REGISTRO de cenários salvos (rfx:sim:data:{ddd}) sem auto-ativar.
+// IMPORTANTE: NÃO mexe em state.clients/state.drivers da produção. Apenas
+// registra o cenário no registry+snapshot+buffer próprio. Usuário deve clicar
+// no popover para ativar manualmente. Isso garante que F5 nunca contamine
+// produção mesmo que havia cenário ativo na sessão anterior.
 function _restoreSimulationSession() {
-  if (state.mode !== 'SIMULATION') return false;
-
   const ddd = String(state.selectedDDD);
 
   try {
@@ -6142,45 +6235,47 @@ function _restoreSimulationSession() {
     // Guard 3: estrutura inválida ou versão desconhecida
     if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.clients)) return false;
 
-    // Guard 4: array vazio
-    if (!parsed.clients.length) return false;
-
-    // Guard 5: tipo mínimo dos itens
-    const sample = parsed.clients[0];
-    if (typeof sample.id !== 'string' || typeof sample.driverId !== 'string') return false;
-
-    // Guard 6: sessionId ativo ausente
+    // Guard 4: sessionId ativo ausente
     const savedSessionId = localStorage.getItem(`rfx:sim:active:${ddd}`);
     if (!savedSessionId) return false;
 
-    // Guard 7: sessão REAL base deve existir (initializePlanningSessions já criou)
+    // Guard 5: sessão REAL base deve existir
     if (!planningSessionRegistry.has(getRealSessionIdForDDD(ddd))) return false;
 
-    // Registrar sessão de simulação no registry (sem apagar DDD_65)
+    // Registrar cenário no registry COM metadados arquiteturais.
     planningSessionRegistry.set(savedSessionId, {
       id: savedSessionId,
       ddd,
       tipo_sessao: 'SIMULACAO',
+      type: 'scenario',
+      name: parsed.name || null,
+      isolated: true,
+      allowCRM: false,
+      allowPALM: false,
       createdAt: parsed.savedAt || new Date().toISOString(),
       sourceSessionId: getRealSessionIdForDDD(ddd),
     });
 
-    // Registrar snapshot com os dados salvos (não defaults)
+    // Snapshot legacy (compat com promote/revert) — NÃO aplicado em state.clients.
     planningSessionSnapshots.set(savedSessionId, parsed.clients);
 
-    // Aplicar snapshot a state.clients sem disparar applyFilters
-    applyPlanningSnapshotToCurrentClients(parsed.clients, ddd);
+    // Buffer de clientes do cenário começa vazio. Persistência completa de
+    // clientes do cenário virá via Manutenção (futuro). F5 = cenário vazio,
+    // mas continua aparecendo no popover para o usuário re-selecionar.
+    if (!planningSessionClients.has(savedSessionId)) {
+      planningSessionClients.set(savedSessionId, []);
+    }
+    if (!planningSessionDrivers.has(savedSessionId)) {
+      planningSessionDrivers.set(savedSessionId, []);
+    }
 
-    // Corrigir snapshots['DDD_65'] contaminado — substituir sim defaults pelo plano real salvo
-    _hydrateRealSnapshotForDDD(ddd);
+    // NÃO ativar automaticamente. Boot sempre cai em produção. Usuário ativa
+    // o cenário manualmente via popover. state.mode permanece REAL.
+    state.mode = 'REAL';
+    try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch (_) {}
 
-    // Atualizar estado sem disparar render
-    state.activePlanningSessionId = savedSessionId;
-    state.activePlanningSessionByDDD[ddd] = savedSessionId;
-
-    // Atualizar UI de sessão (sem applyFilters)
     renderPlanningSessionSelector();
-    updatePlanningSessionStatus(savedSessionId);
+    updatePlanningSessionStatus(state.activePlanningSessionId);
 
     return true;
   } catch (_) {
@@ -6190,40 +6285,97 @@ function _restoreSimulationSession() {
 }
 
 
-function createSimulationSessionForActiveDDD(targetDDD = state.selectedDDD, preferredSourceSessionId = null) {
-  captureActivePlanningSessionSnapshot();
+function createSimulationSessionForActiveDDD(targetDDD = state.selectedDDD, preferredSourceSessionId = null, options = {}) {
+  // Captura snapshot da PRODUÇÃO ativa antes de qualquer coisa, para garantir
+  // que o estado atual da produção esteja salvo no snapshot map (idempotente).
+  const activeMeta = planningSessionRegistry.get(state.activePlanningSessionId);
+  if (activeMeta && isProductionSession(activeMeta)) {
+    captureActivePlanningSessionSnapshot();
+  }
 
   const ddd = String(targetDDD);
   const sourceSessionId = preferredSourceSessionId && planningSessionRegistry.has(preferredSourceSessionId)
     ? preferredSourceSessionId
     : (state.activePlanningSessionByDDD[ddd] || getRealSessionIdForDDD(ddd));
-  const sourceLabel = getSourceSessionDisplayLabel(sourceSessionId) || sourceSessionId;
-  const sourceSnapshot = planningSessionSnapshots.get(sourceSessionId) || buildPlanningSnapshotFromCurrentClients(ddd);
-  const simulationId = createSimulationSessionFromSnapshot(ddd, sourceSessionId, sourceSnapshot);
+
+  // ISOLAMENTO ESTRITO: cenário nasce SEM clientes, SEM motoristas, SEM rotas,
+  // SEM assignments. NÃO copiamos nada da produção. Manutenção (futuro) será
+  // o canal explícito para transferência produção → cenário.
+  const simulationId = createSimulationSessionFromSnapshot(ddd, sourceSessionId, [], {
+    name: options && options.name ? options.name : null,
+  });
+  planningSessionClients.set(simulationId, []);
+  planningSessionDrivers.set(simulationId, []);
 
   state.selectedDDD = ddd;
   const dddSelect = document.getElementById('session-select');
   if (dddSelect) dddSelect.value = ddd;
   state.activePlanningSessionByDDD[ddd] = simulationId;
-  renderPlanningSessionSelector();
+  // NÃO chamar renderPlanningSessionSelector() ANTES de switchPlanningSession:
+  // aquela função já escreve state.activePlanningSessionId = simulationId,
+  // o que faria o swap em switchPlanningSession ser ignorado
+  // (previousId === target.id → condição falsa → swap não executa).
   state.mode = 'SIMULATION';
   try { sessionStorage.setItem('rfx:mode', 'SIMULATION'); } catch (_) {}
   updateDataModeUI();
+  // switchPlanningSession faz o swap de state.clients/state.drivers para os
+  // buffers vazios do cenário; produção fica preservada em backup.
   switchPlanningSession(simulationId, { skipCapture: true });
+  // renderPlanningSessionSelector APÓS o switch (não antes), para que o
+  // state.activePlanningSessionId correto já esteja definido.
+  renderPlanningSessionSelector();
+
   const simulationLabel = getSessionDisplayLabel(planningSessionRegistry.get(simulationId));
-  updatePlannerHint(`${simulationLabel} criada a partir de ${sourceLabel}. Nenhum dado será enviado ao CRM ou banco.`);
+  updatePlannerHint(`${simulationLabel} criado (sandbox vazio). Use Manutenção para transferir dados da produção.`);
 }
 
 function createPlanningSessionByDDD(targetDDD = state.selectedDDD) {
   const ddd = String(targetDDD || state.selectedDDD || '').trim();
-  updatePlannerHint('Sessões operacionais reais são criadas automaticamente quando existem clientes no DDD. Use Simulação para testar cenários.');
-  if (/^\d{2,3}$/.test(ddd)) {
-    logger.info('[PLANNING SESSIONS] criação manual de sessão REAL bloqueada', {
-      ddd,
-      activeSessionId: state.activePlanningSessionId,
-      mode: state.mode
-    });
+  if (!/^\d{2,3}$/.test(ddd)) {
+    updatePlannerHint('DDD inválido. Informe apenas dígitos (2 ou 3 caracteres).');
+    return;
   }
+
+  // Se já existir sessão REAL para esse DDD, apenas trocar de sessão ativa.
+  const realId = getRealSessionIdForDDD(ddd);
+  if (planningSessionRegistry.has(realId)) {
+    state.selectedDDD = ddd;
+    state.activePlanningSessionByDDD[ddd] = realId;
+    const dddSelect = document.getElementById('session-select');
+    if (dddSelect && Array.from(dddSelect.options).some((opt) => opt.value === ddd)) {
+      dddSelect.value = ddd;
+    }
+    switchPlanningSession(realId, { skipCapture: true });
+    renderPlanningSessionSelector();
+    closePlanningCreateSessionModal();
+    updatePlannerHint(`Sessão de Produção DDD ${ddd} ativada.`);
+    return;
+  }
+
+  // DDD novo: cria entrada arquitetural (vazia). Carregamento de clientes desse DDD
+  // permanece a cargo do fluxo existente (CRM/loader) — não introduzimos integração
+  // nova aqui (mantendo o escopo: "NAO implementar CRM agora").
+  planningSessionRegistry.set(realId, {
+    id: realId,
+    ddd,
+    tipo_sessao: 'REAL',
+    type: 'production',
+    name: null,
+    isolated: false,
+    allowCRM: true,
+    allowPALM: true,
+    createdAt: new Date().toISOString(),
+    sourceSessionId: null,
+  });
+  planningSessionSnapshots.set(realId, []);
+  state.activePlanningSessionByDDD[ddd] = realId;
+  state.selectedDDD = ddd;
+
+  closePlanningCreateSessionModal();
+  switchPlanningSession(realId, { skipCapture: true });
+  renderPlanningSessionSelector();
+  updatePlannerHint(`Sessão de Produção DDD ${ddd} criada. Carregue clientes para iniciar o planejamento.`);
+  logger.info('[PLANNING SESSIONS] sessão REAL criada', { ddd, sessionId: realId });
 }
 
 function deleteActiveSimulationSessionForDDD(options = {}) {
@@ -6234,7 +6386,7 @@ function deleteActiveSimulationSessionForDDD(options = {}) {
   if (!meta) return;
 
   if (meta.tipo_sessao === 'REAL') {
-    updatePlannerHint('Selecione uma sessão de simulação para apagar.');
+    updatePlannerHint('Selecione um cenário para apagar.');
     return;
   }
 
@@ -6243,7 +6395,7 @@ function deleteActiveSimulationSessionForDDD(options = {}) {
     : getRealSessionIdForDDD(ddd);
   const fallbackLabel = getSourceSessionDisplayLabel(fallbackSessionId) || fallbackSessionId;
   if (!skipConfirm) {
-    const confirmed = window.confirm(`Apagar a simulação ${meta.id}? Esta ação remove apenas o cenário de teste.`);
+    const confirmed = window.confirm(`Apagar o cenário "${getSessionDisplayLabel(meta)}"? Esta ação remove apenas o sandbox.`);
     if (!confirmed) return;
   }
 
@@ -6258,15 +6410,17 @@ function deleteActiveSimulationSessionForDDD(options = {}) {
 
   planningSessionRegistry.delete(meta.id);
   planningSessionSnapshots.delete(meta.id);
+  planningSessionClients.delete(meta.id);
+  planningSessionDrivers.delete(meta.id);
   if (state.lastPromotionBackupByDDD[ddd] === meta.id) {
     delete state.lastPromotionBackupByDDD[ddd];
   }
   state.activePlanningSessionByDDD[ddd] = fallbackSessionId;
-  renderPlanningSessionSelector();
   state.mode = 'REAL';
   try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch (_) {}
   updateDataModeUI();
   switchPlanningSession(fallbackSessionId, { skipCapture: true });
+  renderPlanningSessionSelector();
   updatePlannerHint(`${getSessionDisplayLabel(meta)} apagada. Sessão ativa retornou para ${fallbackLabel}.`);
 }
 
@@ -6284,13 +6438,15 @@ function deleteRealPlanningSessionForDDD(options = {}) {
 
   const allSessionsForDDD = getPlanningSessionsForDDD(ddd);
   if (!skipConfirm) {
-    const confirmed = window.confirm(`Apagar a sessão de planejamento DDD ${ddd} e ${Math.max(0, allSessionsForDDD.length - 1)} simulação(ões) vinculada(s)?`);
+    const confirmed = window.confirm(`Apagar a sessão de produção DDD ${ddd} e ${Math.max(0, allSessionsForDDD.length - 1)} cenário(s) vinculado(s)?`);
     if (!confirmed) return;
   }
 
   allSessionsForDDD.forEach((session) => {
     planningSessionRegistry.delete(session.id);
     planningSessionSnapshots.delete(session.id);
+    planningSessionClients.delete(session.id);
+    planningSessionDrivers.delete(session.id);
   });
   delete state.activePlanningSessionByDDD[ddd];
   delete state.lastPromotionBackupByDDD[ddd];
@@ -6311,37 +6467,55 @@ function deleteRealPlanningSessionForDDD(options = {}) {
   const fallbackDDD = availableDDD.includes('65') ? '65' : availableDDD[0];
   state.selectedDDD = fallbackDDD;
   document.getElementById('session-select').value = fallbackDDD;
-  renderPlanningSessionSelector();
   switchPlanningSession(state.activePlanningSessionByDDD[fallbackDDD] || getRealSessionIdForDDD(fallbackDDD), { skipCapture: true });
+  renderPlanningSessionSelector();
   updatePlannerHint(`Sessão de produção DDD ${ddd} apagada.`);
 }
 
 function updatePlanningCreateSessionMode() {
   const selectedType = document.querySelector('input[name="planning-create-type"]:checked')?.value || 'production';
-  const dddField = document.getElementById('planning-create-ddd-field');
+  const input = document.getElementById('planning-create-input');
+  const label = document.getElementById('planning-create-input-label');
   const simHint = document.getElementById('planning-create-sim-hint');
-  const simDDD = document.getElementById('planning-create-sim-ddd');
   const confirmBtn = document.getElementById('planning-create-confirm-btn');
-  const isSimulation = selectedType === 'simulation';
+  const isScenario = selectedType === 'simulation';
 
-  if (dddField) dddField.hidden = isSimulation;
-  if (simHint) simHint.hidden = !isSimulation;
-  if (simDDD) simDDD.textContent = `DDD ${state.selectedDDD}`;
-  if (confirmBtn) confirmBtn.textContent = isSimulation ? 'Criar Simulação' : 'Criar Sessão';
+  if (input) {
+    if (isScenario) {
+      input.type = 'text';
+      input.removeAttribute('inputmode');
+      input.removeAttribute('pattern');
+      input.maxLength = 60;
+      input.placeholder = 'Ex: FERIADO MAIO, ROTA FEVEREIRO';
+      // Limpar valor numérico se trocou de produção
+      if (/^\d+$/.test(String(input.value || ''))) input.value = '';
+    } else {
+      input.type = 'text';
+      input.inputMode = 'numeric';
+      input.setAttribute('pattern', '[0-9]*');
+      input.maxLength = 3;
+      input.placeholder = 'Ex: 65, 62, 11';
+      // Sanitiza valor existente
+      input.value = String(input.value || '').replace(/\D/g, '').slice(0, 3);
+    }
+  }
+  if (label) label.textContent = isScenario ? 'Nome do cenário' : 'Número do DDD (apenas dígitos)';
+  if (simHint) simHint.hidden = !isScenario;
+  if (confirmBtn) confirmBtn.textContent = isScenario ? 'Criar Cenário' : 'Criar Sessão';
 }
 
 function openPlanningCreateSessionModal() {
   const modal = document.getElementById('planning-create-modal');
-  const dddInput = document.getElementById('planning-create-ddd-input');
+  const input = document.getElementById('planning-create-input');
   const productionOption = document.getElementById('planning-create-type-production');
-  if (!modal || !dddInput || !productionOption) return;
+  if (!modal || !input || !productionOption) return;
 
   closePlanningSessionsPopover();
   productionOption.checked = true;
-  dddInput.value = String(state.selectedDDD || '').replace(/\D/g, '').slice(0, 3);
+  input.value = String(state.selectedDDD || '').replace(/\D/g, '').slice(0, 3);
   updatePlanningCreateSessionMode();
   modal.hidden = false;
-  dddInput.focus();
+  input.focus();
 }
 
 function closePlanningCreateSessionModal() {
@@ -6352,19 +6526,34 @@ function closePlanningCreateSessionModal() {
 
 function confirmPlanningCreateSessionFromModal() {
   const selectedType = document.querySelector('input[name="planning-create-type"]:checked')?.value || 'production';
+  const input = document.getElementById('planning-create-input');
 
   if (selectedType === 'simulation') {
+    const rawName = input ? String(input.value || '').trim() : '';
+    if (!rawName) {
+      updatePlannerHint('Informe um nome para o cenário.');
+      if (input) input.focus();
+      return;
+    }
     const currentDDD = String(state.selectedDDD);
     const sourceSessionId = getRealSessionIdForDDD(currentDDD);
-    createSimulationSessionForActiveDDD(currentDDD, sourceSessionId);
+    createSimulationSessionForActiveDDD(currentDDD, sourceSessionId, { name: rawName });
     closePlanningCreateSessionModal();
     openPlanningSessionsPopover();
     return;
   }
 
-  const dddInput = document.getElementById('planning-create-ddd-input');
-  if (dddInput) dddInput.focus();
-  createPlanningSessionByDDD((dddInput && dddInput.value) || state.selectedDDD);
+  const rawDDD = input ? String(input.value || '').replace(/\D/g, '') : '';
+  if (!/^\d{2,3}$/.test(rawDDD)) {
+    updatePlannerHint('DDD inválido. Informe apenas dígitos (2 ou 3 caracteres).');
+    if (input) {
+      input.value = rawDDD;
+      input.focus();
+    }
+    return;
+  }
+  if (input) input.value = rawDDD;
+  createPlanningSessionByDDD(rawDDD);
 }
 
 function deleteSelectedPlanningSession() {
@@ -6398,7 +6587,7 @@ async function promoteActiveSimulationToRealSession() {
   const activeMeta = planningSessionRegistry.get(activeSessionId);
 
   if (!activeMeta || activeMeta.tipo_sessao !== 'SIMULACAO') {
-    updatePlannerHint('Selecione uma simulação para promover para produção.');
+    updatePlannerHint('Selecione um cenário para promover para produção.');
     return;
   }
 
@@ -6408,6 +6597,11 @@ async function promoteActiveSimulationToRealSession() {
       id: realSessionId,
       ddd,
       tipo_sessao: 'REAL',
+      type: 'production',
+      name: null,
+      isolated: false,
+      allowCRM: true,
+      allowPALM: true,
       createdAt: new Date().toISOString(),
       sourceSessionId: null,
     });
@@ -6433,11 +6627,11 @@ async function promoteActiveSimulationToRealSession() {
   planningSessionSnapshots.delete(activeSessionId);
 
   state.activePlanningSessionByDDD[ddd] = realSessionId;
-  renderPlanningSessionSelector();
   state.mode = 'REAL';
   try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch (_) {}
   updateDataModeUI();
   switchPlanningSession(realSessionId, { skipCapture: true });
+  renderPlanningSessionSelector();
 
   postBackendEvent('/planning/sessions/promote-simulation', {
     ddd,
@@ -6450,7 +6644,7 @@ async function promoteActiveSimulationToRealSession() {
 
   // CORREÇÃO 4: Persistir imediatamente o plano REAL após promoção
   markPlanAsDirty();
-  updatePlannerHint(`Simulação promovida para Produção DDD ${ddd}. Salvando...`);
+  updatePlannerHint(`Cenário promovido para Produção DDD ${ddd}. Salvando...`);
   await savePlanningAdjustments();
 }
 
@@ -6480,11 +6674,11 @@ function revertRealPlanningSession() {
   state.lastPromotionBackupByDDD[ddd] = preservedCurrentRealSimulationId;
 
   state.activePlanningSessionByDDD[ddd] = realSessionId;
-  renderPlanningSessionSelector();
   state.mode = 'REAL';
   try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch (_) {}
   updateDataModeUI();
   switchPlanningSession(realSessionId, { skipCapture: true });
+  renderPlanningSessionSelector();
 
   postBackendEvent('/planning/sessions/revert-real', {
     ddd,
@@ -6738,6 +6932,7 @@ async function savePlanningAdjustments() {
         version: 1,
         savedAt: new Date().toISOString(),
         sessionId: state.activePlanningSessionId,
+        name: activeSessionMeta.name || null,
         clients: planningSessionSnapshots.get(state.activePlanningSessionId) || []
       });
       // Chave nova determinística — recuperável após reload
@@ -6746,11 +6941,12 @@ async function savePlanningAdjustments() {
       // Chave antiga — mantida para compatibilidade
       localStorage.setItem(`${PLAN_SAVE_STORAGE_KEY}:sim:${state.activePlanningSessionId}`, simPayload);
       markPlanAsSaved();
-      updatePlannerHint(`Ajustes salvos apenas na simulação ${state.activePlanningSessionId}. Produção não foi alterada.`);
+      const _scenarioLabel = getSessionDisplayLabel(activeSessionMeta);
+      updatePlannerHint(`Ajustes salvos apenas no cenário ${_scenarioLabel}. Produção não foi alterada.`);
       applyFilters({ skipFitBounds: true });
       return;
     } catch (storageError) {
-      updatePlannerHint('Falha ao salvar ajustes da simulação no navegador.');
+      updatePlannerHint('Falha ao salvar ajustes do cenário no navegador.');
       return;
     }
   }
@@ -6760,7 +6956,7 @@ async function savePlanningAdjustments() {
   // a sessão ativa pode ser REAL (DDD_65) enquanto state.mode ainda é SIMULATION.
   if (state.mode === 'SIMULATION') {
     markPlanAsSaved();
-    updatePlannerHint('Modo simulação: nenhum dado de produção foi alterado.');
+    updatePlannerHint('Modo cenário: nenhum dado de produção foi alterado.');
     return;
   }
 
@@ -11950,24 +12146,48 @@ function updateFocusCards(selectedRoute, filteredClients, routeGroups) {
   if (_t1_fc - _t0_fc > _fcE.maxMs) _fcE.maxMs = _t1_fc - _t0_fc;
 }
 
-function fitMapToFilteredClients(filteredClients, selectedRoute) {
+// ── POLÍTICA CENTRAL DE MOVIMENTAÇÃO DO MAPA ─────────────────────────────────
+// Chamada por QUALQUER função que pretenda mover a câmera automaticamente.
+// Retorna true se o movimento é permitido.
+//
+// razões aceitas sem bloqueio (user:*) — sempre permitidas:
+//   user:center-route    botao Centralizar rota
+//   user:center-driver   foco em motorista
+//   user:center-client   foco em cliente
+//   user:search-client   busca por cliente
+//   user:manual-fit      comando manual/AI
+//
+// razões automáticas (auto:*) — bloqueadas quando suppressAutoFit=true:
+//   auto:fitBounds       fitMapToFilteredClients (após renderização)
+//   auto:focusDDD        focusMapOnDDD (fallback de DDD vazio)
+//   auto:boot            zoom inicial no boot
+function shouldAutoFitMap(reason) {
+  const allowed = Boolean(!state.suppressAutoFit || (reason && reason.startsWith('user:')));
+  if (typeof console !== 'undefined' && console.debug) {
+    console.debug('[MAP_MOVE_AUDIT]', allowed ? 'allowed' : 'BLOCKED', 'reason=' + reason);
+  }
+  return allowed;
+}
+
+function fitMapToFilteredClients(filteredClients, selectedRoute, reason) {
+  if (!shouldAutoFitMap(reason || 'auto:fitBounds')) return;
   if (selectedRoute && selectedRoute.clients.length) {
     const points = [[selectedRoute.driver.lat, selectedRoute.driver.lon], ...selectedRoute.clients.map((client) => [client.lat, client.lon])];
     map.fitBounds(points, { padding: [60, 60] });
     return;
   }
-
-  if (filteredClients.length) {
+  if (filteredClients && filteredClients.length) {
     map.fitBounds(filteredClients.map((client) => [client.lat, client.lon]), { padding: [60, 60] });
     return;
   }
-
-  focusMapOnDDD(state.selectedDDD, { zoom: 8, animate: true });
+  // Sem clientes: NÃO mover automaticamente. focusMapOnDDD só roda em ação explicita do usuário.
+  focusMapOnDDD(state.selectedDDD, { zoom: 8, animate: true, reason: reason || 'auto:fitBounds' });
 }
 
 function focusMapOnDDD(ddd, options = {}) {
   if (!map) return;
-
+  const reason = options.reason || 'auto:focusDDD';
+  if (!shouldAutoFitMap(reason)) return;
   const dddText = String(ddd || state.selectedDDD || '65');
   ensureDDDOperationalContext(dddText);
   const base = driverBases[Number(dddText)];
@@ -11975,7 +12195,6 @@ function focusMapOnDDD(ddd, options = {}) {
   const lon = Number(base && base.lon);
   const zoom = Number(options.zoom || 8);
   const animate = options.animate !== false;
-
   if (Number.isFinite(lat) && Number.isFinite(lon)) {
     if (animate && typeof map.flyTo === 'function') {
       map.flyTo([lat, lon], zoom, { duration: 0.75, easeLinearity: 0.25 });
@@ -11984,7 +12203,6 @@ function focusMapOnDDD(ddd, options = {}) {
     map.setView([lat, lon], zoom);
     return;
   }
-
   map.setView([-15.9, -54.8], 6);
 }
 
@@ -14189,7 +14407,7 @@ async function regenerateScenario() {
   state.selectedStopId = null;
   await initializeApp();
   markPlanAsSaved();
-  applyFilters();
+  applyFilters({ skipFitBounds: true });
 }
 
 function publishPlan() {
@@ -14211,7 +14429,7 @@ function clearSelection() {
 function centerCurrentRoute() {
   const routeGroups = getRouteGroupsSafe();
   const selectedRoute = routeGroups.find((route) => route.routeId === state.selectedRouteId) || null;
-  fitMapToFilteredClients(state.filteredClientsCache, selectedRoute);
+  fitMapToFilteredClients(state.filteredClientsCache, selectedRoute, 'user:center-route');
 }
 
 function togglePanel(panelId, stateKey) {
@@ -14228,7 +14446,10 @@ async function activatePlanningSessionScope(ddd, sessionId = null) {
   state.selectedDDD = dddText;
   const dddSelect = document.getElementById('session-select');
   if (dddSelect) dddSelect.value = dddText;
-  renderPlanningSessionSelector();
+  // NÃO chamar renderPlanningSessionSelector() aqui: ela escreve
+  // state.activePlanningSessionId = targetSession, o que impede o
+  // swap em switchPlanningSession (previousId === targetId). Chamada
+  // movida para APÓS switchPlanningSession abaixo.
 
   // ── Lazy loading: buscar clientes do CRM se o DDD ainda não foi carregado ──
   if (state.mode === 'REAL') {
@@ -14263,6 +14484,7 @@ async function activatePlanningSessionScope(ddd, sessionId = null) {
     || getRealSessionIdForDDD(dddText);
 
   switchPlanningSession(targetSessionId, { skipCapture: true });
+  renderPlanningSessionSelector();
   state.manualAdjustedDriverIds.clear();
   state.selectedDriverId = 'all';
   state.selectedDriverIds.clear();
@@ -14285,7 +14507,7 @@ async function activatePlanningSessionScope(ddd, sessionId = null) {
     subtitleEl.textContent = 'Ajuste de carteira: redistribua clientes entre motoristas usando laço ou arrastar.';
   }
 
-  applyFilters();
+  applyFilters({ skipFitBounds: true });
 }
 
 function handlePlanningSessionRowAction(action, sessionId, ddd) {
@@ -14372,12 +14594,19 @@ document.querySelectorAll('input[name="planning-create-type"]').forEach((radio) 
   radio.addEventListener('change', updatePlanningCreateSessionMode);
 });
 
-const planningCreateDDDInput = document.getElementById('planning-create-ddd-input');
-if (planningCreateDDDInput) {
-  planningCreateDDDInput.addEventListener('keydown', (event) => {
+const planningCreateInput = document.getElementById('planning-create-input');
+if (planningCreateInput) {
+  planningCreateInput.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter') return;
     event.preventDefault();
     confirmPlanningCreateSessionFromModal();
+  });
+  // Sanitizacao em tempo real apenas em modo producao (DDD numerico).
+  planningCreateInput.addEventListener('input', (event) => {
+    const selectedType = document.querySelector('input[name="planning-create-type"]:checked')?.value || 'production';
+    if (selectedType !== 'production') return;
+    const stripped = String(event.target.value || '').replace(/\D/g, '').slice(0, 3);
+    if (stripped !== event.target.value) event.target.value = stripped;
   });
 }
 

@@ -110,7 +110,11 @@ const state = {
   lastFilterContext: null,
   viewportRefreshTimer: null,
   simulationSourceCustomers: [],
-  simulationSyncTimer: null
+  simulationSyncTimer: null,
+  // ── Mapa: supressão de movimentos automáticos ────────────────────────────
+  // Quando true, fitBounds/flyTo/setView automáticos são bloqueados.
+  // Só reações explícitas do usuário (reason=user:*) passam mesmo com este flag.
+  suppressAutoFit: false
 };
 
 function updateState(patch) {
