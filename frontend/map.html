@@ -7417,6 +7417,13 @@ function switchPlanningSession(sessionId, options = {}) {
 
   state.activePlanningSessionId = sessionId;
   state.activePlanningSessionByDDD[target.ddd] = sessionId;
+  // Persist last-active scenario for F5 hydration guard.
+  // Cleared when returning to production so boot never re-enters a scenario by mistake.
+  if (isScenarioSession(target)) {
+    try { localStorage.setItem('rfx:last-active-session:' + target.ddd, sessionId); } catch (_) {}
+  } else {
+    try { localStorage.removeItem('rfx:last-active-session:' + target.ddd); } catch (_) {}
+  }
   state.selectedDDD = String(target.ddd);
   const dddSelect = document.getElementById('session-select');
   if (dddSelect) dddSelect.value = String(target.ddd);
@@ -7593,6 +7600,7 @@ function _restoreSimulationSession() {
   // Boot sempre volta para produção — não ativar cenário automaticamente
   state.mode = 'REAL';
   try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch(_) {}
+  updateDataModeUI(); // Sync toolbar badge after mode reset — caller may have left it as SIMULATION
 
   if (restored) {
     renderPlanningSessionSelector();
@@ -16411,18 +16419,18 @@ async function toggleDataMode() {
 }
 
 async function initializeApp() {
-  // Restaurar modo REAL/SIMULATION persistido (sobrevive ao reload da aba)
-  try {
-    const _savedMode = sessionStorage.getItem('rfx:mode');
-    if (_savedMode === 'REAL' || _savedMode === 'SIMULATION') {
-      state.mode = _savedMode;
-      updateDataModeUI();
-    }
-  } catch (_) {}
+  // ── HYDRATION GUARD ─────────────────────────────────────────────────────────
+  // Do NOT restore state.mode from sessionStorage here.
+  // state.mode is set authoritatively by:
+  //   _restoreSimulationSession() → always resets to 'REAL'
+  //   switchPlanningSession()     → sets 'SIMULATION' when activating a scenario
+  // Reading the stale sessionStorage value before data is loaded would create a
+  // hybrid state: mode=SIMULATION banner while clients=production data.
+  // ────────────────────────────────────────────────────────────────────────────
 
   initializeDrivers();
 
-  // Carregar apenas o DDD padrão no boot (lazy loading dos demais ao trocar)
+  // Fase 1: carregar apenas o DDD padrão no boot (lazy loading dos demais ao trocar)
   const loadedCustomers = await loadCustomersFromSource(state.selectedDDD, { entryPoint: 'boot' });
   logger.info(`[BOOT] DDD ${state.selectedDDD}: ${loadedCustomers.length} clientes carregados`);
 
@@ -16442,19 +16450,40 @@ async function initializeApp() {
   syncInstrumentsPanelUI();
   syncTerritoryViewUI();
   updateDataModeUI();
-  renderMap(state.clients, []);
-  calculateRoutes();
 
-  // Fase 2: carrega planejamento DDD-scoped (backend → localStorage → legacy)
+  // Fase 2: carrega planejamento DDD-scoped (backend → localStorage → legacy).
+  // Must run before any render so clients have correct driver/day/week assignments.
   await loadPlanningForDDD(state.selectedDDD);
+
   // Fase 3: restaurar metadados + buffers de cenários salvos (SEMPRE — independente do modo).
-  // Não ativa nenhum cenário: boot sempre começa em produção. Apenas popula o registry
-  // para que os cenários apareçam no popover e o Manutenção encontre os destinos.
+  // Resets state.mode to 'REAL' and calls updateDataModeUI() — no mixed-state possible after this.
   _restoreSimulationSession();
-  // Capturar snapshot da produção apenas se estamos em modo REAL após a restauração.
-  if (state.mode !== 'SIMULATION') {
+
+  // Fase 4: re-ativar último cenário se o usuário estava em um cenário antes do F5.
+  // rfx:last-active-session:{ddd} é gravada por switchPlanningSession ao ativar cenário
+  // e apagada ao retornar para produção — boot é sempre limpo quando último estado era produção.
+  var _bootActivatedScenario = false;
+  try {
+    var _lastScenId = localStorage.getItem('rfx:last-active-session:' + state.selectedDDD);
+    if (_lastScenId && planningSessionRegistry.has(_lastScenId)) {
+      var _lastScenMeta = planningSessionRegistry.get(_lastScenId);
+      if (_lastScenMeta && isScenarioSession(_lastScenMeta)) {
+        console.info('[BOOT] último cenário detectado — re-ativando sem render de produção', _lastScenId);
+        switchPlanningSession(_lastScenId, { skipCapture: true });
+        _bootActivatedScenario = true;
+      }
+    }
+  } catch (_bootScenErr) {
+    console.warn('[BOOT] falha ao re-ativar último cenário', _bootScenErr);
+  }
+
+  if (!_bootActivatedScenario) {
+    // Production path: first render is always clean (mode=REAL, clients=production).
+    renderMap(state.clients, []);
+    calculateRoutes();
     captureActivePlanningSessionSnapshot();
   }
+
   if (_autosaveTimer) {
     clearTimeout(_autosaveTimer);
     _autosaveTimer = null;
