@@ -7315,8 +7315,22 @@ function switchPlanningSession(sessionId, options = {}) {
       // Entrando em cenário: usar buffer próprio (criar vazio se primeira vez).
       if (!planningSessionClients.has(target.id)) planningSessionClients.set(target.id, []);
       if (!planningSessionDrivers.has(target.id)) planningSessionDrivers.set(target.id, []);
-      updateState({ clients: planningSessionClients.get(target.id) });
+      var _scenBuf = planningSessionClients.get(target.id);
+      updateState({ clients: _scenBuf });
       state.drivers = planningSessionDrivers.get(target.id);
+      var _scenBufSample = Array.isArray(_scenBuf) ? _scenBuf.slice(0, 3).map(function(c) { return { id: c.id, ddd: c.ddd, driverId: c.driverId, lat: c.lat, lon: c.lon, clientType: c.clientType, week: c.week, day: c.day }; }) : [];
+      console.info('[SCENARIO-ACTIVATE]', {
+        scenarioId: target.id,
+        bufferType: Array.isArray(_scenBuf) ? 'Array' : typeof _scenBuf,
+        bufferLength: Array.isArray(_scenBuf) ? _scenBuf.length : '?',
+        first3: _scenBufSample,
+        stateClientsLength: state.clients.length,
+        selectedDDD: state.selectedDDD,
+        viewMode: state.viewMode,
+        showActiveClients: state.showActiveClients,
+        activeWeeks: Array.from(state.activeWeeks || []),
+        activeDays: Array.from(state.activeDays || []),
+      });
 
       // ── LIMPEZA SÍNCRONA DE CACHES E RENDER ────────────────────────────────
       // Impede que lastFilterContext / filteredClientsCache / routeGroupsCache
@@ -14467,7 +14481,7 @@ function renderMap(filteredClients, routeGroups, _precomputedSelect) {
   // === Build desired marker set (no DOM work yet) ===
   const desiredMarkers = new Map();
 
-  const _visibleDriverIds = new Set(routeGroups.map(r => r.driver.id));
+  const _visibleDriverIds = new Set(routeGroups.filter(r => r.driver && r.driver.id).map(r => r.driver.id));
   const _fewDriversMode = _visibleDriverIds.size <= 3 && _visibleDriverIds.size > 0;
 
   routeGroups.forEach((route) => {
@@ -14537,7 +14551,7 @@ function renderMap(filteredClients, routeGroups, _precomputedSelect) {
     }
 
     // --- Driver base markers (diffed, no full rebuild) ---
-    if (showBaseForThisMode) {
+    if (showBaseForThisMode && route.driver && route.driver.lat != null && route.driver.lon != null) {
       _desiredDriverBaseMarkers.set(route.routeId, {
         route,
         routeId: route.routeId,

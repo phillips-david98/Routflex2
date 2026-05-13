@@ -350,6 +350,12 @@ function classifyClients() {
   _classifyCacheKey = key;
   // Territory shapes depend on territorial bucket — mark dirty on any classify rebuild
   state._territoryDirty = true;
+  console.debug('[CLASSIFY]', {
+    selectedDDD, mutationCounter: state._clientMutationCounter,
+    totalClients: clients.length, filtered: filtered.length, territorial: territorial.length,
+    special: special.length, noCoord: noCoord.length,
+    first3ddds: clients.slice(0,3).map(function(c){return c.ddd;}),
+  });
   return _classifyCache;
 }
 
@@ -395,7 +401,8 @@ function buildRouteGroups(filteredClients, options = {}) {
   filteredClients.forEach((client) => {
     const routeId = createRouteId(client.ddd, client.driverId, client.week, client.day);
     if (!groups.has(routeId)) {
-      const driver = getDriverById(client.driverId) || getDriversByDDD(client.ddd)[0];
+      const driver = getDriverById(client.driverId) || getDriversByDDD(client.ddd)[0]
+        || { id: client.driverId, name: 'Sem motorista', lat: null, lon: null, vehicle: 'carro', ddd: client.ddd, territoryColor: '#95a5a6' };
       groups.set(routeId, {
         routeId,
         ddd: client.ddd,
