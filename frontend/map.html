@@ -6102,6 +6102,21 @@ function _saveScenarioRegistry(ddd) {
   }
 }
 
+// ── Scenario mutation persistence (debounced) ─────────────────────────────
+// Called after any client mutation while a scenario session is active.
+// Collapses rapid sequential edits (drag, lasso) into a single localStorage write.
+var _scenarioPersistTimer = null;
+function _scheduleScenarioPersist() {
+  var _spMeta = planningSessionRegistry.get(state.activePlanningSessionId);
+  if (!_spMeta || _spMeta.tipo_sessao !== 'SIMULACAO') return;
+  var _spId = state.activePlanningSessionId;
+  if (_scenarioPersistTimer) clearTimeout(_scenarioPersistTimer);
+  _scenarioPersistTimer = setTimeout(function() {
+    _scenarioPersistTimer = null;
+    persistScenarioSession(_spId);
+  }, 1500);
+}
+
 /** Retorna o pool de clientes de produção (backup ou live) */
 function _productionClientsPool() {
   return _productionClientsBackup || state.clients;
@@ -6462,6 +6477,10 @@ function _computeMaintenancePlan() {
   var srcMeta = planningSessionRegistry.get(originId);
   var dstMeta = planningSessionRegistry.get(destId);
   if (srcMeta && dstMeta && srcMeta.type === 'scenario' && dstMeta.type === 'production') return null;
+  // Validação: bloquear operações entre DDDs diferentes
+  if (srcMeta && dstMeta && String(srcMeta.ddd) !== String(dstMeta.ddd)) {
+    return { crossDDD: true, srcDDD: String(srcMeta.ddd), dstDDD: String(dstMeta.ddd) };
+  }
   // Escopo: precisa selecionar pelo menos motoristas OU laço (sem "todos" implícito)
   var hasDriverScope = _maintenanceUIState.selectedDriverIds.size > 0;
   var hasLassoScope  = !!(useLasso && state.lassoSelectionIds && state.lassoSelectionIds.size > 0);
@@ -6518,6 +6537,14 @@ function _renderMaintenanceSummary() {
     if (execBtn)   { execBtn.disabled = true; execBtn.classList.remove('is-danger'); }
     return;
   }
+  if (plan.crossDDD) {
+    if (sumCount)  sumCount.textContent  = 'DDDs diferentes';
+    if (sumOp)     sumOp.textContent     = '—';
+    if (sumOrigin) sumOrigin.textContent = 'DDD ' + plan.srcDDD;
+    if (sumDest)   sumDest.textContent   = 'DDD ' + plan.dstDDD;
+    if (execBtn)   { execBtn.disabled = true; execBtn.classList.remove('is-danger'); }
+    return;
+  }
   var opLabel  = plan.operation === 'copy' ? 'Copiar' : 'Transferir';
   var srcLabel = getSessionDisplayLabel(planningSessionRegistry.get(plan.sourceSessionId)) || plan.sourceSessionId;
   var dstLabel = getSessionDisplayLabel(planningSessionRegistry.get(plan.destSessionId))   || plan.destSessionId;
@@ -6561,7 +6588,15 @@ function _showMaintenanceFeedback(message, isError) {
 
 function _executeMaintenance() {
   var plan = _computeMaintenancePlan();
-  if (!plan || plan.noScope || !plan.clientIds.length) {
+  if (!plan) {
+    _showMaintenanceFeedback('Nenhum cliente no escopo selecionado. Selecione motoristas ou um laço.', true);
+    return;
+  }
+  if (plan.crossDDD) {
+    _showMaintenanceFeedback('Operações entre DDDs diferentes ainda não são permitidas.', true);
+    return;
+  }
+  if (plan.noScope || !plan.clientIds.length) {
     _showMaintenanceFeedback('Nenhum cliente no escopo selecionado. Selecione motoristas ou um laço.', true);
     return;
   }
@@ -6611,6 +6646,10 @@ var _autosaveDirtyDDDs = new Set();
 
 function _schedulePlanningAutosave(ddd) {
   if (state.mode !== 'REAL') return;
+  // Guard: never schedule a production autosave while a scenario session is active.
+  // Scenario sessions have tipo_sessao === 'SIMULACAO' regardless of state.mode.
+  var _schedActiveMeta = planningSessionRegistry.get(state.activePlanningSessionId);
+  if (_schedActiveMeta && _schedActiveMeta.tipo_sessao === 'SIMULACAO') return;
   if (ddd) _autosaveDirtyDDDs.add(String(ddd));
   if (_autosaveTimer) clearTimeout(_autosaveTimer);
   _autosaveTimer = setTimeout(function() {
@@ -6622,6 +6661,10 @@ function _schedulePlanningAutosave(ddd) {
 }
 
 function _flushPlanningForDDD(ddd) {
+  // Guard: never write production keys (backend + ROUTflex:plan:ddd:*) while a
+  // scenario session is active. state.clients holds scenario data in that case.
+  var _flushActiveMeta = planningSessionRegistry.get(state.activePlanningSessionId);
+  if (_flushActiveMeta && _flushActiveMeta.tipo_sessao === 'SIMULACAO') return;
   // CORREÇÃO 1: Suspender autosave se houver drag ativo (estado intermediário)
   if (state.dragClientId) {
     _autosaveDirtyDDDs.add(String(ddd));
@@ -7378,6 +7421,18 @@ function _restoreSimulationSession() {
             planningSessionDrivers.set(savedSessionId, []);
             restored = true;
             console.info('[SESSION-RESTORE] cenário restaurado (legado)', savedSessionId, parsed.clients.length, 'clientes');
+            // ── Migrate legacy key → new namespace ──────────────────────────
+            // Absorb into rfx:scenario:buf:{id} + rfx:sim:scenarios:{ddd} so
+            // subsequent reloads use Path A and the legacy key is never read again.
+            try {
+              persistScenarioSession(savedSessionId);
+              _saveScenarioRegistry(ddd);
+              localStorage.removeItem('rfx:sim:data:' + ddd);
+              localStorage.removeItem('rfx:sim:active:' + ddd);
+              console.info('[SESSION-RESTORE] chave legada migrada e removida para DDD', ddd);
+            } catch(migrateErr) {
+              console.warn('[SESSION-RESTORE] migração legada falhou (chave preservada)', migrateErr);
+            }
           }
         }
       }
@@ -10588,6 +10643,7 @@ function moveLassoSelectionToDriver(targetDriverId, options = {}) {
   if (!document.getElementById('driver-manager-modal').hidden) {
     renderDriverManagerPanel();
   }
+  _scheduleScenarioPersist();
 }
 
 function moveLassoSelectionToDay(targetDay, options = {}) {
@@ -10653,6 +10709,7 @@ function moveLassoSelectionToDay(targetDay, options = {}) {
   state.activeDays.add(targetDay);
   applyFilters({ skipFitBounds: true });
   updatePlannerHint(`${changed} clientes reprogramados para o dia ${targetDay}.`);
+  _scheduleScenarioPersist();
 }
 
 function handleLassoGroupDrag(event, previewLatLng = null) {
@@ -11422,6 +11479,7 @@ function savePdvDraft(clientId) {
     + '&week=' + encodeURIComponent(draftWeek || '')
     + '&user=frontend', {});
   updatePlannerHint(draftDay && draftWeek ? 'Visita definida: S' + draftWeek + ' / ' + draftDay + '.' : 'Visita removida para este cliente.');
+  _scheduleScenarioPersist();
   state.pdvEditDraft = null;
   closeClientPopup({ skipDraftCheck: true });
 }
@@ -11448,6 +11506,7 @@ function changePdvDay(clientId, newDay) {
     applyFilters({ skipFitBounds: true });
     postBackendEvent(`/customers/${encodeURIComponent(client.id)}/visit-day?day=&week=${encodeURIComponent(client.week || '')}&user=frontend`, {});
     updatePlannerHint('Dia de visita removido manualmente para este cliente.');
+    _scheduleScenarioPersist();
     return;
   }
 
@@ -11481,6 +11540,7 @@ function changePdvDay(clientId, newDay) {
     applyFilters({ skipFitBounds: true });
     postBackendEvent(`/customers/${encodeURIComponent(client.id)}/visit-day?day=${encodeURIComponent(client.day)}&week=${encodeURIComponent(client.week)}&user=frontend`, {});
     updatePlannerHint('Ajuste manual aplicado para cliente fora do fluxo automático.');
+    _scheduleScenarioPersist();
     return;
   }
 
@@ -11497,6 +11557,7 @@ function changePdvDay(clientId, newDay) {
   refreshClientPopupVisitControls(refreshedClient);
   applyFilters({ skipFitBounds: true });
   postBackendEvent(`/customers/${encodeURIComponent(refreshedClient.id)}/visit-day?day=${encodeURIComponent(newDay)}&week=${encodeURIComponent(refreshedClient.week)}&user=frontend`, {});
+  _scheduleScenarioPersist();
 }
 
 function changePdvWeek(clientId, newWeek) {
@@ -11521,6 +11582,7 @@ function changePdvWeek(clientId, newWeek) {
     applyFilters({ skipFitBounds: true });
     postBackendEvent(`/customers/${encodeURIComponent(client.id)}/visit-day?day=&week=&user=frontend`, {});
     updatePlannerHint('Ciclo e dia de visita removidos manualmente para este cliente.');
+    _scheduleScenarioPersist();
     return;
   }
 
@@ -11554,6 +11616,7 @@ function changePdvWeek(clientId, newWeek) {
     applyFilters({ skipFitBounds: true });
     postBackendEvent(`/customers/${encodeURIComponent(client.id)}/visit-day?day=${encodeURIComponent(client.day)}&week=${encodeURIComponent(client.week)}&user=frontend`, {});
     updatePlannerHint('Ajuste manual aplicado para cliente fora do fluxo automático.');
+    _scheduleScenarioPersist();
     return;
   }
 
@@ -11570,6 +11633,7 @@ function changePdvWeek(clientId, newWeek) {
   refreshClientPopupVisitControls(refreshedClient);
   applyFilters({ skipFitBounds: true });
   postBackendEvent(`/customers/${encodeURIComponent(refreshedClient.id)}/visit-day?day=${encodeURIComponent(refreshedClient.day)}&week=${encodeURIComponent(newWeek)}&user=frontend`, {});
+  _scheduleScenarioPersist();
 }
 
 function getLatLngFromPointerEvent(originalEvent) {
@@ -11984,6 +12048,7 @@ function handleMarkerDragEnd(event, client, dropLatLng = null) {
     if (!document.getElementById('driver-manager-modal').hidden) {
       renderDriverManagerPanel();
     }
+    _scheduleScenarioPersist();
     return;
   }
   state.dragHoverDriverId = null;
@@ -12093,6 +12158,7 @@ function handleMarkerDragEnd(event, client, dropLatLng = null) {
         : `${client.name} atribuído a ${targetDay}. Semana definida como S${targetWeek}.`;
     clearManualRebalanceState(_hint);
     applyFilters({ skipFitBounds: true });
+    _scheduleScenarioPersist();
     return;
   }
 
