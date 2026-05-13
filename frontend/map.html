@@ -6377,9 +6377,11 @@ function executeMaintenanceTransfer(plan) {
       c.sequence = null;
       c.sequencia = null;
     }
-    // Não vincula ao motorista da origem — fica sem motorista no destino
-    c.driverId = null;
-    c.motoristaId = null;
+    // Preservar driverId e motoristaId — operational ownership travels with the client.
+    // Both COPY and TRANSFER keep the assignment: the only difference is whether the
+    // source retains the client (COPY) or loses it (TRANSFER).
+    // Phase 3 in switchPlanningSession validates that the driverId exists in the
+    // destination session's driver pool and falls back to 'unassigned' if not.
     return c;
   });
   // Adicionar ao destino
@@ -7316,8 +7318,24 @@ function switchPlanningSession(sessionId, options = {}) {
       if (!planningSessionClients.has(target.id)) planningSessionClients.set(target.id, []);
       if (!planningSessionDrivers.has(target.id)) planningSessionDrivers.set(target.id, []);
       var _scenBuf = planningSessionClients.get(target.id);
-      updateState({ clients: _scenBuf });
       state.drivers = planningSessionDrivers.get(target.id);
+      // ── Phase 3: validate client driverIds against scenario driver pool ───────
+      // Guards legacy scenarios restored from localStorage with drivers:[] and any
+      // future path that might create a driverId mismatch. Clients whose driverId
+      // is not found in the scenario driver pool are reassigned to 'unassigned'.
+      var _scenDriverIds = new Set((state.drivers || []).map(function(d) { return d.id; }));
+      var _orphanCount = 0;
+      (_scenBuf || []).forEach(function(c) {
+        if (c.driverId && c.driverId !== 'unassigned' && !_scenDriverIds.has(c.driverId)) {
+          c.driverId = 'unassigned';
+          c.driverName = 'Sem motorista';
+          _orphanCount++;
+        }
+      });
+      if (_orphanCount > 0) {
+        console.warn('[SCENARIO-ACTIVATE] ' + _orphanCount + ' cliente(s) com driverId sem par no pool do cenário → reassinalado para "unassigned"');
+      }
+      updateState({ clients: _scenBuf });
       var _scenBufSample = Array.isArray(_scenBuf) ? _scenBuf.slice(0, 3).map(function(c) { return { id: c.id, ddd: c.ddd, driverId: c.driverId, lat: c.lat, lon: c.lon, clientType: c.clientType, week: c.week, day: c.day }; }) : [];
       console.info('[SCENARIO-ACTIVATE]', {
         scenarioId: target.id,
@@ -7607,7 +7625,13 @@ function createSimulationSessionForActiveDDD(targetDDD = state.selectedDDD, pref
     name: options && options.name ? options.name : null,
   });
   planningSessionClients.set(simulationId, []);
-  planningSessionDrivers.set(simulationId, []);
+  // ── Phase 1: clone production drivers into scenario registry ──────────────
+  // Scenarios need their own isolated driver pool so that client.driverId
+  // references resolve correctly after the state.drivers swap in switchPlanningSession.
+  // Deep-clone ensures edits to production drivers do not bleed into the scenario.
+  var _prodDriversForClone = getDriversByDDD(Number(ddd));
+  planningSessionDrivers.set(simulationId, JSON.parse(JSON.stringify(_prodDriversForClone)));
+  console.info('[SCENARIO] drivers cloned from production', { simulationId, ddd, count: _prodDriversForClone.length });
   // Persistir metadados e buffer vazio imediatamente — garante que F5 encontra o cenário
   // mesmo sem Ctrl+S e antes de qualquer operação de Manutenção.
   persistScenarioSession(simulationId);
