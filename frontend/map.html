@@ -41,6 +41,40 @@ html, body {
   font-family: 'IBM Plex Sans', sans-serif;
 }
 
+/* ─── Dev origin divergence warning banner ────────────────────────────── */
+#rfx-origin-warning {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 99999;
+  background: #5c2800;
+  color: #ffe0b2;
+  font-size: 13px;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  padding: 7px 16px;
+  text-align: center;
+  border-bottom: 1px solid #bf6000;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+#rfx-origin-warning.rfx-ow-visible { display: flex; }
+#rfx-origin-warning strong { color: #ffd080; }
+#rfx-origin-warning-dismiss {
+  background: none;
+  border: 1px solid rgba(255,224,178,.55);
+  color: #ffe0b2;
+  border-radius: 3px;
+  padding: 1px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+#rfx-origin-warning-dismiss:hover { background: rgba(255,255,255,.1); }
+
 /* Active drag lock — prevents text selection and native drag globally */
 body.rfx-dragging,
 body.rfx-dragging * {
@@ -4773,6 +4807,13 @@ body.login-active .routex-ai-panel { display:none !important; }
 </style>
 </head>
 <body class="login-active">
+
+<!-- Dev origin divergence warning — only shown when hostname is 127.0.0.1 -->
+<div id="rfx-origin-warning" role="alert" aria-live="polite">
+  <span>⚠ <strong>Ambiente 127.0.0.1 detectado.</strong> Use <strong>localhost:8080</strong> para evitar divergência de storage em desenvolvimento.</span>
+  <button id="rfx-origin-warning-dismiss" type="button" aria-label="Fechar aviso de origem">Fechar ✕</button>
+</div>
+
 <div class="entry-screen" id="entry-screen" aria-labelledby="entry-title">
 
   <!-- Radar rings -->
@@ -17708,6 +17749,51 @@ document.getElementById('ai-input').addEventListener('keydown', (e) => {
 });
 
 bootstrapApp();
+</script>
+
+<!-- ─── Dev origin check: 127.0.0.1 vs localhost storage divergence ──────
+     Non-blocking. Production (non-loopback) is unaffected.
+     Canonical dev URL: http://localhost:8080/frontend/map.html
+     ─────────────────────────────────────────────────────────────────────── -->
+<script>
+(function() {
+  'use strict';
+  if (location.hostname !== '127.0.0.1') return;
+
+  // Collect all app-owned storage keys for the console report
+  var lsKeys = [], ssKeys = [];
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && (k.startsWith('rfx:') || k.startsWith('ROUTflex:'))) lsKeys.push(k);
+    }
+  } catch (_) {}
+  try {
+    for (var j = 0; j < sessionStorage.length; j++) {
+      var sk = sessionStorage.key(j);
+      if (sk && (sk.startsWith('rfx:') || sk.startsWith('ROUTflex:'))) ssKeys.push(sk);
+    }
+  } catch (_) {}
+
+  console.warn(
+    '[ROUTflex] \u26a0 Origem de desenvolvimento: ' + location.origin + '\n' +
+    'Esta origem tem localStorage/sessionStorage ISOLADOS de http://localhost:8080.\n' +
+    'Dados de sess\u00e3o, cen\u00e1rios e planos salvos aqui N\u00c3O s\u00e3o vis\u00edveis em localhost, e vice-versa.\n' +
+    '\nLocalStorage ROUTflex (' + lsKeys.length + ' chaves detectadas):\n  ' +
+    (lsKeys.length ? lsKeys.join('\n  ') : '(nenhuma)') + '\n' +
+    '\nSessionStorage ROUTflex (' + ssKeys.length + ' chaves detectadas):\n  ' +
+    (ssKeys.length ? ssKeys.join('\n  ') : '(nenhuma)') + '\n' +
+    '\nURL can\u00f4nica recomendada: http://localhost:8080/frontend/map.html'
+  );
+
+  var banner = document.getElementById('rfx-origin-warning');
+  if (!banner) return;
+  banner.classList.add('rfx-ow-visible');
+  var btn = document.getElementById('rfx-origin-warning-dismiss');
+  if (btn) btn.addEventListener('click', function() {
+    banner.classList.remove('rfx-ow-visible');
+  });
+})();
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
