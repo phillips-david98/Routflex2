@@ -2823,6 +2823,384 @@ body.login-active .app-shell {
 .leaflet-container.insight-mode,
 .leaflet-container.insight-mode .leaflet-grab { cursor: crosshair !important; }
 
+/* ── Maintenance Modal (MNT) ─────────────────────────────────── */
+.maintenance-modal-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(640px, 98vw);
+  max-height: min(92vh, 820px);
+  overflow-y: auto;
+  background: #111c2d;
+  border: 1px solid rgba(129, 183, 231, 0.18);
+  border-radius: 20px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.72), 0 0 0 1px rgba(255,255,255,0.04);
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 9600;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(129,183,231,0.25) transparent;
+}
+.maintenance-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.maintenance-modal-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #e8f3ff;
+  letter-spacing: 0.01em;
+}
+.maintenance-modal-header span {
+  font-size: 0.78rem;
+  color: #7fa8cc;
+  margin-top: 2px;
+}
+.maintenance-modal-close {
+  background: none;
+  border: none;
+  color: #7fa8cc;
+  font-size: 1.25rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.maintenance-modal-close:hover {
+  color: #e8f3ff;
+  background: rgba(255,255,255,0.07);
+}
+/* ── Flow row: origin → arrow → destination ── */
+.mnt-flow-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 10px;
+}
+.mnt-flow-side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mnt-flow-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7fa8cc;
+}
+.mnt-session-select {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(129,183,231,0.2);
+  border-radius: 10px;
+  color: #ddeeff;
+  font-size: 0.85rem;
+  padding: 7px 10px;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+.mnt-session-select:focus {
+  border-color: rgba(129,183,231,0.5);
+}
+.mnt-flow-meta {
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: #6a94b8;
+  min-height: 1em;
+}
+.mnt-flow-arrow-wrap {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 26px;
+}
+.mnt-flow-arrow {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(65, 140, 210, 0.15);
+  border: 1px solid rgba(65, 140, 210, 0.3);
+}
+.mnt-flow-arrow svg { width: 16px; height: 16px; fill: #6aabdb; }
+/* ── Warning banner ── */
+.mnt-warning {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(230, 100, 60, 0.12);
+  border: 1px solid rgba(230, 100, 60, 0.3);
+  color: #f5a070;
+  font-size: 0.82rem;
+}
+.mnt-warning.is-visible { display: flex; }
+/* ── Operation pills (COPY / TRANSFER) ── */
+.mnt-operation-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mnt-operation-row label.section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7fa8cc;
+}
+.mnt-pill-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mnt-pill-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(129,183,231,0.2);
+  background: rgba(255,255,255,0.04);
+  font-size: 0.83rem;
+  color: #aacde8;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+.mnt-pill-radio:has(input:checked) {
+  background: rgba(65, 140, 210, 0.22);
+  border-color: rgba(65, 140, 210, 0.6);
+  color: #d8eeff;
+}
+.mnt-pill-radio input { display: none; }
+/* ── Scope / filter cards ── */
+.mnt-scope-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.mnt-card {
+  border-radius: 14px;
+  border: 1px solid rgba(129,183,231,0.13);
+  background: rgba(255,255,255,0.03);
+  overflow: hidden;
+}
+.mnt-card-hdr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid rgba(129,183,231,0.08);
+}
+.mnt-card-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: rgba(65,140,210,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+.mnt-card-titles { display: flex; flex-direction: column; gap: 1px; }
+.mnt-card-titles strong { font-size: 0.82rem; color: #ddeeff; font-weight: 600; }
+.mnt-card-titles span  { font-size: 0.74rem; color: #6a94b8; }
+.mnt-card-body {
+  padding: 10px 14px 12px;
+}
+/* ── Driver list ── */
+.mnt-driver-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 160px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(129,183,231,0.2) transparent;
+}
+.mnt-driver-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  transition: background 0.12s;
+}
+.mnt-driver-row:hover { background: rgba(255,255,255,0.04); }
+.mnt-driver-options {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mnt-driver-options label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.77rem;
+  color: #7fa8cc;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mnt-driver-options label:has(input:checked) { color: #b8d8f0; }
+.mnt-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  color: #aacde8;
+  cursor: pointer;
+  width: 100%;
+  user-select: none;
+}
+.mnt-check input[type="checkbox"] {
+  accent-color: #4a9edd;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+/* ── Lasso status ── */
+.mnt-lasso-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mnt-lasso-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(129,183,231,0.15);
+  color: #8ab8d8;
+  align-self: flex-start;
+}
+.mnt-lasso-badge.is-active {
+  background: rgba(65,140,210,0.18);
+  border-color: rgba(65,140,210,0.4);
+  color: #a8d4f0;
+}
+.mnt-lasso-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mnt-lasso-filter label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #8ab8d8;
+  cursor: pointer;
+  user-select: none;
+}
+.mnt-lasso-filter label:has(input:checked) { color: #c8e4f8; }
+/* ── Summary table ── */
+.mnt-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mnt-summary-hdr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mnt-summary-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(65,140,210,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+.mnt-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.mnt-summary-grid .detail-line {
+  font-size: 0.83rem;
+}
+/* ── Feedback strip ── */
+.mnt-feedback {
+  display: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.83rem;
+  font-weight: 500;
+}
+.mnt-feedback.is-visible { display: block; }
+.mnt-feedback.is-success {
+  background: rgba(40,160,90,0.14);
+  border: 1px solid rgba(40,160,90,0.3);
+  color: #70e8a0;
+}
+.mnt-feedback.is-error {
+  background: rgba(220,60,60,0.14);
+  border: 1px solid rgba(220,60,60,0.3);
+  color: #f08080;
+}
+/* ── Action bar ── */
+.mnt-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.mnt-btn-secondary {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(129,183,231,0.2);
+  border-radius: 10px;
+  color: #aacde8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.mnt-btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.mnt-btn-primary {
+  background: rgba(65,140,210,0.3);
+  border: 1px solid rgba(65,140,210,0.55);
+  border-radius: 10px;
+  color: #d8eeff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.mnt-btn-primary:hover { background: rgba(65,140,210,0.48); }
+.mnt-btn-primary.is-danger {
+  background: rgba(200,50,50,0.25);
+  border-color: rgba(200,50,50,0.55);
+  color: #ffcccc;
+}
+.mnt-btn-primary.is-danger:hover { background: rgba(200,50,50,0.4); }
+.mnt-btn-primary:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ── Insight Modal (INS) ────────────────────────────────────── */
 #ins-modal-scrim {
   position: fixed;
@@ -4831,7 +5209,7 @@ body.login-active .routex-ai-panel { display:none !important; }
               <span class="instrument-glyph">LAS</span>
               <span class="instrument-label">Laço</span>
             </button>
-            <button class="instrument-btn" type="button" title="Manutencao">
+            <button class="instrument-btn" id="toggle-maintenance-btn" type="button" title="Manutencao">
               <span class="instrument-glyph">MNT</span>
               <span class="instrument-label">Manut.</span>
             </button>
@@ -5076,6 +5454,139 @@ body.login-active .routex-ai-panel { display:none !important; }
           <button class="action-button" id="lasso-confirm-cancel-btn" type="button">Cancelar</button>
           <button class="action-button primary" id="lasso-confirm-apply-btn" type="button">Confirmar</button>
         </div>
+      </div>
+    </div>
+
+    <!-- MODAL: MANUTENÇÃO ─────────────────────────────────────── -->
+    <div class="modal-scrim" id="maintenance-modal" hidden>
+      <div class="maintenance-modal-card">
+
+        <!-- Header -->
+        <div class="maintenance-modal-header">
+          <div>
+            <h3>Manutenção de Carteiras</h3>
+            <span>Copiar ou transferir clientes entre sessões de planejamento</span>
+          </div>
+          <button class="maintenance-modal-close" id="maintenance-modal-close" title="Fechar">✕</button>
+        </div>
+
+        <!-- Flow: origin → dest -->
+        <div class="mnt-flow-container">
+          <div class="mnt-flow-side">
+            <div class="mnt-flow-label">Origem</div>
+            <select class="mnt-session-select" id="mnt-origin-select"></select>
+            <div class="mnt-flow-meta" id="mnt-origin-meta"></div>
+          </div>
+          <div class="mnt-flow-arrow-wrap">
+            <div class="mnt-flow-arrow">
+              <svg viewBox="0 0 16 16"><path d="M3 8h8m0 0-3-3m3 3-3 3"/></svg>
+            </div>
+          </div>
+          <div class="mnt-flow-side">
+            <div class="mnt-flow-label">Destino</div>
+            <select class="mnt-session-select" id="mnt-dest-select"></select>
+            <div class="mnt-flow-meta" id="mnt-dest-meta"></div>
+          </div>
+        </div>
+
+        <!-- Warning banner -->
+        <div class="mnt-warning" id="mnt-warning">
+          <span>⚠</span>
+          <span id="mnt-warning-text"></span>
+        </div>
+
+        <!-- Operation selector -->
+        <div class="mnt-operation-row">
+          <label class="section-label">Operação</label>
+          <div class="mnt-pill-row">
+            <label class="mnt-pill-radio">
+              <input type="radio" name="mnt-op" value="copy" checked> Copiar
+            </label>
+            <label class="mnt-pill-radio">
+              <input type="radio" name="mnt-op" value="transfer"> Transferir
+            </label>
+          </div>
+        </div>
+
+        <!-- Scope: driver selection + lasso -->
+        <div class="mnt-scope-grid">
+          <!-- Driver card -->
+          <div class="mnt-card">
+            <div class="mnt-card-hdr">
+              <div class="mnt-card-icon">🚚</div>
+              <div class="mnt-card-titles">
+                <strong>Motoristas</strong>
+                <span>Selecione um ou mais</span>
+              </div>
+            </div>
+            <div class="mnt-card-body">
+              <div class="mnt-driver-list" id="mnt-driver-list">
+                <span style="font-size:0.8rem;color:#6a94b8;">Selecione a sessão de origem.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lasso card -->
+          <div class="mnt-card">
+            <div class="mnt-card-hdr">
+              <div class="mnt-card-icon">🔷</div>
+              <div class="mnt-card-titles">
+                <strong>Seleção por Laço</strong>
+                <span>Filtrar clientes lassados</span>
+              </div>
+            </div>
+            <div class="mnt-card-body">
+              <div class="mnt-lasso-status" id="mnt-lasso-status">
+                <div class="mnt-lasso-badge" id="mnt-lasso-badge">Laço inativo</div>
+                <label class="mnt-lasso-filter">
+                  <input type="checkbox" id="mnt-use-lasso" disabled> Usar seleção do laço
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div class="mnt-flow-label">Filtros adicionais</div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            <label class="mnt-check">
+              <input type="checkbox" id="mnt-include-with-day" checked> Clientes com dia de visita
+            </label>
+            <label class="mnt-check">
+              <input type="checkbox" id="mnt-include-without-day" checked> Clientes sem dia de visita
+            </label>
+            <label class="mnt-check">
+              <input type="checkbox" id="mnt-keep-sequence"> Preservar sequência
+            </label>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="mnt-summary">
+          <div class="mnt-summary-hdr">
+            <div class="mnt-summary-icon">📋</div>
+            <div>
+              <strong style="font-size:0.85rem;color:#ddeeff;">Resumo da operação</strong>
+            </div>
+          </div>
+          <div class="mnt-summary-grid">
+            <div class="detail-line"><span>Clientes selecionados</span><strong id="mnt-sum-count">—</strong></div>
+            <div class="detail-line"><span>Operação</span><strong id="mnt-sum-op">—</strong></div>
+            <div class="detail-line"><span>Origem</span><strong id="mnt-sum-origin">—</strong></div>
+            <div class="detail-line"><span>Destino</span><strong id="mnt-sum-dest">—</strong></div>
+          </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="mnt-feedback" id="mnt-feedback"></div>
+
+        <!-- Actions -->
+        <div class="mnt-modal-actions">
+          <button class="mnt-btn-secondary" id="mnt-cancel-btn" type="button">Cancelar</button>
+          <button class="mnt-btn-primary" id="mnt-execute-btn" type="button" disabled>Executar</button>
+        </div>
+
       </div>
     </div>
 
@@ -5534,6 +6045,563 @@ function crmFetch(endpoint, options = {}) {
     'x-session-id': sessionId,
   }, options.headers || {});
   return fetch(`${CRM_API_BASE}${endpoint}`, Object.assign({}, options, { headers }));
+}
+
+// ── Manutenção de Carteiras — helpers de buffer ───────────────────────────
+function _deepCloneTransfer(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+/** Persiste buffers de cenário no localStorage.
+ * Formato: { version:1, meta:{id,ddd,name,sourceSessionId,createdAt}, clients:[...], drivers:[...] }
+ * Chave: rfx:scenario:buf:{sessionId}
+ */
+function persistScenarioSession(sessionId) {
+  var meta = planningSessionRegistry.get(sessionId);
+  if (!meta || meta.type !== 'scenario') return;
+  try {
+    var rawClients = planningSessionClients.get(sessionId) || [];
+    var clientsArr = Array.isArray(rawClients)
+      ? rawClients
+      : (rawClients instanceof Map ? Array.from(rawClients.values()) : Object.values(rawClients));
+    var rawDrivers = planningSessionDrivers.get(sessionId) || [];
+    var driversArr = Array.isArray(rawDrivers)
+      ? rawDrivers
+      : (rawDrivers instanceof Map ? Array.from(rawDrivers.values()) : Object.values(rawDrivers));
+    var payload = {
+      version: 1,
+      meta: {
+        id: meta.id, ddd: meta.ddd, name: meta.name || null,
+        sourceSessionId: meta.sourceSessionId || null,
+        createdAt: meta.createdAt || new Date().toISOString()
+      },
+      clients: clientsArr,
+      drivers: driversArr
+    };
+    localStorage.setItem('rfx:scenario:buf:' + sessionId, JSON.stringify(payload));
+    console.debug('[SCENARIO] persisted', sessionId, clientsArr.length, 'clientes');
+  } catch(e) {
+    console.warn('[SCENARIO] persistScenarioSession failed', e);
+  }
+}
+
+/** Salva o índice de cenários de um DDD no localStorage.
+ * Chave: rfx:sim:scenarios:{ddd}  Valor: ["SIMULACAO_DDD_65_V1", ...]
+ * Chamada após criação/deleção de cenário.
+ */
+function _saveScenarioRegistry(ddd) {
+  try {
+    var dddStr = String(ddd);
+    var ids = Array.from(planningSessionRegistry.values())
+      .filter(function(m) { return m.type === 'scenario' && String(m.ddd) === dddStr; })
+      .map(function(m) { return m.id; });
+    localStorage.setItem('rfx:sim:scenarios:' + dddStr, JSON.stringify(ids));
+    console.debug('[SCENARIO] registry saved for DDD', dddStr, ids);
+  } catch(e) {
+    console.warn('[SCENARIO] _saveScenarioRegistry failed', e);
+  }
+}
+
+/** Retorna o pool de clientes de produção (backup ou live) */
+function _productionClientsPool() {
+  return _productionClientsBackup || state.clients;
+}
+function _productionDriversPool() {
+  return _productionDriversBackup || state.drivers;
+}
+
+/**
+ * Internal: returns the LIVE clients array for a session (no clone, DDD-filtered for production).
+ * Use this for read-only operations (rendering, counting, computing the plan).
+ * Mutating callers MUST clone before writing.
+ */
+function _rawSessionClients(sessionId) {
+  var meta = planningSessionRegistry.get(sessionId);
+  if (!meta) return [];
+  if (meta.type === 'production') {
+    var pool = _productionClientsPool() || {};
+    var dddNum = Number(meta.ddd);
+    var arr = pool instanceof Map ? Array.from(pool.values()) : Object.values(pool);
+    if (Number.isFinite(dddNum)) {
+      return arr.filter(function(c) { return Number(c && c.ddd) === dddNum; });
+    }
+    return arr;
+  }
+  var buf = planningSessionClients.get(sessionId);
+  if (!buf) return [];
+  return buf instanceof Map ? Array.from(buf.values()) : Object.values(buf);
+}
+
+function _rawSessionDrivers(sessionId) {
+  var meta = planningSessionRegistry.get(sessionId);
+  if (!meta) return [];
+  if (meta.type === 'production') {
+    var pool = _productionDriversPool();
+    var arr = pool instanceof Map ? Array.from(pool.values()) : Object.values(pool || {});
+    var dddStr = String(meta.ddd);
+    var dddNum = Number(meta.ddd);
+    return arr.filter(function(d) {
+      if (!d) return false;
+      return String(d.ddd) === dddStr || Number(d.ddd) === dddNum;
+    });
+  }
+  var buf = planningSessionDrivers.get(sessionId);
+  if (!buf) return [];
+  return buf instanceof Map ? Array.from(buf.values()) : Object.values(buf);
+}
+
+/** Cloned variants — keep the public API used elsewhere. Only mutating callers need clones. */
+function getSessionClientsBuffer(sessionId) {
+  return _deepCloneTransfer(_rawSessionClients(sessionId));
+}
+function getSessionDriversBuffer(sessionId) {
+  return _deepCloneTransfer(_rawSessionDrivers(sessionId));
+}
+
+/**
+ * Adiciona ou substitui clientes em um buffer de sessão.
+ * Para produção: atualiza _productionClientsBackup (objeto id→cliente).
+ * Para cenários: atualiza planningSessionClients (Map id→cliente).
+ */
+function appendSessionClients(sessionId, clientsArray) {
+  var meta = planningSessionRegistry.get(sessionId);
+  if (!meta) return;
+  if (meta.type === 'production') {
+    var pool = _productionClientsBackup || {};
+    clientsArray.forEach(function(c) { pool[c.id] = c; });
+    _productionClientsBackup = pool;
+    if (state.activePlanningSessionId === sessionId) {
+      clientsArray.forEach(function(c) { state.clients[c.id] = c; });
+    }
+  } else {
+    // IMPORTANTE: planningSessionClients pode conter um Array (set por createSimulation
+    // ou por switchPlanningSession que salva state.clients). Não chamar .set() em Arrays.
+    var buf = planningSessionClients.get(sessionId);
+    // Normalizar para Array (contrato de state.clients)
+    if (!buf) {
+      buf = [];
+      planningSessionClients.set(sessionId, buf);
+    } else if (!Array.isArray(buf)) {
+      // Migrar Map/object para Array
+      buf = buf instanceof Map ? Array.from(buf.values()) : Object.values(buf);
+      planningSessionClients.set(sessionId, buf);
+    }
+    // Upsert por id
+    var existingMap = new Map(buf.map(function(c) { return [String(c.id), true]; }));
+    clientsArray.forEach(function(c) {
+      var cid = String(c.id);
+      if (existingMap.has(cid)) {
+        var idx = buf.findIndex(function(e) { return String(e.id) === cid; });
+        if (idx !== -1) buf[idx] = c;
+      } else {
+        buf.push(c);
+        existingMap.set(cid, true);
+      }
+    });
+    if (state.activePlanningSessionId === sessionId) {
+      updateState({ clients: buf });
+    }
+    persistScenarioSession(sessionId);
+    console.debug('[SCENARIO] appendSessionClients', sessionId, 'total:', buf.length);
+  }
+}
+
+function appendSessionDrivers(sessionId, driversArray) {
+  var meta = planningSessionRegistry.get(sessionId);
+  if (!meta) return;
+  if (meta.type === 'production') {
+    var pool = _productionDriversPool();
+    if (pool instanceof Map) {
+      driversArray.forEach(function(d) { pool.set(d.id, d); });
+    } else {
+      driversArray.forEach(function(d) { pool[d.id] = d; });
+    }
+    if (state.activePlanningSessionId === sessionId) {
+      driversArray.forEach(function(d) { state.drivers[d.id] = d; });
+    }
+  } else {
+    var buf = planningSessionDrivers.get(sessionId);
+    if (!buf) { buf = new Map(); planningSessionDrivers.set(sessionId, buf); }
+    driversArray.forEach(function(d) { buf.set(d.id, d); });
+    if (state.activePlanningSessionId === sessionId) {
+      driversArray.forEach(function(d) { state.drivers[d.id] = d; });
+    }
+    persistScenarioSession(sessionId);
+  }
+}
+
+/**
+ * Remove clientes de uma sessão por ID.
+ * Para produção: respeita o escopo DDD da sessão (remove só do DDD dela).
+ * Para cenários: remove do buffer.
+ */
+function removeSessionClients(sessionId, clientIds) {
+  var meta = planningSessionRegistry.get(sessionId);
+  if (!meta || !clientIds || !clientIds.length) return;
+  var idSet = new Set(clientIds.map(String));
+  if (meta.type === 'production') {
+    var pool = _productionClientsBackup || {};
+    idSet.forEach(function(id) { delete pool[id]; });
+    _productionClientsBackup = pool;
+    if (state.activePlanningSessionId === sessionId) {
+      idSet.forEach(function(id) { delete state.clients[id]; });
+    }
+  } else {
+    var buf = planningSessionClients.get(sessionId);
+    if (Array.isArray(buf)) {
+      var newBuf = buf.filter(function(c) { return !idSet.has(String(c.id)); });
+      planningSessionClients.set(sessionId, newBuf);
+      if (state.activePlanningSessionId === sessionId) {
+        updateState({ clients: newBuf });
+      }
+    } else if (buf instanceof Map) {
+      idSet.forEach(function(id) { buf.delete(id); });
+      if (state.activePlanningSessionId === sessionId) {
+        updateState({ clients: Array.from(buf.values()) });
+      }
+    }
+    persistScenarioSession(sessionId);
+  }
+}
+
+/**
+ * Motor de transferência/cópia. Recebe o plano gerado por _computeMaintenancePlan().
+ * NUNCA sincroniza com CRM/PALM. NUNCA contamina produção de cenários.
+ */
+function executeMaintenanceTransfer(plan) {
+  if (!plan || !plan.clientIds || !plan.clientIds.length) return false;
+  var srcId   = plan.sourceSessionId;
+  var dstId   = plan.destSessionId;
+  var srcMeta = planningSessionRegistry.get(srcId);
+  var dstMeta = planningSessionRegistry.get(dstId);
+  if (!srcMeta || !dstMeta) return false;
+  // Produção → cenário: OK.  Cenário → produção: BLOQUEADO.
+  if (dstMeta.type === 'production' && srcMeta.type === 'scenario') {
+    console.warn('[MNT] Bloqueado: cenário → produção não é permitido.');
+    return false;
+  }
+  // Obter clientes da origem (raw, sem clone — clonamos só os que vão se mover)
+  var srcClients = _rawSessionClients(srcId);
+  var idSet = new Set(plan.clientIds.map(String));
+  var clientsToMove = srcClients.filter(function(c) {
+    return idSet.has(String(c.id));
+  });
+  if (!clientsToMove.length) return false;
+  // Preparar cópias
+  var copies = _deepCloneTransfer(clientsToMove).map(function(c) {
+    if (!plan.keepSequence) {
+      c.sequence = null;
+      c.sequencia = null;
+    }
+    // Não vincula ao motorista da origem — fica sem motorista no destino
+    c.driverId = null;
+    c.motoristaId = null;
+    return c;
+  });
+  // Adicionar ao destino
+  appendSessionClients(dstId, copies);
+  // Se TRANSFER (mover), remover da origem
+  if (plan.operation === 'transfer') {
+    removeSessionClients(srcId, plan.clientIds);
+  }
+  return true;
+}
+
+// ── Manutenção de Carteiras — UI state ───────────────────────────────────
+var _maintenanceUIState = {
+  selectedDriverIds: new Set()
+};
+
+function openMaintenanceModal() {
+  var modal = document.getElementById('maintenance-modal');
+  if (!modal) return;
+  _maintenanceUIState.selectedDriverIds.clear();
+  _maintenanceInitDefaults();
+  modal.hidden = false;
+}
+
+function closeMaintenanceModal() {
+  var modal = document.getElementById('maintenance-modal');
+  if (modal) modal.hidden = true;
+}
+
+function _maintenanceInitDefaults() {
+  var originSelect = document.getElementById('mnt-origin-select');
+  var destSelect   = document.getElementById('mnt-dest-select');
+  if (!originSelect || !destSelect) return;
+  // Popula ambos os selects com todas as sessões
+  var sessions = Array.from(planningSessionRegistry.values());
+  [originSelect, destSelect].forEach(function(sel) {
+    sel.innerHTML = '';
+    sessions.forEach(function(m) {
+      var opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = getSessionDisplayLabel(m) || m.label || m.id;
+      sel.appendChild(opt);
+    });
+  });
+  // Origem = sessão ativa
+  originSelect.value = state.activePlanningSessionId || (sessions[0] && sessions[0].id);
+  // Destino = primeira sessão diferente da origem
+  var firstOther = sessions.find(function(m) { return m.id !== originSelect.value; });
+  if (firstOther) destSelect.value = firstOther.id;
+  refreshMaintenanceModal();
+}
+
+function refreshMaintenanceModal() {
+  var originId = document.getElementById('mnt-origin-select').value;
+  var destId   = document.getElementById('mnt-dest-select').value;
+  var warning  = document.getElementById('mnt-warning');
+  var warnText = document.getElementById('mnt-warning-text');
+  // Validar: origem ≠ destino
+  if (originId && originId === destId) {
+    warnText.textContent = 'Origem e destino não podem ser iguais.';
+    warning.classList.add('is-visible');
+    document.getElementById('mnt-execute-btn').disabled = true;
+    return;
+  }
+  // Bloquear cenário → produção
+  var srcMeta = planningSessionRegistry.get(originId);
+  var dstMeta = planningSessionRegistry.get(destId);
+  if (srcMeta && dstMeta && srcMeta.type === 'scenario' && dstMeta.type === 'production') {
+    warnText.textContent = 'Transferência de cenário para produção não é permitida.';
+    warning.classList.add('is-visible');
+    document.getElementById('mnt-execute-btn').disabled = true;
+    return;
+  }
+  warning.classList.remove('is-visible');
+  // Metadata line — usa raw (sem clone) para performance
+  var srcClients = _rawSessionClients(originId);
+  var srcDrivers = _rawSessionDrivers(originId);
+  var dstClients = _rawSessionClients(destId);
+  var sMeta = document.getElementById('mnt-origin-meta');
+  var dMeta = document.getElementById('mnt-dest-meta');
+  if (sMeta) sMeta.textContent = srcClients.length + ' clientes · ' + srcDrivers.length + ' motoristas (DDD ' + (srcMeta && srcMeta.ddd) + ')';
+  if (dMeta) dMeta.textContent = dstClients.length + ' clientes (DDD ' + (dstMeta && dstMeta.ddd) + ')';
+  _renderMaintenanceDriverList(srcDrivers, srcClients);
+  _renderMaintenanceLasso(srcClients);
+  _renderMaintenanceSummary();
+}
+
+function _renderMaintenanceDriverList(srcDrivers, srcClients) {
+  var list = document.getElementById('mnt-driver-list');
+  if (!list) return;
+  if (!srcDrivers || !srcDrivers.length) {
+    list.innerHTML = '<span style="font-size:0.8rem;color:#6a94b8;">Nenhum motorista encontrado para este DDD.</span>';
+    return;
+  }
+  // Mapeia motorista → contagem de clientes
+  var clientCount = {};
+  (srcClients || []).forEach(function(c) {
+    var did = String(c.driverId || c.motoristaId || '');
+    if (did) { clientCount[did] = (clientCount[did] || 0) + 1; }
+  });
+  // Estável: ordena por nome
+  srcDrivers = srcDrivers.slice().sort(function(a, b) {
+    return String(a.name || a.nome || a.id).localeCompare(String(b.name || b.nome || b.id));
+  });
+  list.innerHTML = '';
+  srcDrivers.forEach(function(d) {
+    var did  = String(d.id);
+    var name = d.name || d.nome || d.label || did;
+    var cnt  = clientCount[did] || 0;
+    var row  = document.createElement('div');
+    row.className = 'mnt-driver-row';
+    var checked = _maintenanceUIState.selectedDriverIds.has(did);
+    row.innerHTML = '<label class="mnt-check">' +
+      '<input type="checkbox" data-driver-id="' + did + '"' + (checked ? ' checked' : '') + '> ' +
+      name + '</label>' +
+      '<span style="font-size:0.76rem;color:#6a94b8;">' + cnt + ' cli.</span>';
+    row.querySelector('input').addEventListener('change', function(e) {
+      if (e.target.checked) {
+        _maintenanceUIState.selectedDriverIds.add(did);
+      } else {
+        _maintenanceUIState.selectedDriverIds.delete(did);
+      }
+      _renderMaintenanceSummary();
+    });
+    list.appendChild(row);
+  });
+}
+
+function _renderMaintenanceLasso(srcClients) {
+  var badge   = document.getElementById('mnt-lasso-badge');
+  var useChk  = document.getElementById('mnt-use-lasso');
+  var card    = useChk && useChk.closest('.mnt-card');
+  var filter  = useChk && useChk.closest('.mnt-lasso-filter');
+  if (!badge || !useChk) return;
+  var lassoCount = state.lassoSelectionIds ? state.lassoSelectionIds.size : 0;
+  if (lassoCount > 0) {
+    badge.textContent = lassoCount + ' clientes no laço';
+    badge.classList.add('is-active');
+    useChk.disabled = false;
+    if (filter) filter.style.display = '';
+    if (card)   card.style.opacity = '1';
+  } else {
+    badge.textContent = 'Laço inativo · selecione no mapa para usar';
+    badge.classList.remove('is-active');
+    useChk.disabled = true;
+    useChk.checked  = false;
+    if (filter) filter.style.display = 'none';
+    if (card)   card.style.opacity = '0.55';
+  }
+  _renderMaintenanceSummary();
+}
+
+function _computeMaintenancePlan() {
+  var originId   = document.getElementById('mnt-origin-select').value;
+  var destId     = document.getElementById('mnt-dest-select').value;
+  var operation  = document.querySelector('input[name="mnt-op"]:checked');
+  var withDay    = document.getElementById('mnt-include-with-day').checked;
+  var withoutDay = document.getElementById('mnt-include-without-day').checked;
+  var keepSeq    = document.getElementById('mnt-keep-sequence').checked;
+  var useLasso   = document.getElementById('mnt-use-lasso').checked;
+  if (!originId || !destId || originId === destId) return null;
+  if (!operation) return null;
+  // Validação: bloquear cenário → produção (defesa em profundidade)
+  var srcMeta = planningSessionRegistry.get(originId);
+  var dstMeta = planningSessionRegistry.get(destId);
+  if (srcMeta && dstMeta && srcMeta.type === 'scenario' && dstMeta.type === 'production') return null;
+  // Escopo: precisa selecionar pelo menos motoristas OU laço (sem "todos" implícito)
+  var hasDriverScope = _maintenanceUIState.selectedDriverIds.size > 0;
+  var hasLassoScope  = !!(useLasso && state.lassoSelectionIds && state.lassoSelectionIds.size > 0);
+  if (!hasDriverScope && !hasLassoScope) {
+    return {
+      sourceSessionId: originId, destSessionId: destId,
+      operation: operation.value, clientIds: [], keepSequence: keepSeq,
+      noScope: true
+    };
+  }
+  var srcClients = _rawSessionClients(originId);
+  var filtered = srcClients;
+  // 1) Filtrar por motoristas selecionados (se houver)
+  if (hasDriverScope) {
+    filtered = filtered.filter(function(c) {
+      var did = String(c.driverId || c.motoristaId || '');
+      return _maintenanceUIState.selectedDriverIds.has(did);
+    });
+  }
+  // 2) Filtrar por laço (se ativo)
+  if (hasLassoScope) {
+    filtered = filtered.filter(function(c) {
+      return state.lassoSelectionIds.has(String(c.id));
+    });
+  }
+  // 3) Filtrar por dia de visita
+  filtered = filtered.filter(function(c) {
+    var hasDay = !!(c.visitDay || c.diaVisita || c.dia);
+    if (hasDay  && withDay)    return true;
+    if (!hasDay && withoutDay) return true;
+    return false;
+  });
+  return {
+    sourceSessionId: originId,
+    destSessionId:   destId,
+    operation:       operation.value,
+    clientIds:       filtered.map(function(c) { return String(c.id); }),
+    keepSequence:    keepSeq
+  };
+}
+
+function _renderMaintenanceSummary() {
+  var plan = _computeMaintenancePlan();
+  var sumCount  = document.getElementById('mnt-sum-count');
+  var sumOp     = document.getElementById('mnt-sum-op');
+  var sumOrigin = document.getElementById('mnt-sum-origin');
+  var sumDest   = document.getElementById('mnt-sum-dest');
+  var execBtn   = document.getElementById('mnt-execute-btn');
+  if (!plan) {
+    if (sumCount)  sumCount.textContent  = '—';
+    if (sumOp)     sumOp.textContent     = '—';
+    if (sumOrigin) sumOrigin.textContent = '—';
+    if (sumDest)   sumDest.textContent   = '—';
+    if (execBtn)   { execBtn.disabled = true; execBtn.classList.remove('is-danger'); }
+    return;
+  }
+  var opLabel  = plan.operation === 'copy' ? 'Copiar' : 'Transferir';
+  var srcLabel = getSessionDisplayLabel(planningSessionRegistry.get(plan.sourceSessionId)) || plan.sourceSessionId;
+  var dstLabel = getSessionDisplayLabel(planningSessionRegistry.get(plan.destSessionId))   || plan.destSessionId;
+  if (sumCount)  sumCount.textContent  = plan.noScope ? 'selecione um escopo' : plan.clientIds.length;
+  if (sumOp)     sumOp.textContent     = opLabel;
+  if (sumOrigin) sumOrigin.textContent = srcLabel;
+  if (sumDest)   sumDest.textContent   = dstLabel;
+  var canExec = !plan.noScope && plan.clientIds.length > 0;
+  if (execBtn) {
+    execBtn.disabled = !canExec;
+    execBtn.textContent = plan.operation === 'transfer' ? 'Transferir' : 'Copiar';
+    execBtn.classList.toggle('is-danger', plan.operation === 'transfer');
+  }
+}
+
+/** Maintenance history — local audit log (no CRM/PALM, never leaves browser) */
+function _logMaintenanceHistory(entry) {
+  try {
+    var key = 'ROUTflex:maintenance:history';
+    var raw = localStorage.getItem(key);
+    var arr = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(arr)) arr = [];
+    arr.push(entry);
+    // Cap at 200 entries to keep storage small
+    if (arr.length > 200) arr = arr.slice(-200);
+    localStorage.setItem(key, JSON.stringify(arr));
+  } catch (e) {
+    console.warn('[MNT] failed to write maintenance history', e);
+  }
+}
+
+function _showMaintenanceFeedback(message, isError) {
+  var fb = document.getElementById('mnt-feedback');
+  if (!fb) return;
+  fb.textContent = message;
+  fb.className   = 'mnt-feedback is-visible ' + (isError ? 'is-error' : 'is-success');
+  setTimeout(function() {
+    fb.className = 'mnt-feedback';
+  }, 5000);
+}
+
+function _executeMaintenance() {
+  var plan = _computeMaintenancePlan();
+  if (!plan || plan.noScope || !plan.clientIds.length) {
+    _showMaintenanceFeedback('Nenhum cliente no escopo selecionado. Selecione motoristas ou um laço.', true);
+    return;
+  }
+  var opLabel  = plan.operation === 'copy' ? 'copiar' : 'transferir';
+  var srcLabel = getSessionDisplayLabel(planningSessionRegistry.get(plan.sourceSessionId)) || plan.sourceSessionId;
+  var dstLabel = getSessionDisplayLabel(planningSessionRegistry.get(plan.destSessionId))   || plan.destSessionId;
+  var msg = plan.clientIds.length + ' clientes — ' + opLabel + ' de "' + srcLabel + '" para "' + dstLabel + '". Confirmar?';
+  if (!confirm(msg)) return;
+  var ok = executeMaintenanceTransfer(plan);
+  if (ok) {
+    // Log história local
+    _logMaintenanceHistory({
+      timestamp: new Date().toISOString(),
+      operation: plan.operation,
+      sourceSessionId: plan.sourceSessionId,
+      sourceLabel: srcLabel,
+      destSessionId: plan.destSessionId,
+      destLabel: dstLabel,
+      clientCount: plan.clientIds.length,
+      driverIds: Array.from(_maintenanceUIState.selectedDriverIds),
+      usedLasso: !!document.getElementById('mnt-use-lasso').checked,
+      keepSequence: plan.keepSequence,
+      actor: 'local'
+    });
+    var verb = plan.operation === 'copy' ? 'copiados' : 'transferidos';
+    _showMaintenanceFeedback(plan.clientIds.length + ' clientes ' + verb + ' para "' + dstLabel + '". Use o seletor de sessão para visualizar.', false);
+    // Limpar escopo (evita re-execução acidental)
+    _maintenanceUIState.selectedDriverIds.clear();
+    var lassoChk = document.getElementById('mnt-use-lasso');
+    if (lassoChk) lassoChk.checked = false;
+    // Atualiza apenas a sessão ATIVA — destino só re-renderiza se for a ativa.
+    // O usuário pode mudar a sessão ativa depois para ver o destino.
+    if (state.activePlanningSessionId === plan.sourceSessionId
+     || state.activePlanningSessionId === plan.destSessionId) {
+      applyFilters({ skipFitBounds: true });
+    }
+    refreshMaintenanceModal();
+  } else {
+    _showMaintenanceFeedback('Erro ao executar a operação. Verifique os dados e tente novamente.', true);
+  }
 }
 
 // ── Autosave com debounce ──────────────────────────────────────────────────
@@ -6216,72 +7284,120 @@ function _hydrateRealSnapshotForDDD(ddd) {
   }
 }
 
-// Reidrata o REGISTRO de cenários salvos (rfx:sim:data:{ddd}) sem auto-ativar.
-// IMPORTANTE: NÃO mexe em state.clients/state.drivers da produção. Apenas
-// registra o cenário no registry+snapshot+buffer próprio. Usuário deve clicar
-// no popover para ativar manualmente. Isso garante que F5 nunca contamine
-// produção mesmo que havia cenário ativo na sessão anterior.
+// Restaura TODOS os cenários salvos para o DDD ativo, sem auto-ativar nenhum.
+// Chamada SEMPRE no boot, independente do modo.
+// Lê rfx:sim:scenarios:{ddd} (índice) e rfx:scenario:buf:{id} (buffer de cada cenário).
+// Fallback: rfx:sim:data:{ddd} + rfx:sim:active:{ddd} (namespace legado).
 function _restoreSimulationSession() {
   const ddd = String(state.selectedDDD);
+  const realId = getRealSessionIdForDDD(ddd);
+  if (!planningSessionRegistry.has(realId)) return false;
 
+  let restored = false;
+  console.info('[SESSION-RESTORE] iniciando restauração de cenários para DDD', ddd);
+
+  // ── Path A: namespace novo (rfx:sim:scenarios:{ddd} + rfx:scenario:buf:{id}) ──
   try {
-    // Guard 1: chave ausente
-    const raw = localStorage.getItem(`rfx:sim:data:${ddd}`);
-    if (!raw) return false;
-
-    // Guard 2: JSON inválido — coberto pelo try/catch externo
-    const parsed = JSON.parse(raw);
-
-    // Guard 3: estrutura inválida ou versão desconhecida
-    if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.clients)) return false;
-
-    // Guard 4: sessionId ativo ausente
-    const savedSessionId = localStorage.getItem(`rfx:sim:active:${ddd}`);
-    if (!savedSessionId) return false;
-
-    // Guard 5: sessão REAL base deve existir
-    if (!planningSessionRegistry.has(getRealSessionIdForDDD(ddd))) return false;
-
-    // Registrar cenário no registry COM metadados arquiteturais.
-    planningSessionRegistry.set(savedSessionId, {
-      id: savedSessionId,
-      ddd,
-      tipo_sessao: 'SIMULACAO',
-      type: 'scenario',
-      name: parsed.name || null,
-      isolated: true,
-      allowCRM: false,
-      allowPALM: false,
-      createdAt: parsed.savedAt || new Date().toISOString(),
-      sourceSessionId: getRealSessionIdForDDD(ddd),
-    });
-
-    // Snapshot legacy (compat com promote/revert) — NÃO aplicado em state.clients.
-    planningSessionSnapshots.set(savedSessionId, parsed.clients);
-
-    // Buffer de clientes do cenário começa vazio. Persistência completa de
-    // clientes do cenário virá via Manutenção (futuro). F5 = cenário vazio,
-    // mas continua aparecendo no popover para o usuário re-selecionar.
-    if (!planningSessionClients.has(savedSessionId)) {
-      planningSessionClients.set(savedSessionId, []);
+    const indexRaw = localStorage.getItem('rfx:sim:scenarios:' + ddd);
+    if (indexRaw) {
+      const scenarioIds = JSON.parse(indexRaw);
+      if (Array.isArray(scenarioIds) && scenarioIds.length > 0) {
+        console.info('[SESSION-RESTORE] índice encontrado:', scenarioIds);
+        scenarioIds.forEach(function(scenarioId) {
+          try {
+            const bufRaw = localStorage.getItem('rfx:scenario:buf:' + scenarioId);
+            if (!bufRaw) {
+              // Cenário no índice mas sem buffer: registrar com buffer vazio
+              console.warn('[SESSION-RESTORE] buffer ausente para', scenarioId, '— registrando vazio');
+              if (!planningSessionRegistry.has(scenarioId)) {
+                planningSessionRegistry.set(scenarioId, {
+                  id: scenarioId, ddd, tipo_sessao: 'SIMULACAO', type: 'scenario',
+                  name: null, isolated: true, allowCRM: false, allowPALM: false,
+                  createdAt: new Date().toISOString(), sourceSessionId: realId,
+                });
+              }
+              planningSessionClients.set(scenarioId, []);
+              planningSessionDrivers.set(scenarioId, []);
+              restored = true;
+              return;
+            }
+            const bufParsed = JSON.parse(bufRaw);
+            if (!bufParsed) return;
+            const meta = bufParsed.meta || {};
+            const clients = Array.isArray(bufParsed.clients)
+              ? bufParsed.clients
+              : Object.values(bufParsed.clients || {});
+            const drivers = Array.isArray(bufParsed.drivers)
+              ? bufParsed.drivers
+              : Object.values(bufParsed.drivers || {});
+            planningSessionRegistry.set(scenarioId, {
+              id: scenarioId,
+              ddd,
+              tipo_sessao: 'SIMULACAO',
+              type: 'scenario',
+              name: meta.name || null,
+              isolated: true,
+              allowCRM: false,
+              allowPALM: false,
+              createdAt: meta.createdAt || new Date().toISOString(),
+              sourceSessionId: meta.sourceSessionId || realId,
+            });
+            planningSessionClients.set(scenarioId, clients);
+            planningSessionDrivers.set(scenarioId, drivers);
+            console.info('[SESSION-RESTORE] cenário restaurado', scenarioId, clients.length, 'clientes');
+            restored = true;
+          } catch(e) {
+            console.warn('[SESSION-RESTORE] falha ao restaurar cenário', scenarioId, e);
+          }
+        });
+      }
     }
-    if (!planningSessionDrivers.has(savedSessionId)) {
-      planningSessionDrivers.set(savedSessionId, []);
+  } catch(e) {
+    console.warn('[SESSION-RESTORE] falha ao ler índice de cenários', e);
+  }
+
+  // ── Path B: fallback legado (rfx:sim:data:{ddd} + rfx:sim:active:{ddd}) ──
+  if (!restored) {
+    try {
+      const raw = localStorage.getItem('rfx:sim:data:' + ddd);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.version === 1 && Array.isArray(parsed.clients)) {
+          const savedSessionId = localStorage.getItem('rfx:sim:active:' + ddd);
+          if (savedSessionId && !planningSessionRegistry.has(savedSessionId)) {
+            planningSessionRegistry.set(savedSessionId, {
+              id: savedSessionId, ddd,
+              tipo_sessao: 'SIMULACAO', type: 'scenario',
+              name: parsed.name || null, isolated: true,
+              allowCRM: false, allowPALM: false,
+              createdAt: parsed.savedAt || new Date().toISOString(),
+              sourceSessionId: realId,
+            });
+            planningSessionSnapshots.set(savedSessionId, parsed.clients);
+            planningSessionClients.set(savedSessionId, parsed.clients);
+            planningSessionDrivers.set(savedSessionId, []);
+            restored = true;
+            console.info('[SESSION-RESTORE] cenário restaurado (legado)', savedSessionId, parsed.clients.length, 'clientes');
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('[SESSION-RESTORE] fallback legado falhou', e);
     }
+  }
 
-    // NÃO ativar automaticamente. Boot sempre cai em produção. Usuário ativa
-    // o cenário manualmente via popover. state.mode permanece REAL.
-    state.mode = 'REAL';
-    try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch (_) {}
+  // Boot sempre volta para produção — não ativar cenário automaticamente
+  state.mode = 'REAL';
+  try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch(_) {}
 
+  if (restored) {
     renderPlanningSessionSelector();
     updatePlanningSessionStatus(state.activePlanningSessionId);
-
-    return true;
-  } catch (_) {
-    // Qualquer erro (JSON inválido, storage inacessível, etc.) → fallback silencioso
-    return false;
+    console.info('[SESSION-RESTORE] concluído — cenários disponíveis no popover');
+  } else {
+    console.info('[SESSION-RESTORE] nenhum cenário salvo encontrado para DDD', ddd);
   }
+  return restored;
 }
 
 
@@ -6299,13 +7415,18 @@ function createSimulationSessionForActiveDDD(targetDDD = state.selectedDDD, pref
     : (state.activePlanningSessionByDDD[ddd] || getRealSessionIdForDDD(ddd));
 
   // ISOLAMENTO ESTRITO: cenário nasce SEM clientes, SEM motoristas, SEM rotas,
-  // SEM assignments. NÃO copiamos nada da produção. Manutenção (futuro) será
+  // SEM assignments. NÃO copiamos nada da produção. Manutenção é
   // o canal explícito para transferência produção → cenário.
   const simulationId = createSimulationSessionFromSnapshot(ddd, sourceSessionId, [], {
     name: options && options.name ? options.name : null,
   });
   planningSessionClients.set(simulationId, []);
   planningSessionDrivers.set(simulationId, []);
+  // Persistir metadados e buffer vazio imediatamente — garante que F5 encontra o cenário
+  // mesmo sem Ctrl+S e antes de qualquer operação de Manutenção.
+  persistScenarioSession(simulationId);
+  _saveScenarioRegistry(ddd);
+  console.info('[SCENARIO] criado', simulationId, 'DDD', ddd);
 
   state.selectedDDD = ddd;
   const dddSelect = document.getElementById('session-select');
@@ -6415,6 +7536,9 @@ function deleteActiveSimulationSessionForDDD(options = {}) {
   if (state.lastPromotionBackupByDDD[ddd] === meta.id) {
     delete state.lastPromotionBackupByDDD[ddd];
   }
+  // Limpar localStorage: buffer do cenário e índice de cenários do DDD
+  try { localStorage.removeItem('rfx:scenario:buf:' + meta.id); } catch(_) {}
+  _saveScenarioRegistry(ddd);
   state.activePlanningSessionByDDD[ddd] = fallbackSessionId;
   state.mode = 'REAL';
   try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch (_) {}
@@ -14704,6 +15828,26 @@ map.on('click', (e) => {
 document.getElementById('optimize-plan-btn').onclick = optimizeSelectedRoutes;
 document.getElementById('regenerate-data-btn').onclick = regenerateScenario;
 document.getElementById('publish-plan-btn').onclick = publishPlan;
+
+// ── Manutenção de Carteiras — event handlers ──────────────────────────────
+document.getElementById('toggle-maintenance-btn').onclick = openMaintenanceModal;
+document.getElementById('maintenance-modal-close').onclick = closeMaintenanceModal;
+document.getElementById('mnt-cancel-btn').onclick = closeMaintenanceModal;
+document.getElementById('maintenance-modal').onclick = function(ev) {
+  if (ev.target.id === 'maintenance-modal') closeMaintenanceModal();
+};
+document.getElementById('mnt-origin-select').addEventListener('change', function() {
+  _maintenanceUIState.selectedDriverIds.clear();
+  refreshMaintenanceModal();
+});
+document.getElementById('mnt-dest-select').addEventListener('change', refreshMaintenanceModal);
+document.querySelectorAll('input[name="mnt-op"]').forEach(function(radio) {
+  radio.addEventListener('change', _renderMaintenanceSummary);
+});
+['mnt-include-with-day', 'mnt-include-without-day', 'mnt-keep-sequence', 'mnt-use-lasso'].forEach(function(id) {
+  document.getElementById(id).addEventListener('change', _renderMaintenanceSummary);
+});
+document.getElementById('mnt-execute-btn').onclick = _executeMaintenance;
 document.getElementById('export-csv-btn').onclick = exportRoutesCSV;
 document.getElementById('generate-reports-btn').onclick = toggleReportOptions;
 document.getElementById('report-active-btn').onclick = generateReportRoteirizados;
@@ -15068,13 +16212,13 @@ async function initializeApp() {
 
   // Fase 2: carrega planejamento DDD-scoped (backend → localStorage → legacy)
   await loadPlanningForDDD(state.selectedDDD);
-  // Em modo SIMULATION a sessão ativa no boot é REAL (DDD_65) com clientes de simulação.
-  // Não capturar: contaminaria o snapshot de produção com defaults de simulação.
+  // Fase 3: restaurar metadados + buffers de cenários salvos (SEMPRE — independente do modo).
+  // Não ativa nenhum cenário: boot sempre começa em produção. Apenas popula o registry
+  // para que os cenários apareçam no popover e o Manutenção encontre os destinos.
+  _restoreSimulationSession();
+  // Capturar snapshot da produção apenas se estamos em modo REAL após a restauração.
   if (state.mode !== 'SIMULATION') {
     captureActivePlanningSessionSnapshot();
-  } else {
-    // Etapa 3: reidratar sessão de simulação salva (rfx:sim:data:{ddd} + rfx:sim:active:{ddd})
-    _restoreSimulationSession();
   }
   if (_autosaveTimer) {
     clearTimeout(_autosaveTimer);
