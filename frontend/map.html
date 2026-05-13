@@ -6226,11 +6226,28 @@ function appendSessionClients(sessionId, clientsArray) {
   var meta = planningSessionRegistry.get(sessionId);
   if (!meta) return;
   if (meta.type === 'production') {
-    var pool = _productionClientsBackup || {};
-    clientsArray.forEach(function(c) { pool[c.id] = c; });
-    _productionClientsBackup = pool;
+    // Use the live pool — _productionClientsPool() returns state.clients when active
+    // and _productionClientsBackup when not active. Never start from {} because
+    // that would overwrite the backup with only the new clients on next session switch.
+    var pool = _productionClientsPool();
+    var arr = Array.isArray(pool) ? pool.slice() : Object.values(pool);
+    var existingIds = new Set(arr.map(function(c) { return String(c.id); }));
+    clientsArray.forEach(function(c) {
+      var cid = String(c.id);
+      if (existingIds.has(cid)) {
+        var idx = arr.findIndex(function(e) { return String(e.id) === cid; });
+        if (idx !== -1) arr[idx] = c;
+      } else {
+        arr.push(c);
+        existingIds.add(cid);
+      }
+    });
     if (state.activePlanningSessionId === sessionId) {
-      clientsArray.forEach(function(c) { state.clients[c.id] = c; });
+      // updateState properly increments _clientMutationCounter and invalidates classify cache
+      updateState({ clients: arr });
+      // _productionClientsBackup stays null — production is still the active session
+    } else {
+      _productionClientsBackup = arr;
     }
   } else {
     // IMPORTANTE: planningSessionClients pode conter um Array (set por createSimulation
@@ -6299,11 +6316,19 @@ function removeSessionClients(sessionId, clientIds) {
   if (!meta || !clientIds || !clientIds.length) return;
   var idSet = new Set(clientIds.map(String));
   if (meta.type === 'production') {
-    var pool = _productionClientsBackup || {};
-    idSet.forEach(function(id) { delete pool[id]; });
-    _productionClientsBackup = pool;
+    // Use the live pool — never start from {} which would corrupt the backup to empty
+    // and cause state.clients = {} after the next session switch (KPIs → 0, markers vanish).
+    var pool = _productionClientsPool();
+    var arr = Array.isArray(pool)
+      ? pool.filter(function(c) { return !idSet.has(String(c.id)); })
+      : Object.values(pool).filter(function(c) { return !idSet.has(String(c.id)); });
     if (state.activePlanningSessionId === sessionId) {
-      idSet.forEach(function(id) { delete state.clients[id]; });
+      // updateState properly increments _clientMutationCounter and invalidates classify cache
+      // so the immediate applyFilters() call in _executeMaintenance reflects the removal.
+      updateState({ clients: arr });
+      // _productionClientsBackup intentionally stays null — production is still active
+    } else {
+      _productionClientsBackup = arr;
     }
   } else {
     var buf = planningSessionClients.get(sessionId);
@@ -14613,6 +14638,12 @@ function renderMap(filteredClients, routeGroups, _precomputedSelect) {
       _diffReused++;
       // ── REUSE existing marker (no DOM creation) ──
       const m = existing.marker;
+      // Guard: marker may be orphaned if a prior addMarkersToLayerInBatches call was
+      // aborted (by a superseding render pass) before this marker was added to the layer.
+      // clusterLayer.addLayer() is idempotent — safe to call even if already present.
+      if (!clusterLayer.hasLayer(m)) {
+        clusterLayer.addLayer(m);
+      }
       m._rfxClient = desired.client;
       m._rfxRoute = desired.route;
       m._rfxIndex = desired.index;
