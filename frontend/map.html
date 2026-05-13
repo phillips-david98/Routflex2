@@ -5588,19 +5588,19 @@ body.login-active .routex-ai-panel { display:none !important; }
         </div>
 
         <!-- Filters -->
-        <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;flex-direction:column;gap:8px;">
           <div class="mnt-flow-label">Filtros adicionais</div>
-          <div style="display:flex;gap:16px;flex-wrap:wrap;">
-            <label class="mnt-check">
-              <input type="checkbox" id="mnt-include-with-day" checked> Clientes com dia de visita
-            </label>
-            <label class="mnt-check">
-              <input type="checkbox" id="mnt-include-without-day" checked> Clientes sem dia de visita
-            </label>
-            <label class="mnt-check">
-              <input type="checkbox" id="mnt-keep-sequence"> Preservar sequência
-            </label>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <label style="font-size:0.8rem;color:#8fa7c4;white-space:nowrap;" for="mnt-agenda-filter">Agenda dos clientes:</label>
+            <select id="mnt-agenda-filter" class="mnt-session-select" style="flex:1;min-width:160px;">
+              <option value="all">Todos os clientes</option>
+              <option value="with-day">Apenas com dia de visita</option>
+              <option value="without-day">Apenas sem dia de visita</option>
+            </select>
           </div>
+          <label class="mnt-check">
+            <input type="checkbox" id="mnt-keep-sequence" checked> Manter sequência atual
+          </label>
         </div>
 
         <!-- Summary -->
@@ -5612,10 +5612,13 @@ body.login-active .routex-ai-panel { display:none !important; }
             </div>
           </div>
           <div class="mnt-summary-grid">
-            <div class="detail-line"><span>Clientes selecionados</span><strong id="mnt-sum-count">—</strong></div>
             <div class="detail-line"><span>Operação</span><strong id="mnt-sum-op">—</strong></div>
             <div class="detail-line"><span>Origem</span><strong id="mnt-sum-origin">—</strong></div>
             <div class="detail-line"><span>Destino</span><strong id="mnt-sum-dest">—</strong></div>
+            <div class="detail-line"><span>Escopo</span><strong id="mnt-sum-scope">—</strong></div>
+            <div class="detail-line"><span>Agenda</span><strong id="mnt-sum-agenda">—</strong></div>
+            <div class="detail-line"><span>Clientes afetados</span><strong id="mnt-sum-count">—</strong></div>
+            <div class="detail-line"><span>Sequência</span><strong id="mnt-sum-seq">—</strong></div>
           </div>
         </div>
 
@@ -6446,12 +6449,8 @@ function _renderMaintenanceDriverList(srcDrivers, srcClients) {
     list.innerHTML = '<span style="font-size:0.8rem;color:#6a94b8;">Nenhum motorista encontrado para este DDD.</span>';
     return;
   }
-  // Mapeia motorista → contagem de clientes
-  var clientCount = {};
-  (srcClients || []).forEach(function(c) {
-    var did = String(c.driverId || c.motoristaId || '');
-    if (did) { clientCount[did] = (clientCount[did] || 0) + 1; }
-  });
+  // Read current agenda filter so driver counts match the plan exactly
+  var agendaValue = (document.getElementById('mnt-agenda-filter') || {}).value || 'all';
   // Estável: ordena por nome
   srcDrivers = srcDrivers.slice().sort(function(a, b) {
     return String(a.name || a.nome || a.id).localeCompare(String(b.name || b.nome || b.id));
@@ -6460,7 +6459,8 @@ function _renderMaintenanceDriverList(srcDrivers, srcClients) {
   srcDrivers.forEach(function(d) {
     var did  = String(d.id);
     var name = d.name || d.nome || d.label || did;
-    var cnt  = clientCount[did] || 0;
+    // Use canonical helper — same filter as plan computation
+    var cnt  = _mntGetDriverClients(srcClients || [], did, agendaValue).length;
     var row  = document.createElement('div');
     row.className = 'mnt-driver-row';
     var checked = _maintenanceUIState.selectedDriverIds.has(did);
@@ -6504,14 +6504,51 @@ function _renderMaintenanceLasso(srcClients) {
   _renderMaintenanceSummary();
 }
 
+// ── Canonical visit-day helpers ──────────────────────────────────────────────
+
+/**
+ * Returns true if the client has any visit-day / schedule assignment.
+ * Checks all real ROUTflex field variants so the same logic is used
+ * by driver row counts, plan computation, and execution.
+ */
+function _mntClientHasVisitDay(c) {
+  if (!c) return false;
+  return !!(c.day || c.visitDay || c.visit_day ||
+    (c.visit_days && c.visit_days.length) ||
+    c.diaVisita || c.dia || c.semana);
+}
+
+/**
+ * Filters a client array by the single agenda selector value.
+ * agendaValue: 'all' | 'with-day' | 'without-day'
+ */
+function _mntFilterByAgenda(clients, agendaValue) {
+  if (!agendaValue || agendaValue === 'all') return clients;
+  if (agendaValue === 'with-day')
+    return clients.filter(function(c) { return _mntClientHasVisitDay(c); });
+  if (agendaValue === 'without-day')
+    return clients.filter(function(c) { return !_mntClientHasVisitDay(c); });
+  return clients;
+}
+
+/**
+ * Returns the clients for a specific driver, filtered by agenda.
+ * Used by both driver row counts and plan computation — single source of truth.
+ */
+function _mntGetDriverClients(allClients, driverId, agendaValue) {
+  var byDriver = allClients.filter(function(c) {
+    return String(c.driverId || c.motoristaId || '') === String(driverId);
+  });
+  return _mntFilterByAgenda(byDriver, agendaValue);
+}
+
 function _computeMaintenancePlan() {
-  var originId   = document.getElementById('mnt-origin-select').value;
-  var destId     = document.getElementById('mnt-dest-select').value;
-  var operation  = document.querySelector('input[name="mnt-op"]:checked');
-  var withDay    = document.getElementById('mnt-include-with-day').checked;
-  var withoutDay = document.getElementById('mnt-include-without-day').checked;
-  var keepSeq    = document.getElementById('mnt-keep-sequence').checked;
-  var useLasso   = document.getElementById('mnt-use-lasso').checked;
+  var originId     = document.getElementById('mnt-origin-select').value;
+  var destId       = document.getElementById('mnt-dest-select').value;
+  var operation    = document.querySelector('input[name="mnt-op"]:checked');
+  var agendaFilter = document.getElementById('mnt-agenda-filter').value;
+  var keepSeq      = document.getElementById('mnt-keep-sequence').checked;
+  var useLasso     = document.getElementById('mnt-use-lasso').checked;
   if (!originId || !destId || originId === destId) return null;
   if (!operation) return null;
   // Validação: bloquear cenário → produção (defesa em profundidade)
@@ -6547,52 +6584,66 @@ function _computeMaintenancePlan() {
       return state.lassoSelectionIds.has(String(c.id));
     });
   }
-  // 3) Filtrar por dia de visita
-  filtered = filtered.filter(function(c) {
-    var hasDay = !!(c.visitDay || c.diaVisita || c.dia);
-    if (hasDay  && withDay)    return true;
-    if (!hasDay && withoutDay) return true;
-    return false;
-  });
+  // 3) Filtrar por agenda (único selector canônico — usa _mntFilterByAgenda)
+  filtered = _mntFilterByAgenda(filtered, agendaFilter);
+  // Compute scope label for summary
+  var scopeLabel = hasDriverScope && hasLassoScope
+    ? _maintenanceUIState.selectedDriverIds.size + ' motorista(s) + Laço'
+    : hasDriverScope ? _maintenanceUIState.selectedDriverIds.size + ' motorista(s)'
+    : hasLassoScope  ? 'Laço ativo'
+    : '—';
+  var agendaLabel = agendaFilter === 'with-day'    ? 'Apenas com dia'
+                 : agendaFilter === 'without-day' ? 'Apenas sem dia'
+                 : 'Todos os clientes';
   return {
     sourceSessionId: originId,
     destSessionId:   destId,
     operation:       operation.value,
     clientIds:       filtered.map(function(c) { return String(c.id); }),
-    keepSequence:    keepSeq
+    keepSequence:    keepSeq,
+    scopeLabel:      scopeLabel,
+    agendaLabel:     agendaLabel
   };
 }
 
 function _renderMaintenanceSummary() {
   var plan = _computeMaintenancePlan();
-  var sumCount  = document.getElementById('mnt-sum-count');
   var sumOp     = document.getElementById('mnt-sum-op');
   var sumOrigin = document.getElementById('mnt-sum-origin');
   var sumDest   = document.getElementById('mnt-sum-dest');
+  var sumScope  = document.getElementById('mnt-sum-scope');
+  var sumAgenda = document.getElementById('mnt-sum-agenda');
+  var sumCount  = document.getElementById('mnt-sum-count');
+  var sumSeq    = document.getElementById('mnt-sum-seq');
   var execBtn   = document.getElementById('mnt-execute-btn');
-  if (!plan) {
-    if (sumCount)  sumCount.textContent  = '—';
-    if (sumOp)     sumOp.textContent     = '—';
-    if (sumOrigin) sumOrigin.textContent = '—';
-    if (sumDest)   sumDest.textContent   = '—';
-    if (execBtn)   { execBtn.disabled = true; execBtn.classList.remove('is-danger'); }
-    return;
+  function _clear(dash) {
+    [sumOp, sumOrigin, sumDest, sumScope, sumAgenda, sumCount, sumSeq].forEach(function(el) {
+      if (el) el.textContent = dash || '—';
+    });
+    if (execBtn) { execBtn.disabled = true; execBtn.classList.remove('is-danger'); }
   }
+  if (!plan) { _clear(); return; }
   if (plan.crossDDD) {
-    if (sumCount)  sumCount.textContent  = 'DDDs diferentes';
     if (sumOp)     sumOp.textContent     = '—';
     if (sumOrigin) sumOrigin.textContent = 'DDD ' + plan.srcDDD;
     if (sumDest)   sumDest.textContent   = 'DDD ' + plan.dstDDD;
+    if (sumScope)  sumScope.textContent  = '—';
+    if (sumAgenda) sumAgenda.textContent = '—';
+    if (sumCount)  sumCount.textContent  = 'DDDs diferentes — bloqueado';
+    if (sumSeq)    sumSeq.textContent    = '—';
     if (execBtn)   { execBtn.disabled = true; execBtn.classList.remove('is-danger'); }
     return;
   }
   var opLabel  = plan.operation === 'copy' ? 'Copiar' : 'Transferir';
   var srcLabel = getSessionDisplayLabel(planningSessionRegistry.get(plan.sourceSessionId)) || plan.sourceSessionId;
   var dstLabel = getSessionDisplayLabel(planningSessionRegistry.get(plan.destSessionId))   || plan.destSessionId;
-  if (sumCount)  sumCount.textContent  = plan.noScope ? 'selecione um escopo' : plan.clientIds.length;
   if (sumOp)     sumOp.textContent     = opLabel;
   if (sumOrigin) sumOrigin.textContent = srcLabel;
   if (sumDest)   sumDest.textContent   = dstLabel;
+  if (sumScope)  sumScope.textContent  = plan.noScope ? 'selecione motoristas ou laço' : (plan.scopeLabel || '—');
+  if (sumAgenda) sumAgenda.textContent = plan.agendaLabel || 'Todos os clientes';
+  if (sumCount)  sumCount.textContent  = plan.noScope ? '—' : plan.clientIds.length;
+  if (sumSeq)    sumSeq.textContent    = plan.keepSequence ? 'Mantida' : 'Removida';
   var canExec = !plan.noScope && plan.clientIds.length > 0;
   if (execBtn) {
     execBtn.disabled = !canExec;
@@ -15951,7 +16002,15 @@ document.getElementById('mnt-dest-select').addEventListener('change', refreshMai
 document.querySelectorAll('input[name="mnt-op"]').forEach(function(radio) {
   radio.addEventListener('change', _renderMaintenanceSummary);
 });
-['mnt-include-with-day', 'mnt-include-without-day', 'mnt-keep-sequence', 'mnt-use-lasso'].forEach(function(id) {
+// Agenda filter change: re-render driver counts (so they match plan) then update summary
+document.getElementById('mnt-agenda-filter').addEventListener('change', function() {
+  var originId = document.getElementById('mnt-origin-select').value;
+  if (originId) {
+    _renderMaintenanceDriverList(_rawSessionDrivers(originId), _rawSessionClients(originId));
+  }
+  _renderMaintenanceSummary();
+});
+['mnt-keep-sequence', 'mnt-use-lasso'].forEach(function(id) {
   document.getElementById(id).addEventListener('change', _renderMaintenanceSummary);
 });
 document.getElementById('mnt-execute-btn').onclick = _executeMaintenance;
