@@ -1370,6 +1370,17 @@ body.login-active .app-shell {
   background: transparent;
 }
 
+.planning-toolbar-btn.is-apply-to-prod {
+  border-color: rgba(255, 196, 0, 0.38);
+  background: rgba(80, 60, 0, 0.42);
+  color: #ffe87a;
+}
+
+.planning-toolbar-btn.is-apply-to-prod:hover {
+  border-color: rgba(255, 214, 60, 0.6);
+  background: rgba(100, 78, 0, 0.55);
+}
+
 .planning-toolbar-btn.is-ghost {
   background: transparent;
   color: #9ec3e4;
@@ -1474,6 +1485,105 @@ body.login-active .app-shell {
   display: flex;
   justify-content: flex-start;
   gap: 6px;
+}
+
+/* ── Apply-to-production modal ─────────────────────────────── */
+.planning-apply-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(3, 10, 20, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.planning-apply-modal[hidden] {
+  display: none !important;
+}
+
+.planning-apply-modal-card {
+  width: min(700px, 100%);
+  max-height: 90vh;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 196, 0, 0.2);
+  background: linear-gradient(180deg, rgba(11, 26, 48, 0.92), rgba(10, 22, 40, 0.92));
+  box-shadow: 0 18px 34px rgba(3, 9, 20, 0.55), inset 0 0 0 1px rgba(255, 220, 80, 0.06);
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
+  grid-template-rows: auto auto 1fr auto;
+}
+
+.planning-apply-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.72rem;
+}
+
+.planning-apply-chip {
+  background: rgba(25, 52, 87, 0.5);
+  border: 1px solid rgba(112, 167, 226, 0.2);
+  border-radius: 8px;
+  padding: 3px 9px;
+  color: #cbe4fc;
+}
+
+.planning-apply-chip.is-warn {
+  border-color: rgba(255, 196, 0, 0.3);
+  color: #ffe07a;
+}
+
+.planning-apply-table-wrap {
+  overflow-y: auto;
+  max-height: 340px;
+  border: 1px solid rgba(82, 130, 180, 0.15);
+  border-radius: 8px;
+}
+
+.planning-apply-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.71rem;
+}
+
+.planning-apply-table th {
+  position: sticky;
+  top: 0;
+  background: rgba(13, 30, 58, 0.95);
+  color: #87add0;
+  font-weight: 700;
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(82, 130, 180, 0.2);
+}
+
+.planning-apply-table td {
+  padding: 5px 8px;
+  color: #d0e8fc;
+  border-bottom: 1px solid rgba(82, 130, 180, 0.08);
+  vertical-align: middle;
+}
+
+.planning-apply-table tr:last-child td {
+  border-bottom: none;
+}
+
+.planning-apply-table .val-before {
+  color: #e88;
+  text-decoration: line-through;
+}
+
+.planning-apply-table .val-after {
+  color: #7de8a0;
+}
+
+.planning-apply-table .val-null {
+  color: #666;
+  font-style: italic;
 }
 
 @media (max-width: 860px) {
@@ -4974,6 +5084,10 @@ body.login-active .routex-ai-panel { display:none !important; }
             <div class="planning-session-toolbar">
               <button class="planning-toolbar-btn is-create is-main" id="planning-create-session-btn" type="button">Nova Sessão</button>
               <button class="planning-toolbar-btn is-delete is-quiet" id="planning-delete-session-btn" type="button">Apagar</button>
+              <button class="planning-toolbar-btn is-apply-to-prod" id="planning-apply-to-prod-btn" type="button" hidden
+                title="Aplicar ajustes deste cenário à produção. Mostra prévia e exige confirmação.">
+                Aplicar ajustes ao plano real
+              </button>
             </div>
 
             <div class="planning-create-modal" id="planning-create-modal" hidden>
@@ -5008,6 +5122,36 @@ body.login-active .routex-ai-panel { display:none !important; }
                 <div class="planning-create-modal-actions">
                   <button class="planning-toolbar-btn is-create is-main" id="planning-create-confirm-btn" type="button">Criar</button>
                   <button class="planning-toolbar-btn is-ghost" id="planning-create-cancel-btn" type="button">Fechar</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Modal: Aplicar ajustes ao plano real ────────────────── -->
+            <div class="planning-apply-modal" id="planning-apply-modal" hidden>
+              <div class="planning-apply-modal-card" role="dialog" aria-modal="true" aria-labelledby="planning-apply-modal-title">
+                <div class="planning-create-header">
+                  <h4 id="planning-apply-modal-title">Aplicar ajustes ao plano real</h4>
+                  <p id="planning-apply-modal-subtitle">Prévia das alterações que serão aplicadas à produção.</p>
+                </div>
+                <div class="planning-apply-summary" id="planning-apply-summary">
+                  <!-- preenchido por JS -->
+                </div>
+                <div class="planning-apply-table-wrap">
+                  <table class="planning-apply-table" id="planning-apply-table">
+                    <thead>
+                      <tr>
+                        <th>Cliente</th>
+                        <th>Campo</th>
+                        <th>Antes</th>
+                        <th>Depois</th>
+                      </tr>
+                    </thead>
+                    <tbody id="planning-apply-table-body"></tbody>
+                  </table>
+                </div>
+                <div class="planning-create-modal-actions">
+                  <button class="planning-toolbar-btn is-apply-to-prod is-main" id="planning-apply-confirm-btn" type="button">Confirmar e aplicar</button>
+                  <button class="planning-toolbar-btn is-ghost" id="planning-apply-cancel-btn" type="button">Fechar</button>
                 </div>
               </div>
             </div>
@@ -7248,14 +7392,270 @@ function updatePlanningSessionStatus(sessionId) {
   renderPlanningSessionsPopover();
 }
 
+// ══ Aplicar ajustes ao plano real ═══════════════════════════════════════════
+// Computa o diff entre os clientes do cenário ativo e o backup de produção,
+// mostra prévia e aplica com confirmação explícita.
+// Nunca escreve para CRM/PALM. Nunca auto-aplica.
+
+/** Retorna o nome de um driver pelo id, ou a sigla bruta em fallback. */
+function _driverLabel(driverId) {
+  if (!driverId) return '—';
+  var dr = getDriverById(driverId);
+  return dr ? (dr.name || driverId) : driverId;
+}
+
+/** Converte valor de campo em label legível para a tabela de preview. */
+function _fieldLabel(field, value) {
+  if (value === null || value === undefined || value === '') return null;
+  if (field === 'driverId') return _driverLabel(value);
+  return String(value);
+}
+
+/** Constrói o diff entre scenarioClients e prodClients.
+ *  Retorna um array de { clientId, clientName, field, before, after }
+ *  para todos os campos (day, week, driverId, sequence) que mudaram.
+ */
+function _buildScenarioDiff(scenarioClients, prodClients) {
+  var prodById = new Map((prodClients || []).map(function(c) { return [c.id, c]; }));
+  var rows = [];
+  var FIELDS = ['day', 'week', 'driverId', 'sequence'];
+  (scenarioClients || []).forEach(function(scCl) {
+    var prodCl = prodById.get(scCl.id);
+    if (!prodCl) return;
+    FIELDS.forEach(function(field) {
+      var before = prodCl[field];
+      var after  = scCl[field];
+      // Treat undefined as null for comparison
+      if (before === undefined) before = null;
+      if (after  === undefined) after  = null;
+      if (before === after) return;
+      rows.push({
+        clientId:   scCl.id,
+        clientName: scCl.name || scCl.razaoSocial || scCl.id,
+        field:      field,
+        before:     before,
+        after:      after,
+      });
+    });
+  });
+  return rows;
+}
+
+/** Returns the production clients pool for diff comparison.
+ *  Uses _productionClientsBackup when a scenario is active,
+ *  otherwise falls back to current state.clients. */
+function _getProdClientsForDiff(ddd) {
+  var numDdd = Number(ddd);
+  var pool = _productionClientsBackup || state.clients;
+  return pool.filter(function(c) { return c.ddd === numDdd; });
+}
+
+// Stores pending diff for confirmation step.
+var _pendingApplyDiff = null;
+
+function openApplyScenarioToProductionModal() {
+  var modal = document.getElementById('planning-apply-modal');
+  if (!modal) return;
+
+  var scenMeta = planningSessionRegistry.get(state.activePlanningSessionId);
+  if (!scenMeta || scenMeta.tipo_sessao !== 'SIMULACAO') {
+    updatePlannerHint('Nenhum cenário ativo para aplicar.');
+    return;
+  }
+
+  var ddd = String(scenMeta.ddd);
+  var prodId = getRealSessionIdForDDD(ddd);
+  if (!prodId) {
+    updatePlannerHint('Sessão de produção não encontrada para DDD ' + ddd + '.');
+    return;
+  }
+
+  var scenClients = planningSessionClients.get(state.activePlanningSessionId) || [];
+  var prodClients = _getProdClientsForDiff(ddd);
+
+  var diff = _buildScenarioDiff(scenClients, prodClients);
+  _pendingApplyDiff = { diff: diff, scenarioId: state.activePlanningSessionId, prodId: prodId, ddd: ddd };
+
+  // Summary chips
+  var changedClientIds = new Set(diff.map(function(r) { return r.clientId; }));
+  var removedVisit  = diff.filter(function(r) { return r.field === 'day' && r.after === null; });
+  var changedDay    = diff.filter(function(r) { return r.field === 'day' && r.after !== null; });
+  var changedWeek   = diff.filter(function(r) { return r.field === 'week'; });
+  var changedDriver = diff.filter(function(r) { return r.field === 'driverId'; });
+  var affectedDriverIds = new Set();
+  changedDriver.forEach(function(r) {
+    if (r.before) affectedDriverIds.add(r.before);
+    if (r.after)  affectedDriverIds.add(r.after);
+  });
+
+  var summaryEl = document.getElementById('planning-apply-summary');
+  if (summaryEl) {
+    summaryEl.innerHTML = [
+      '<span class="planning-apply-chip">' + changedClientIds.size + ' cliente(s) alterado(s)</span>',
+      affectedDriverIds.size > 0 ? '<span class="planning-apply-chip">' + affectedDriverIds.size + ' motorista(s) afetado(s)</span>' : '',
+      removedVisit.length > 0 ? '<span class="planning-apply-chip is-warn">' + removedVisit.length + ' remoção(ões) de dia de visita</span>' : '',
+      changedDay.length  > 0 ? '<span class="planning-apply-chip">' + changedDay.length  + ' troca(s) de dia</span>' : '',
+      changedWeek.length > 0 ? '<span class="planning-apply-chip">' + changedWeek.length + ' troca(s) de semana</span>' : '',
+      diff.length === 0 ? '<span class="planning-apply-chip">Sem diferenças detectadas.</span>' : '',
+    ].filter(Boolean).join('');
+  }
+
+  // Subtitle
+  var subtitleEl = document.getElementById('planning-apply-modal-subtitle');
+  var scenLabel = getSessionDisplayLabel(scenMeta);
+  if (subtitleEl) {
+    subtitleEl.textContent = 'Cenário: ' + scenLabel + ' → Produção DDD ' + ddd + '. Apenas este dispositivo será alterado. Sem envio ao CRM ou PALM.';
+  }
+
+  // Table rows
+  var FIELD_NAMES = { day: 'Dia', week: 'Semana', driverId: 'Motorista', sequence: 'Sequência' };
+  var tbody = document.getElementById('planning-apply-table-body');
+  if (tbody) {
+    if (!diff.length) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#667;padding:12px;">Nenhuma diferença encontrada — o plano de produção já está idêntico ao cenário.</td></tr>';
+    } else {
+      tbody.innerHTML = diff.map(function(row) {
+        var beforeLabel = _fieldLabel(row.field, row.before);
+        var afterLabel  = _fieldLabel(row.field, row.after);
+        var beforeHtml  = beforeLabel ? '<span class="val-before">' + _escHtml(beforeLabel) + '</span>'
+                                      : '<span class="val-null">sem visita</span>';
+        var afterHtml   = afterLabel  ? '<span class="val-after">'  + _escHtml(afterLabel)  + '</span>'
+                                      : '<span class="val-null">sem visita</span>';
+        return '<tr>'
+          + '<td>' + _escHtml(row.clientName) + '</td>'
+          + '<td>' + _escHtml(FIELD_NAMES[row.field] || row.field) + '</td>'
+          + '<td>' + beforeHtml + '</td>'
+          + '<td>' + afterHtml  + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+  }
+
+  // Disable confirm if nothing to apply
+  var confirmBtn = document.getElementById('planning-apply-confirm-btn');
+  if (confirmBtn) confirmBtn.disabled = diff.length === 0;
+
+  modal.hidden = false;
+}
+
+function closeApplyScenarioToProductionModal() {
+  var modal = document.getElementById('planning-apply-modal');
+  if (modal) modal.hidden = true;
+  _pendingApplyDiff = null;
+}
+
+function confirmApplyScenarioToProduction() {
+  if (!_pendingApplyDiff || !_pendingApplyDiff.diff.length) {
+    closeApplyScenarioToProductionModal();
+    return;
+  }
+
+  var diff       = _pendingApplyDiff.diff;
+  var ddd        = _pendingApplyDiff.ddd;
+  var numDdd     = Number(ddd);
+  var scenarioId = _pendingApplyDiff.scenarioId;
+
+  // Build a by-clientId patch map from the diff
+  var patchMap = new Map();
+  diff.forEach(function(row) {
+    if (!patchMap.has(row.clientId)) patchMap.set(row.clientId, {});
+    patchMap.get(row.clientId)[row.field] = row.after;
+  });
+
+  // Apply to production backup (which is what becomes production state after
+  // scenario is exited). If backup is absent the scenario is already on top of
+  // production state (edge case after F5 in scenario) — apply to state.clients.
+  var prodPool = _productionClientsBackup || state.clients;
+  prodPool.forEach(function(c) {
+    if (c.ddd !== numDdd) return;
+    var patch = patchMap.get(c.id);
+    if (!patch) return;
+    Object.keys(patch).forEach(function(field) {
+      c[field] = patch[field];
+    });
+  });
+
+  // Also flush into the production session snapshot so switching back to
+  // production reflects the changes immediately.
+  var prodId = _pendingApplyDiff.prodId;
+  var prodSnapshot = planningSessionSnapshots.get(prodId) || [];
+  var snapByClientId = new Map(prodSnapshot.map(function(s) { return [s.id, s]; }));
+  patchMap.forEach(function(patch, clientId) {
+    if (!snapByClientId.has(clientId)) {
+      // New snapshot entry from scenario client data
+      var scCl = (planningSessionClients.get(scenarioId) || []).find(function(c) { return c.id === clientId; });
+      if (scCl) {
+        snapByClientId.set(clientId, { id: clientId, week: scCl.week, day: scCl.day, driverId: scCl.driverId, sequence: scCl.sequence });
+        prodSnapshot.push(snapByClientId.get(clientId));
+      }
+    } else {
+      Object.keys(patch).forEach(function(field) {
+        snapByClientId.get(clientId)[field] = patch[field];
+      });
+    }
+  });
+  planningSessionSnapshots.set(prodId, prodSnapshot);
+
+  // Persist to localStorage immediately (same format as Ctrl+S production path).
+  // Backend write is deferred to an explicit Ctrl+S by the user.
+  try {
+    var existingRaw = localStorage.getItem('ROUTflex:plan:ddd:' + ddd);
+    var existingPlan = existingRaw ? JSON.parse(existingRaw) : null;
+    var existingClients = (existingPlan && Array.isArray(existingPlan.clients)) ? existingPlan.clients : [];
+    var existingById = new Map(existingClients.map(function(c) { return [c.id, c]; }));
+    patchMap.forEach(function(patch, clientId) {
+      if (!existingById.has(clientId)) {
+        var scCl = (planningSessionClients.get(scenarioId) || []).find(function(c) { return c.id === clientId; });
+        if (scCl) {
+          existingById.set(clientId, { id: clientId, week: scCl.week, day: scCl.day, driverId: scCl.driverId, sequence: scCl.sequence });
+          existingClients.push(existingById.get(clientId));
+        }
+      } else {
+        Object.keys(patch).forEach(function(field) {
+          existingById.get(clientId)[field] = patch[field];
+        });
+      }
+    });
+    var newPlan = {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      clients: existingClients
+    };
+    localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(newPlan));
+  } catch(_saveErr) {
+    console.warn('[APPLY-TO-PROD] falha ao persistir localStorage', _saveErr);
+  }
+
+  markPlanAsDirty();
+  closeApplyScenarioToProductionModal();
+
+  var appliedCount = patchMap.size;
+  updatePlannerHint('Ajustes do cenário aplicados ao plano real (' + appliedCount + ' cliente(s)). Use Ctrl+S para salvar no backend.');
+  console.info('[APPLY-TO-PROD] aplicados', appliedCount, 'clientes ao plano real DDD', ddd);
+}
+
+/** Escapa HTML para uso em innerHTML. */
+function _escHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function updatePlanningSessionActionButtons(sessionId) {
   const deleteSessionBtn = document.getElementById('planning-delete-session-btn');
-  if (!deleteSessionBtn) return;
+  const applyToProdBtn = document.getElementById('planning-apply-to-prod-btn');
   const current = planningSessionRegistry.get(sessionId);
   const isSimulation = Boolean(current && current.tipo_sessao === 'SIMULACAO');
-  deleteSessionBtn.title = isSimulation
-    ? 'Apagar cenário ativo.'
-    : 'Apagar sessão de produção ativa (com confirmação forte).';
+  if (deleteSessionBtn) {
+    deleteSessionBtn.title = isSimulation
+      ? 'Apagar cenário ativo.'
+      : 'Apagar sessão de produção ativa (com confirmação forte).';
+  }
+  // Only show "Aplicar ajustes ao plano real" when a scenario is active and there
+  // is a matching production session for the same DDD.
+  if (applyToProdBtn) {
+    const hasProdSession = isSimulation && Boolean(getRealSessionIdForDDD(current && current.ddd));
+    applyToProdBtn.hidden = !hasProdSession;
+  }
 }
 
 function renderPlanningSessionSelector() {
@@ -8251,7 +8651,7 @@ function _applyPlanningAssignments(savedClients, numDdd) {
     function(client) {
       var item = byId.get(client.id);
       if (typeof item.week === 'number') client.week = item.week;
-      if (typeof item.day === 'string') client.day = item.day;
+      if ('day' in item) client.day = item.day;  // null = sem visita, preservar explicitamente
       if (typeof item.driverId === 'string' && getDriverById(item.driverId)) {
         client.driverId = item.driverId;
         client.driverName = item.driverName || (getDriverById(item.driverId) || {}).name || client.driverName;
@@ -8864,7 +9264,11 @@ function normalizeCurveScheduleForClient(client, options = {}) {
 
   const anchor = group[0];
   const curva = String(anchor.curva || client.curva || 'C').toUpperCase();
-  const desiredDay = options.targetDay || client.day || anchor.day;
+  // When targetDay is provided, use it. When client.day is explicitly null (sem visita),
+  // preserve null and do NOT fall back to anchor.day — that would silently re-assign a visit day.
+  const desiredDay = ('targetDay' in options)
+    ? options.targetDay
+    : (client.day !== undefined ? client.day : anchor.day);
   const desiredDriverId = options.targetDriverId || client.driverId || anchor.driverId;
   const desiredDriverName = (getDriverById(desiredDriverId) || {}).name || anchor.driverName;
   const desiredWeekRaw = Number.isFinite(options.targetWeek)
@@ -15976,6 +16380,36 @@ if (planningDeleteSessionBtn) {
   };
 }
 
+const planningApplyToProdBtn = document.getElementById('planning-apply-to-prod-btn');
+if (planningApplyToProdBtn) {
+  planningApplyToProdBtn.onclick = () => {
+    openApplyScenarioToProductionModal();
+  };
+}
+
+const planningApplyCancelBtn = document.getElementById('planning-apply-cancel-btn');
+if (planningApplyCancelBtn) {
+  planningApplyCancelBtn.onclick = () => {
+    closeApplyScenarioToProductionModal();
+  };
+}
+
+const planningApplyConfirmBtn = document.getElementById('planning-apply-confirm-btn');
+if (planningApplyConfirmBtn) {
+  planningApplyConfirmBtn.onclick = () => {
+    confirmApplyScenarioToProduction();
+  };
+}
+
+const planningApplyModal = document.getElementById('planning-apply-modal');
+if (planningApplyModal) {
+  planningApplyModal.onclick = (event) => {
+    if (event.target.id === 'planning-apply-modal') {
+      closeApplyScenarioToProductionModal();
+    }
+  };
+}
+
 const planningCreateCancelBtn = document.getElementById('planning-create-cancel-btn');
 if (planningCreateCancelBtn) {
   planningCreateCancelBtn.onclick = () => {
@@ -16541,7 +16975,12 @@ async function initializeApp() {
   _autosaveDirtyDDDs.clear();
   markPlanAsSaved();
 
-  calculateRoutes({ skipFitBounds: true });
+  // Scenario boot: switchPlanningSession already queued applyFilters → calculateRoutes
+  // via Promise.resolve(). A second synchronous calculateRoutes here would stack on top
+  // and cause overlapped/doubled route rendering. Skip when scenario was re-activated.
+  if (!_bootActivatedScenario) {
+    calculateRoutes({ skipFitBounds: true });
+  }
   await loadAdvancedHistory();
 }
 

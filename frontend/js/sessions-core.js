@@ -130,7 +130,7 @@ function applyPlanningSnapshotToCurrentClients(snapshot, ddd) {
     function(client) {
       var item = byId.get(client.id);
       if (typeof item.week === 'number') client.week = item.week;
-      if (typeof item.day === 'string') client.day = item.day;
+      if ('day' in item) client.day = item.day;  // null = sem visita, preservar explicitamente
       if (typeof item.driverId === 'string' && getDriverById(item.driverId)) {
         client.driverId = item.driverId;
         client.driverName = (getDriverById(item.driverId) || {}).name || client.driverName;
