@@ -7396,9 +7396,59 @@ function switchPlanningSession(sessionId, options = {}) {
         _productionClientsBackup = null;
         _productionDriversBackup = null;
       }
-      // Limpar caches do cenário para forçar recálculo com dados de produção.
+
+      // ── LIMPEZA SÍNCRONA DE LAYERS E CACHES DO CENÁRIO ─────────────────────
+      // Espelho exato do bloco usado ao entrar no cenário.
+      // Sem isso, os markers/polylines/polygons/base-markers do cenário
+      // permanecem vivos no mapa enquanto o render de produção adiciona os seus
+      // por cima — causando sobreposição, duplicidade e memória acumulada.
+
+      // 1. Caches lógicos — forçar recálculo completo com dados de produção.
       lastFilterContext = null;
       updateState({ filteredClientsCache: [], routeGroupsCache: [], selectedRouteCache: null });
+
+      // 2. Polylines do cenário.
+      _polylineRegistry.forEach((entry) => { try { map.removeLayer(entry.polyline); } catch (_) {} });
+      _polylineRegistry.clear();
+
+      // 3. Client markers do cenário.
+      _markerRegistry.forEach((entry) => { try { clusterLayer.removeLayer(entry.marker); } catch (_) {} });
+      _markerRegistry.clear();
+      markers = [];
+
+      // 4. Territory polygons do cenário.
+      if (_territoryRegistry && _territoryRegistry.size > 0) {
+        _territoryRegistry.forEach((entry) => { try { map.removeLayer(entry.polygon); } catch (_) {} });
+        _territoryRegistry.clear();
+        territoryShapes = [];
+        _territoryShapesCacheKey = null;
+      }
+
+      // 5. Driver base markers do cenário.
+      _driverBaseRegistry.forEach((entry) => { try { map.removeLayer(entry.marker); } catch (_) {} });
+      _driverBaseRegistry.clear();
+      driverMarkers = [];
+
+      // 6. Road route layer (ALT+P) — pode estar ativa sobre dados do cenário.
+      if (typeof clearRoadRoute === 'function') { try { clearRoadRoute(); } catch (_) {} }
+
+      // 7. Cancelar viewport refresh pendente (baseado em dados do cenário).
+      if (viewportRefreshTimer) { window.clearTimeout(viewportRefreshTimer); viewportRefreshTimer = null; }
+
+      // 8. Cancelar RAF de render pendente (baseado em dados do cenário).
+      if (_pendingMapRenderRAF) { cancelAnimationFrame(_pendingMapRenderRAF); _pendingMapRenderRAF = null; }
+      if (_pendingSidebarRAF) { cancelAnimationFrame(_pendingSidebarRAF); _pendingSidebarRAF = null; }
+
+      // 9. Resetar sentinel de viewport diff guard.
+      _lastRenderedClientIds = null;
+
+      // 10. Limpar routeLines (referências de polylines para o estado).
+      routeLines = [];
+
+      // 11. Resetar seleções — IDs do cenário não existem em produção.
+      state.selectedRouteId = null;
+      state.selectedStopId = null;
+      // ────────────────────────────────────────────────────────────────────────
     }
   }
 
