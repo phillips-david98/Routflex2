@@ -17,6 +17,8 @@ const planningSessionClients = new Map(); // sessionId -> Array<client>  (apenas
 const planningSessionDrivers = new Map(); // sessionId -> Array<driver>  (apenas cenários)
 let _productionClientsBackup = null;
 let _productionDriversBackup = null;
+let _productionActiveDaysBackup = null;   // Set<string> — salvo ao entrar em cenário
+let _productionActiveWeeksBackup = null;  // Set<number> — salvo ao entrar em cenário
 
 function buildDriverId(ddd) {
   driverSequence += 1;

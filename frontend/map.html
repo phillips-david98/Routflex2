@@ -7711,6 +7711,10 @@ function switchPlanningSession(sessionId, options = {}) {
       // Saímos de produção SEM ter backup ativo: salvar referência viva.
       _productionClientsBackup = state.clients;
       _productionDriversBackup = state.drivers;
+      // Salvar filtros de dia/semana para restaurar ao voltar da produção.
+      // Cenário pode adicionar dias/semanas inexistentes em produção (ex: D/sem-visita).
+      _productionActiveDaysBackup = new Set(state.activeDays);
+      _productionActiveWeeksBackup = new Set(state.activeWeeks);
     }
 
     if (isScenarioSession(target)) {
@@ -7777,6 +7781,12 @@ function switchPlanningSession(sessionId, options = {}) {
       // Cancelar viewport refresh pendente (baseado em dados de produção).
       if (viewportRefreshTimer) { window.clearTimeout(viewportRefreshTimer); viewportRefreshTimer = null; }
 
+      // Cancelar RAF de render pendente (baseado em dados de produção).
+      // Um RAF de produção enfileirado imediatamente antes da troca pode disparar
+      // e renderizar markers de produção por cima do cenário vazio.
+      if (_pendingMapRenderRAF) { cancelAnimationFrame(_pendingMapRenderRAF); _pendingMapRenderRAF = null; }
+      if (_pendingSidebarRAF) { cancelAnimationFrame(_pendingSidebarRAF); _pendingSidebarRAF = null; }
+
       // Limpar driver base markers de produção.
       _driverBaseRegistry.forEach((entry) => { try { map.removeLayer(entry.marker); } catch (_) {} });
       _driverBaseRegistry.clear();
@@ -7788,6 +7798,11 @@ function switchPlanningSession(sessionId, options = {}) {
       // Limpar routeLines (referências de polylines para o estado).
       routeLines = [];
 
+      // Resetar seleções — IDs de produção não existem no cenário e vice-versa.
+      state.selectedRouteId = null;
+      state.selectedStopId = null;
+      state.focusDriverId = null;
+
     } else {
       // Entrando em produção: restaurar backup se existir; senão manter atual.
       if (_productionClientsBackup !== null) {
@@ -7795,6 +7810,16 @@ function switchPlanningSession(sessionId, options = {}) {
         state.drivers = _productionDriversBackup || [];
         _productionClientsBackup = null;
         _productionDriversBackup = null;
+        // Restaurar filtros de dia/semana da produção (cenário pode ter adicionado
+        // dias como 'D'/sem-visita que não existem em produção).
+        if (_productionActiveDaysBackup) {
+          state.activeDays = _productionActiveDaysBackup;
+          _productionActiveDaysBackup = null;
+        }
+        if (_productionActiveWeeksBackup) {
+          state.activeWeeks = _productionActiveWeeksBackup;
+          _productionActiveWeeksBackup = null;
+        }
       }
 
       // ── LIMPEZA SÍNCRONA DE LAYERS E CACHES DO CENÁRIO ─────────────────────
@@ -7848,9 +7873,21 @@ function switchPlanningSession(sessionId, options = {}) {
       // 11. Resetar seleções — IDs do cenário não existem em produção.
       state.selectedRouteId = null;
       state.selectedStopId = null;
+      state.focusDriverId = null;
+
+      // 12. Limpar flags de ajuste manual do cenário — não devem aparecer
+      //     como pendentes no contexto de produção.
+      state.manualAdjustedDriverIds = new Set();
       // ────────────────────────────────────────────────────────────────────────
     }
   }
+
+  // Garantir que _applyFiltersScheduled está limpo antes de agendar o novo render.
+  // Um applyFilters pendente da sessão anterior (microtask) resultaria em:
+  //   a) applyFilters() retornar imediatamente (no-op) por causa do guard, OU
+  //   b) a microtask antiga disparar calculateRoutes() com dados já trocados.
+  // Zerar aqui garante que o applyFilters() no final desta função sempre agenda.
+  _applyFiltersScheduled = false;
 
   // 3. Aplicar snapshot APENAS para sessões de produção (cenário usa buffer próprio).
   if (isProductionSession(target)) {
