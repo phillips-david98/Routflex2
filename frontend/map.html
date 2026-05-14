@@ -11266,11 +11266,14 @@ function moveLassoSelectionToDriver(targetDriverId, options = {}) {
     changed += 1;
   });
 
-  const normalizeResult = normalizeCurveSchedulesForClients(movableClients, {
-    targetDay: targetDay || undefined,
-    targetWeek: targetWeek || undefined,
-    targetDriverId: targetDriver.id
-  });
+  // Somente passar targetDay/targetWeek quando têm valor real.
+  // Em modo territorial, targetDay e targetWeek são null (dia/semana preservados).
+  // Se passados como undefined, 'targetDay' in options seria verdadeiro e
+  // normalizeCurveScheduleForClient usaria undefined como desiredDay → day=undefined → D.
+  var _normOpts = { targetDriverId: targetDriver.id };
+  if (targetDay != null) _normOpts.targetDay = targetDay;
+  if (targetWeek != null) _normOpts.targetWeek = targetWeek;
+  const normalizeResult = normalizeCurveSchedulesForClients(movableClients, _normOpts);
   changed += normalizeResult.changed;
   normalizeResult.adjustedDriverIds.forEach((driverId) => adjustedDriverIds.add(driverId));
 
