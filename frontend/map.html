@@ -4918,9 +4918,9 @@ body.login-active .routex-ai-panel { display:none !important; }
 </head>
 <body class="login-active">
 
-<!-- Dev origin divergence warning — only shown when hostname is 127.0.0.1 -->
+<!-- Dev origin warning — shown when opened via 127.0.0.1 instead of localhost -->
 <div id="rfx-origin-warning" role="alert" aria-live="polite">
-  <span>⚠ <strong>Ambiente 127.0.0.1 detectado.</strong> Use <strong>localhost:8080</strong> para evitar divergência de storage em desenvolvimento.</span>
+  <span>⚠ Você abriu o ROUTflex por 127.0.0.1. Esta origem usa outro armazenamento local. Feche esta aba e use: <a href="http://localhost:8080/map.html" id="rfx-origin-link" style="color:#ffd080">http://localhost:8080/map.html</a></span>
   <button id="rfx-origin-warning-dismiss" type="button" aria-label="Fechar aviso de origem">Fechar ✕</button>
 </div>
 
@@ -5036,11 +5036,7 @@ body.login-active .routex-ai-panel { display:none !important; }
             <div class="field planning-main-field planning-legacy-selects" aria-hidden="true">
               <label for="session-select">DDD</label>
               <select id="session-select">
-                <option value="61">DDD: 61 - Brasília</option>
-                <option value="62">DDD: 62 - Anápolis</option>
-                <option value="64">DDD: 64 - Rio Verde</option>
                 <option value="65" selected>DDD: 65 - Cuiabá</option>
-                <option value="66">DDD: 66 - Tangará da Serra</option>
               </select>
             </div>
             <div class="field planning-main-field planning-legacy-selects" aria-hidden="true">
@@ -7269,6 +7265,32 @@ function removeDDDOption(ddd) {
   Array.from(select.options)
     .filter((option) => option.value === dddText)
     .forEach((option) => option.remove());
+}
+
+// Sincroniza as opções do selector de DDD com planningSessionRegistry.
+// Garante que apenas DDDs com sessão operacional real aparecem no selector.
+// Chamada após initializePlanningSessions() no boot e após lazy-load de novo DDD.
+// Fallback: se registry vazio, mantém apenas o DDD ativo atual.
+function syncDDDSelectorToRegistry() {
+  const select = document.getElementById('session-select');
+  if (!select) return;
+
+  const registryDDDs = [];
+  planningSessionRegistry.forEach(function(session) {
+    if (session.tipo_sessao === 'REAL' && session.ddd && registryDDDs.indexOf(String(session.ddd)) === -1) {
+      registryDDDs.push(String(session.ddd));
+    }
+  });
+
+  const ddds = registryDDDs.length > 0
+    ? registryDDDs.sort((a, b) => Number(a) - Number(b))
+    : [String(state.selectedDDD || '65')];
+
+  select.innerHTML = ddds
+    .map((ddd) => `<option value="${ddd}"${
+      String(ddd) === String(state.selectedDDD) ? ' selected' : ''
+    }>${getDDDOptionLabel(ddd)}</option>`)
+    .join('');
 }
 
 
@@ -16966,6 +16988,7 @@ async function initializeApp() {
     clients: nextCustomers
   });
   initializePlanningSessions();
+  syncDDDSelectorToRegistry();
   setLassoButtonState();
   setNavButtonState();
   syncMapDragging();
@@ -18475,6 +18498,8 @@ bootstrapApp();
   var banner = document.getElementById('rfx-origin-warning');
   if (!banner) return;
   banner.classList.add('rfx-ow-visible');
+  var link = document.getElementById('rfx-origin-link');
+  // href is hardcoded in HTML to http://localhost:8080/map.html
   var btn = document.getElementById('rfx-origin-warning-dismiss');
   if (btn) btn.addEventListener('click', function() {
     banner.classList.remove('rfx-ow-visible');
