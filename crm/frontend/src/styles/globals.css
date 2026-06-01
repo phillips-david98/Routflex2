@@ -51,6 +51,8 @@
   --radius:         8px;
   --radius-lg:      12px;
   --transition:     0.15s ease;
+  --layout-ease:     cubic-bezier(.22, 1, .36, 1);
+  --layout-speed:    320ms;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -77,13 +79,107 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 .app-shell {
   display: flex;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 .main-content {
   flex: 1;
   margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+.main-content-frame {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  transition:
+    transform var(--layout-speed) var(--layout-ease),
+    opacity .18s ease;
+}
+.main-content.is-sidebar-transitioning {
+  overflow-x: clip;
+}
+.main-content.is-sidebar-transitioning .card,
+.main-content.is-sidebar-transitioning .stat-card,
+.main-content.is-sidebar-transitioning section {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  transition:
+    box-shadow .22s ease,
+    border-color .22s ease,
+    opacity .22s ease,
+    transform var(--layout-speed) var(--layout-ease);
+}
+.main-content.is-sidebar-transitioning .recharts-responsive-container,
+.main-content.is-sidebar-transitioning .recharts-wrapper,
+.main-content.is-sidebar-transitioning .recharts-surface {
+  pointer-events: none;
+  opacity: .972;
+  transition: opacity .22s ease;
+  transform: translateZ(0);
+}
+.sidebar-shell {
+  contain: layout paint;
+  box-shadow: 8px 0 22px rgba(15,27,53,.08);
+}
+.sidebar-shell::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.14), rgba(255,255,255,.04));
+  pointer-events: none;
+}
+.sidebar-toggle {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,.96));
+  border: 1px solid rgba(15,27,53,.14);
+  box-shadow:
+    0 10px 22px rgba(15,27,53,.16),
+    0 0 0 3px rgba(255,255,255,.72);
+  color: var(--primary);
+  transition:
+    background-color .18s ease,
+    border-color .18s ease,
+    box-shadow .22s ease,
+    transform .22s var(--layout-ease);
+}
+.sidebar-toggle:hover {
+  border-color: rgba(255,107,44,.36);
+  box-shadow:
+    0 12px 26px rgba(15,27,53,.20),
+    0 0 0 4px rgba(255,107,44,.10),
+    0 0 0 1px rgba(255,255,255,.9) inset;
+  transform: translateX(1px);
+}
+.sidebar-toggle:active {
+  transform: translateX(1px) scale(.96);
+}
+.sidebar-shell.is-collapsed .sidebar-toggle:hover {
+  transform: translateX(-1px);
+}
+.sidebar-toggle-icon {
+  display: flex;
+  transition: transform var(--layout-speed) var(--layout-ease);
+}
+.sidebar-shell.is-transitioning .sidebar-toggle-icon {
+  transform: rotate(180deg);
+}
+.sidebar-copy {
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity .24s ease,
+    transform .28s var(--layout-ease);
+}
+.sidebar-copy.is-hidden {
+  opacity: 0;
+  transform: translateX(-10px);
 }
 .page-body {
   flex: 1;
@@ -91,7 +187,159 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   overflow-y: auto;
 }
 
+@media (max-width: 920px) {
+  main > div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* ── Cards ──────────────────────────────────────────────── */
+/* Premium login motion */
+.login-visual-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 24% 18%, rgba(255,107,44,.16), transparent 28%),
+    radial-gradient(circle at 82% 70%, rgba(0,180,216,.12), transparent 30%);
+  opacity: .9;
+  animation: loginGlowBreath 9s ease-in-out infinite;
+  pointer-events: none;
+}
+.login-territory-grid {
+  position: absolute;
+  inset: 0;
+  opacity: .30;
+  background-image:
+    linear-gradient(rgba(255,255,255,.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.13) 1px, transparent 1px);
+  background-size: 42px 42px;
+  animation: loginGridDrift 34s linear infinite;
+  pointer-events: none;
+}
+.login-route-line {
+  position: absolute;
+  left: -12%;
+  width: 124%;
+  height: 2px;
+  overflow: hidden;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.42), rgba(255,107,44,.56), transparent);
+  transform-origin: center;
+  pointer-events: none;
+}
+.login-route-line::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -64px;
+  width: 64px;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.76), rgba(255,107,44,.86), transparent);
+  animation: loginRoutePacket 6.8s ease-in-out infinite;
+}
+.login-route-line-a {
+  top: 34%;
+  transform: rotate(-12deg);
+  animation: loginRouteFlow 11s ease-in-out infinite;
+}
+.login-route-line-b {
+  top: 62%;
+  transform: rotate(9deg);
+  animation: loginRouteFlow 14s ease-in-out infinite reverse;
+}
+.login-orb {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  opacity: .20;
+  pointer-events: none;
+}
+.login-orb-a {
+  right: -70px;
+  top: 52px;
+  background: radial-gradient(circle, rgba(255,107,44,.50), rgba(255,107,44,.08) 58%, transparent 72%);
+  animation: loginOrbFloat 13s ease-in-out infinite;
+}
+.login-orb-b {
+  left: -90px;
+  bottom: 34px;
+  background: radial-gradient(circle, rgba(0,180,216,.40), rgba(0,180,216,.08) 58%, transparent 72%);
+  animation: loginOrbFloat 16s ease-in-out infinite reverse;
+}
+.login-route-node {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 5px rgba(255,255,255,.08), 0 0 22px rgba(255,107,44,.45);
+  opacity: .72;
+  pointer-events: none;
+  animation: loginNodePulse 4.8s ease-in-out infinite;
+}
+.login-node-a { left: 18%; top: 30%; }
+.login-node-b { left: 54%; top: 46%; animation-delay: 1.2s; }
+.login-node-c { right: 18%; bottom: 28%; animation-delay: 2.1s; }
+.login-metric-card {
+  animation: loginMetricBreath 7s ease-in-out infinite;
+  transform: translateZ(0);
+}
+.login-metric-card:nth-child(2) { animation-delay: 1.2s; }
+.login-metric-card:nth-child(3) { animation-delay: 2.1s; }
+
+@keyframes loginGridDrift {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 42px 42px, 42px 42px; }
+}
+@keyframes loginRouteFlow {
+  0%, 100% { opacity: .34; translate: -34px 0; }
+  50% { opacity: .72; translate: 44px 0; }
+}
+@keyframes loginRoutePacket {
+  0% { transform: translateX(0); opacity: 0; }
+  18% { opacity: .72; }
+  74% { opacity: .72; }
+  100% { transform: translateX(calc(124vw + 128px)); opacity: 0; }
+}
+@keyframes loginGlowBreath {
+  0%, 100% { opacity: .72; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+@keyframes loginOrbFloat {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(14px, -10px, 0) scale(1.04); }
+}
+@keyframes loginNodePulse {
+  0%, 100% { opacity: .58; transform: scale(.92); }
+  50% { opacity: .98; transform: scale(1.22); }
+}
+@keyframes loginMetricBreath {
+  0%, 100% { transform: translateY(0); border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.06); }
+  50% { transform: translateY(-3px); border-color: rgba(255,255,255,.26); background: rgba(255,255,255,.09); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-visual-panel::after,
+  .login-territory-grid,
+  .login-route-line,
+  .login-route-line::after,
+  .login-orb,
+  .login-route-node,
+  .login-metric-card {
+    animation: none !important;
+  }
+  .main-content,
+  .main-content-frame,
+  .sidebar-copy,
+  .main-content .recharts-responsive-container,
+  .main-content .recharts-wrapper,
+  .main-content .recharts-surface {
+    transition: none !important;
+  }
+}
+
 .card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
@@ -121,7 +369,12 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   border-radius: var(--radius);
   font-weight: 500;
   font-size: 13px;
-  transition: all var(--transition);
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    color var(--transition),
+    box-shadow var(--transition),
+    opacity var(--transition);
   white-space: nowrap;
 }
 .btn-primary {
@@ -216,7 +469,10 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   border-radius: var(--radius);
   font-size: 13px;
   font-weight: 500;
-  transition: all var(--transition);
+  transition:
+    background-color var(--transition),
+    color var(--transition),
+    opacity var(--transition);
   color: var(--text-secondary);
 }
 .page-btn:hover { background: var(--bg-hover); color: var(--text-primary); }

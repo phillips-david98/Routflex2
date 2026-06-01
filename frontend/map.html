@@ -2973,122 +2973,174 @@ body.login-active .app-shell {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(640px, 98vw);
-  max-height: min(92vh, 820px);
+  width: min(720px, 98vw);
+  max-height: min(92vh, 900px);
   overflow-y: auto;
-  background: #111c2d;
-  border: 1px solid rgba(129, 183, 231, 0.18);
-  border-radius: 20px;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.72), 0 0 0 1px rgba(255,255,255,0.04);
-  padding: 28px 28px 24px;
+  background: #0b1724;
+  border: 1px solid rgba(82,160,230,0.2);
+  border-radius: 24px;
+  box-shadow:
+    0 32px 80px rgba(0,0,0,0.84),
+    0 0 0 1px rgba(255,255,255,0.03),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  padding: 32px 32px 28px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 22px;
   z-index: 9600;
   scrollbar-width: thin;
-  scrollbar-color: rgba(129,183,231,0.25) transparent;
+  scrollbar-color: rgba(82,160,230,0.22) transparent;
 }
+/* ── Header ── */
 .maintenance-modal-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
+.mnt-header-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(65,140,210,0.16);
+  border: 1px solid rgba(65,140,210,0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mnt-header-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: #5aa8e0;
+  fill: none;
+}
+.mnt-header-text { flex: 1; }
 .maintenance-modal-header h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.08rem;
   font-weight: 700;
-  color: #e8f3ff;
+  color: #e8f4ff;
   letter-spacing: 0.01em;
 }
 .maintenance-modal-header span {
-  font-size: 0.78rem;
-  color: #7fa8cc;
-  margin-top: 2px;
+  display: block;
+  font-size: 0.77rem;
+  color: #5a7e9e;
+  margin-top: 3px;
 }
 .maintenance-modal-close {
-  background: none;
-  border: none;
-  color: #7fa8cc;
-  font-size: 1.25rem;
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #6a94b8;
+  font-size: 0.95rem;
   cursor: pointer;
   line-height: 1;
-  padding: 4px 8px;
+  padding: 0;
   border-radius: 8px;
-  transition: color 0.15s, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
   flex-shrink: 0;
 }
 .maintenance-modal-close:hover {
   color: #e8f3ff;
-  background: rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.16);
+}
+/* ── Horizontal rule ── */
+.mnt-rule {
+  height: 1px;
+  background: rgba(82,160,230,0.08);
+  margin: 0 -32px;
+  flex-shrink: 0;
 }
 /* ── Flow row: origin → arrow → destination ── */
 .mnt-flow-container {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: start;
-  gap: 10px;
+  gap: 12px;
 }
 .mnt-flow-side {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(82,160,230,0.12);
+  border-radius: 14px;
+  padding: 14px 14px 12px;
 }
 .mnt-flow-label {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #7fa8cc;
+  letter-spacing: 0.1em;
+  color: #4a90d4;
 }
 .mnt-session-select {
   background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(129,183,231,0.2);
+  border: 1px solid rgba(82,160,230,0.18);
   border-radius: 10px;
   color: #ddeeff;
   font-size: 0.85rem;
-  padding: 7px 10px;
+  padding: 9px 12px;
   appearance: none;
   cursor: pointer;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, background 0.15s;
   width: 100%;
 }
 .mnt-session-select:focus {
-  border-color: rgba(129,183,231,0.5);
+  border-color: rgba(82,160,230,0.55);
+  background: rgba(255,255,255,0.07);
 }
 .mnt-flow-meta {
-  margin-top: 2px;
-  font-size: 0.75rem;
-  color: #6a94b8;
+  font-size: 0.73rem;
+  color: #4d7496;
   min-height: 1em;
+  line-height: 1.4;
 }
 .mnt-flow-arrow-wrap {
   display: flex;
-  align-items: flex-start;
-  padding-top: 26px;
+  align-items: center;
+  justify-content: center;
+  padding-top: 38px;
 }
 .mnt-flow-arrow {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(65, 140, 210, 0.15);
-  border: 1px solid rgba(65, 140, 210, 0.3);
+  background: rgba(65,140,210,0.14);
+  border: 1px solid rgba(65,140,210,0.32);
+  box-shadow: 0 0 14px rgba(65,140,210,0.14);
+  transition: background 0.2s, box-shadow 0.2s;
 }
-.mnt-flow-arrow svg { width: 16px; height: 16px; fill: #6aabdb; }
+.mnt-flow-arrow:hover {
+  background: rgba(65,140,210,0.26);
+  box-shadow: 0 0 22px rgba(65,140,210,0.28);
+}
+.mnt-flow-arrow svg {
+  width: 18px;
+  height: 18px;
+  stroke: #5aa8e0;
+  fill: none;
+}
 /* ── Warning banner ── */
 .mnt-warning {
   display: none;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background: rgba(230, 100, 60, 0.12);
-  border: 1px solid rgba(230, 100, 60, 0.3);
-  color: #f5a070;
+  padding: 11px 16px;
+  border-radius: 12px;
+  background: rgba(210,85,45,0.1);
+  border: 1px solid rgba(210,85,45,0.28);
+  color: #ee8a60;
   font-size: 0.82rem;
 }
 .mnt-warning.is-visible { display: flex; }
@@ -3096,95 +3148,113 @@ body.login-active .app-shell {
 .mnt-operation-row {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .mnt-operation-row label.section-label {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #7fa8cc;
+  letter-spacing: 0.1em;
+  color: #4a90d4;
 }
 .mnt-pill-row {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 4px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(82,160,230,0.1);
+  border-radius: 12px;
+  padding: 4px;
 }
 .mnt-pill-radio {
+  flex: 1;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1px solid rgba(129,183,231,0.2);
-  background: rgba(255,255,255,0.04);
-  font-size: 0.83rem;
-  color: #aacde8;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 0.85rem;
+  color: #7fa8cc;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, box-shadow 0.18s;
   user-select: none;
 }
 .mnt-pill-radio:has(input:checked) {
-  background: rgba(65, 140, 210, 0.22);
-  border-color: rgba(65, 140, 210, 0.6);
-  color: #d8eeff;
+  background: rgba(65,140,210,0.2);
+  border-color: rgba(65,140,210,0.48);
+  color: #c8e4ff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(65,140,210,0.16);
 }
 .mnt-pill-radio input { display: none; }
 /* ── Scope / filter cards ── */
 .mnt-scope-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 .mnt-card {
-  border-radius: 14px;
-  border: 1px solid rgba(129,183,231,0.13);
-  background: rgba(255,255,255,0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(82,160,230,0.12);
+  background: rgba(255,255,255,0.025);
   overflow: hidden;
+  transition: border-color 0.2s;
+}
+.mnt-card:focus-within {
+  border-color: rgba(65,140,210,0.3);
 }
 .mnt-card-hdr {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px 8px;
-  border-bottom: 1px solid rgba(129,183,231,0.08);
+  padding: 13px 16px 10px;
+  border-bottom: 1px solid rgba(82,160,230,0.07);
 }
 .mnt-card-icon {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 8px;
-  background: rgba(65,140,210,0.18);
+  background: rgba(65,140,210,0.15);
+  border: 1px solid rgba(65,140,210,0.22);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  flex-shrink: 0;
 }
-.mnt-card-titles { display: flex; flex-direction: column; gap: 1px; }
-.mnt-card-titles strong { font-size: 0.82rem; color: #ddeeff; font-weight: 600; }
-.mnt-card-titles span  { font-size: 0.74rem; color: #6a94b8; }
+.mnt-card-icon svg {
+  width: 15px;
+  height: 15px;
+  stroke: #5aa8e0;
+  fill: none;
+}
+.mnt-card-titles { display: flex; flex-direction: column; gap: 2px; }
+.mnt-card-titles strong { font-size: 0.83rem; color: #ddeeff; font-weight: 600; }
+.mnt-card-titles span  { font-size: 0.72rem; color: #4d7496; }
 .mnt-card-body {
-  padding: 10px 14px 12px;
+  padding: 12px 16px 14px;
 }
 /* ── Driver list ── */
 .mnt-driver-list {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  max-height: 160px;
+  gap: 3px;
+  max-height: 168px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(129,183,231,0.2) transparent;
+  scrollbar-color: rgba(82,160,230,0.18) transparent;
 }
 .mnt-driver-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 5px 8px;
+  padding: 6px 8px;
   border-radius: 8px;
   transition: background 0.12s;
 }
-.mnt-driver-row:hover { background: rgba(255,255,255,0.04); }
+.mnt-driver-row:hover { background: rgba(65,140,210,0.07); }
 .mnt-driver-options {
   display: flex;
   align-items: center;
@@ -3194,7 +3264,7 @@ body.login-active .app-shell {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.77rem;
+  font-size: 0.78rem;
   color: #7fa8cc;
   cursor: pointer;
   white-space: nowrap;
@@ -3203,41 +3273,45 @@ body.login-active .app-shell {
 .mnt-check {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.82rem;
-  color: #aacde8;
+  gap: 7px;
+  font-size: 0.83rem;
+  color: #8fb8d4;
   cursor: pointer;
   width: 100%;
   user-select: none;
+  transition: color 0.12s;
 }
+.mnt-check:has(input:checked) { color: #c8e4ff; }
 .mnt-check input[type="checkbox"] {
   accent-color: #4a9edd;
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 /* ── Lasso status ── */
 .mnt-lasso-status {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .mnt-lasso-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.78rem;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.77rem;
   font-weight: 600;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(129,183,231,0.15);
-  color: #8ab8d8;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(82,160,230,0.14);
+  color: #6a94b8;
   align-self: flex-start;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 .mnt-lasso-badge.is-active {
   background: rgba(65,140,210,0.18);
-  border-color: rgba(65,140,210,0.4);
+  border-color: rgba(65,140,210,0.44);
   color: #a8d4f0;
 }
 .mnt-lasso-filter {
@@ -3248,18 +3322,44 @@ body.login-active .app-shell {
 .mnt-lasso-filter label {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
+  gap: 8px;
+  font-size: 0.83rem;
   color: #8ab8d8;
   cursor: pointer;
   user-select: none;
 }
 .mnt-lasso-filter label:has(input:checked) { color: #c8e4f8; }
+/* ── Filters section ── */
+.mnt-filters-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(82,160,230,0.1);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.mnt-filters-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.mnt-filters-label {
+  font-size: 0.78rem;
+  color: #7fa8cc;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 /* ── Summary table ── */
 .mnt-summary {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(82,160,230,0.1);
+  border-radius: 16px;
+  padding: 16px 18px 14px;
 }
 .mnt-summary-hdr {
   display: flex;
@@ -3267,82 +3367,360 @@ body.login-active .app-shell {
   gap: 10px;
 }
 .mnt-summary-icon {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
-  background: rgba(65,140,210,0.18);
+  background: rgba(65,140,210,0.15);
+  border: 1px solid rgba(65,140,210,0.22);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+}
+.mnt-summary-icon svg {
+  width: 15px;
+  height: 15px;
+  stroke: #5aa8e0;
+  fill: none;
 }
 .mnt-summary-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 6px 12px;
 }
 .mnt-summary-grid .detail-line {
-  font-size: 0.83rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.82rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(82,160,230,0.07);
+}
+.mnt-summary-grid .detail-line span {
+  color: #4d7496;
+  font-size: 0.76rem;
+}
+.mnt-summary-grid .detail-line strong {
+  color: #b8d8f4;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-align: right;
 }
 /* ── Feedback strip ── */
 .mnt-feedback {
   display: none;
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 11px 16px;
+  border-radius: 12px;
   font-size: 0.83rem;
   font-weight: 500;
 }
-.mnt-feedback.is-visible { display: block; }
+@keyframes mnt-feedback-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.mnt-feedback.is-visible {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: mnt-feedback-in 0.2s ease;
+}
 .mnt-feedback.is-success {
-  background: rgba(40,160,90,0.14);
-  border: 1px solid rgba(40,160,90,0.3);
-  color: #70e8a0;
+  background: rgba(35,155,85,0.12);
+  border: 1px solid rgba(35,155,85,0.28);
+  color: #6adea0;
 }
 .mnt-feedback.is-error {
-  background: rgba(220,60,60,0.14);
-  border: 1px solid rgba(220,60,60,0.3);
-  color: #f08080;
+  background: rgba(210,55,55,0.12);
+  border: 1px solid rgba(210,55,55,0.28);
+  color: #f09090;
 }
 /* ── Action bar ── */
 .mnt-modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  padding-top: 4px;
 }
 .mnt-btn-secondary {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(129,183,231,0.2);
-  border-radius: 10px;
-  color: #aacde8;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(82,160,230,0.18);
+  border-radius: 12px;
+  color: #8ab4cc;
   font-size: 0.85rem;
   font-weight: 600;
-  padding: 9px 18px;
+  padding: 10px 22px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-.mnt-btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.mnt-btn-secondary:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(82,160,230,0.32);
+  color: #c8e4ff;
+}
 .mnt-btn-primary {
-  background: rgba(65,140,210,0.3);
-  border: 1px solid rgba(65,140,210,0.55);
-  border-radius: 10px;
-  color: #d8eeff;
+  background: rgba(55,130,210,0.26);
+  border: 1px solid rgba(65,140,210,0.52);
+  border-radius: 12px;
+  color: #cce6ff;
   font-size: 0.85rem;
   font-weight: 700;
-  padding: 9px 18px;
+  padding: 10px 24px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  letter-spacing: 0.01em;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
-.mnt-btn-primary:hover { background: rgba(65,140,210,0.48); }
+.mnt-btn-primary:hover {
+  background: rgba(65,140,210,0.44);
+  border-color: rgba(65,140,210,0.72);
+  box-shadow: 0 4px 16px rgba(65,140,210,0.24);
+}
 .mnt-btn-primary.is-danger {
-  background: rgba(200,50,50,0.25);
-  border-color: rgba(200,50,50,0.55);
-  color: #ffcccc;
+  background: rgba(190,50,50,0.22);
+  border-color: rgba(200,60,60,0.5);
+  color: #ffd4d4;
 }
-.mnt-btn-primary.is-danger:hover { background: rgba(200,50,50,0.4); }
+.mnt-btn-primary.is-danger:hover {
+  background: rgba(200,60,60,0.36);
+  border-color: rgba(210,70,70,0.68);
+  box-shadow: 0 4px 16px rgba(200,60,60,0.2);
+}
 .mnt-btn-primary:disabled {
-  opacity: 0.38;
+  opacity: 0.32;
   cursor: not-allowed;
   pointer-events: none;
+}
+@media (max-width: 520px) {
+  .maintenance-modal-card { padding: 20px 16px 18px; }
+  .mnt-scope-grid { grid-template-columns: 1fr; }
+  .mnt-summary-grid { grid-template-columns: 1fr; }
+  .mnt-flow-container { grid-template-columns: 1fr; }
+  .mnt-flow-arrow-wrap { padding-top: 0; justify-content: flex-start; }
+}
+
+/* ── MNT: Scope mode toggle ── */
+.mnt-scope-mode-row {
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(82,160,230,0.1);
+  border-radius: 12px;
+  padding: 4px;
+}
+.mnt-scope-mode-pill {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: #6a94b8;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  user-select: none;
+}
+.mnt-scope-mode-pill svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  flex-shrink: 0;
+}
+.mnt-scope-mode-pill.is-active {
+  background: rgba(65,140,210,0.2);
+  border-color: rgba(65,140,210,0.48);
+  color: #c8e4ff;
+  font-weight: 600;
+}
+
+/* ── MNT: Scope card visibility ── */
+.mnt-scope-clients-only { display: none; }
+.mnt-scope-grid.is-clients-mode .mnt-scope-drivers-only { display: none; }
+.mnt-scope-grid.is-clients-mode .mnt-scope-clients-only {
+  display: flex;
+  flex-direction: column;
+  grid-column: 1 / -1;
+}
+
+/* ── MNT: Client search ── */
+.mnt-client-search-wrap {
+  position: relative;
+  margin-bottom: 8px;
+}
+.mnt-client-search-wrap svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  stroke: #4d7496;
+  fill: none;
+  pointer-events: none;
+}
+.mnt-client-search {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(82,160,230,0.15);
+  border-radius: 9px;
+  color: #ddeeff;
+  font-size: 0.82rem;
+  padding: 8px 10px 8px 32px;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  box-sizing: border-box;
+}
+.mnt-client-search:focus {
+  border-color: rgba(82,160,230,0.45);
+  background: rgba(255,255,255,0.07);
+}
+.mnt-client-search::placeholder { color: #3d5e78; }
+
+/* ── MNT: Client list ── */
+.mnt-client-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(82,160,230,0.18) transparent;
+}
+.mnt-client-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background 0.12s;
+}
+.mnt-client-row:hover { background: rgba(65,140,210,0.07); }
+.mnt-client-row[hidden] { display: none; }
+.mnt-client-row-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+  color: #8fb8d4;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+  user-select: none;
+  transition: color 0.12s;
+}
+.mnt-client-row-label:has(input:checked) { color: #c8e4ff; }
+.mnt-client-row-label input[type="checkbox"] {
+  accent-color: #4a9edd;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.mnt-client-row-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+.mnt-client-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mnt-client-row-code {
+  font-size: 0.71rem;
+  color: #4d7496;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* ── MNT: Client card header actions ── */
+.mnt-card-hdr-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.mnt-client-counter {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(65,140,210,0.18);
+  border: 1px solid rgba(65,140,210,0.35);
+  color: #a8d4f0;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+.mnt-client-counter.is-zero {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(82,160,230,0.12);
+  color: #4d7496;
+}
+.mnt-lasso-import-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(65,140,210,0.3);
+  background: rgba(65,140,210,0.1);
+  color: #7ab8e0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.mnt-lasso-import-btn:hover {
+  background: rgba(65,140,210,0.22);
+  border-color: rgba(65,140,210,0.5);
+  color: #b0d8f4;
+}
+.mnt-lasso-import-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.mnt-lasso-import-btn svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  fill: none;
+}
+.mnt-client-empty {
+  font-size: 0.8rem;
+  color: #4d7496;
+  padding: 10px 4px;
+  text-align: center;
+}
+
+/* ── MNT: Summary draft note ── */
+.mnt-summary-draft-note {
+  display: none;
+  font-size: 0.74rem;
+  color: #4d7496;
+  font-style: italic;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(82,160,230,0.07);
+  margin-top: 4px;
+}
+.mnt-summary.is-draft .mnt-summary-draft-note { display: block; }
+
+@media (max-width: 520px) {
+  .mnt-scope-mode-pill { padding: 8px 10px; font-size: 0.78rem; }
 }
 
 /* ── Insight Modal (INS) ────────────────────────────────────── */
@@ -5644,7 +6022,13 @@ body.login-active .routex-ai-panel { display:none !important; }
 
         <!-- Header -->
         <div class="maintenance-modal-header">
-          <div>
+          <div class="mnt-header-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/>
+              <path d="M9 8h6M9 12h6M9 16h4"/>
+            </svg>
+          </div>
+          <div class="mnt-header-text">
             <h3>Manutenção de Carteiras</h3>
             <span>Copiar ou transferir clientes entre sessões de planejamento</span>
           </div>
@@ -5659,8 +6043,10 @@ body.login-active .routex-ai-panel { display:none !important; }
             <div class="mnt-flow-meta" id="mnt-origin-meta"></div>
           </div>
           <div class="mnt-flow-arrow-wrap">
-            <div class="mnt-flow-arrow">
-              <svg viewBox="0 0 16 16"><path d="M3 8h8m0 0-3-3m3 3-3 3"/></svg>
+            <div class="mnt-flow-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M13 6l6 6-6 6"/>
+              </svg>
             </div>
           </div>
           <div class="mnt-flow-side">
@@ -5672,7 +6058,7 @@ body.login-active .routex-ai-panel { display:none !important; }
 
         <!-- Warning banner -->
         <div class="mnt-warning" id="mnt-warning">
-          <span>⚠</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           <span id="mnt-warning-text"></span>
         </div>
 
@@ -5681,20 +6067,41 @@ body.login-active .routex-ai-panel { display:none !important; }
           <label class="section-label">Operação</label>
           <div class="mnt-pill-row">
             <label class="mnt-pill-radio">
-              <input type="radio" name="mnt-op" value="copy" checked> Copiar
+              <input type="radio" name="mnt-op" value="copy" checked>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar
             </label>
             <label class="mnt-pill-radio">
-              <input type="radio" name="mnt-op" value="transfer"> Transferir
+              <input type="radio" name="mnt-op" value="transfer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              Transferir
             </label>
           </div>
         </div>
 
-        <!-- Scope: driver selection + lasso -->
-        <div class="mnt-scope-grid">
-          <!-- Driver card -->
-          <div class="mnt-card">
+        <!-- Scope mode toggle -->
+        <div class="mnt-scope-mode-row" id="mnt-scope-mode-row">
+          <button class="mnt-scope-mode-pill is-active" id="mnt-mode-drivers" type="button">
+            <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8ZM5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/></svg>
+            Motoristas
+          </button>
+          <button class="mnt-scope-mode-pill" id="mnt-mode-clients" type="button">
+            <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Clientes
+          </button>
+        </div>
+
+        <!-- Scope: driver selection + lasso + clients -->
+        <div class="mnt-scope-grid" id="mnt-scope-grid">
+          <!-- Driver card (drivers mode) -->
+          <div class="mnt-card mnt-scope-drivers-only">
             <div class="mnt-card-hdr">
-              <div class="mnt-card-icon">🚚</div>
+              <div class="mnt-card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="1" y="3" width="15" height="13" rx="2"/>
+                  <path d="M16 8h4l3 5v3h-7V8ZM5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
+                </svg>
+              </div>
               <div class="mnt-card-titles">
                 <strong>Motoristas</strong>
                 <span>Selecione um ou mais</span>
@@ -5702,15 +6109,22 @@ body.login-active .routex-ai-panel { display:none !important; }
             </div>
             <div class="mnt-card-body">
               <div class="mnt-driver-list" id="mnt-driver-list">
-                <span style="font-size:0.8rem;color:#6a94b8;">Selecione a sessão de origem.</span>
+                <span style="font-size:0.8rem;color:#4d7496;">Selecione a sessão de origem.</span>
               </div>
             </div>
           </div>
 
-          <!-- Lasso card -->
-          <div class="mnt-card">
+          <!-- Lasso card (drivers mode) -->
+          <div class="mnt-card mnt-scope-drivers-only">
             <div class="mnt-card-hdr">
-              <div class="mnt-card-icon">🔷</div>
+              <div class="mnt-card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10"/>
+                  <path d="M16 12c0 4.42-1.79 8-4 8s-4-3.58-4-8 1.79-8 4-8"/>
+                  <path d="M2 12h20"/>
+                  <path d="M18 16l4 4M22 16l-4 4"/>
+                </svg>
+              </div>
               <div class="mnt-card-titles">
                 <strong>Seleção por Laço</strong>
                 <span>Filtrar clientes lassados</span>
@@ -5725,13 +6139,46 @@ body.login-active .routex-ai-panel { display:none !important; }
               </div>
             </div>
           </div>
+
+          <!-- Clients card (clients mode, hidden by default) -->
+          <div class="mnt-card mnt-scope-clients-only" id="mnt-clients-card">
+            <div class="mnt-card-hdr">
+              <div class="mnt-card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div class="mnt-card-titles">
+                <strong>Clientes</strong>
+                <span>Selecione clientes individualmente</span>
+              </div>
+              <div class="mnt-card-hdr-actions">
+                <div class="mnt-client-counter is-zero" id="mnt-client-counter">0 selecionados</div>
+                <button class="mnt-lasso-import-btn" id="mnt-lasso-import-btn" type="button" disabled title="Nenhum cliente selecionado no laço">
+                  <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10"/><path d="M16 12c0 4.42-1.79 8-4 8s-4-3.58-4-8 1.79-8 4-8"/><path d="M2 12h20"/><path d="M18 16l4 4M22 16l-4 4"/></svg>
+                  Importar do laço<span class="mnt-lasso-import-count"></span>
+                </button>
+              </div>
+            </div>
+            <div class="mnt-card-body">
+              <div class="mnt-client-search-wrap">
+                <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input class="mnt-client-search" id="mnt-client-search" type="text" placeholder="Buscar por nome ou código..." autocomplete="off">
+              </div>
+              <div class="mnt-client-list" id="mnt-client-list">
+                <div class="mnt-client-empty">Selecione a sessão de origem.</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Filters -->
-        <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="mnt-filters-section">
           <div class="mnt-flow-label">Filtros adicionais</div>
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <label style="font-size:0.8rem;color:#8fa7c4;white-space:nowrap;" for="mnt-agenda-filter">Agenda dos clientes:</label>
+          <div class="mnt-filters-row">
+            <label class="mnt-filters-label" for="mnt-agenda-filter">Agenda dos clientes:</label>
             <select id="mnt-agenda-filter" class="mnt-session-select" style="flex:1;min-width:160px;">
               <option value="all">Todos os clientes</option>
               <option value="with-day">Apenas com dia de visita</option>
@@ -5746,9 +6193,14 @@ body.login-active .routex-ai-panel { display:none !important; }
         <!-- Summary -->
         <div class="mnt-summary">
           <div class="mnt-summary-hdr">
-            <div class="mnt-summary-icon">📋</div>
+            <div class="mnt-summary-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/>
+                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+              </svg>
+            </div>
             <div>
-              <strong style="font-size:0.85rem;color:#ddeeff;">Resumo da operação</strong>
+              <strong style="font-size:0.85rem;color:#d0e8ff;">Resumo da operação</strong>
             </div>
           </div>
           <div class="mnt-summary-grid">
@@ -5759,6 +6211,9 @@ body.login-active .routex-ai-panel { display:none !important; }
             <div class="detail-line"><span>Agenda</span><strong id="mnt-sum-agenda">—</strong></div>
             <div class="detail-line"><span>Clientes afetados</span><strong id="mnt-sum-count">—</strong></div>
             <div class="detail-line"><span>Sequência</span><strong id="mnt-sum-seq">—</strong></div>
+          </div>
+          <div class="mnt-summary-draft-note" id="mnt-summary-draft-note">
+            Modo Clientes — a execução estará disponível em breve.
           </div>
         </div>
 
@@ -6403,6 +6858,12 @@ function appendSessionClients(sessionId, clientsArray) {
       planningSessionClients.set(sessionId, buf);
     }
     // Upsert por id
+    // ── LOG DIAGNÓSTICO TEMPORÁRIO ──
+    var _diagAppendBefore = buf.length;
+    console.warn('[MNT-DIAG] appendSessionClients [cenário] PRÉ-UPSERT', {
+      sessionId: sessionId, incomingLength: clientsArray.length,
+      bufBefore: _diagAppendBefore, isActiveSession: state.activePlanningSessionId === sessionId
+    });
     var existingMap = new Map(buf.map(function(c) { return [String(c.id), true]; }));
     clientsArray.forEach(function(c) {
       var cid = String(c.id);
@@ -6413,6 +6874,10 @@ function appendSessionClients(sessionId, clientsArray) {
         buf.push(c);
         existingMap.set(cid, true);
       }
+    });
+    console.warn('[MNT-DIAG] appendSessionClients [cenário] PÓS-UPSERT', {
+      sessionId: sessionId, bufAfter: buf.length,
+      bufBefore: _diagAppendBefore, delta: buf.length - _diagAppendBefore
     });
     if (state.activePlanningSessionId === sessionId) {
       updateState({ clients: buf });
@@ -6513,21 +6978,50 @@ function executeMaintenanceTransfer(plan) {
   if (!clientsToMove.length) return false;
   // Preparar cópias
   var copies = _deepCloneTransfer(clientsToMove).map(function(c) {
-    if (!plan.keepSequence) {
+    if (plan.cleanMode) {
+      // Clean state: client enters destination unscheduled and unassigned
+      // driverId='unassigned' is the system-native sentinel (data-loader canonical value)
+      c.driverId   = 'unassigned';
+      c.driverName = 'Sem motorista';
+      c.day        = null;   // native sentinel for no visit day
+      c.week       = null;   // native sentinel for no cycle
+      c.sequence   = null;
+      c.sequencia  = null;
+    } else if (!plan.keepSequence) {
       c.sequence = null;
       c.sequencia = null;
     }
-    // Preservar driverId e motoristaId — operational ownership travels with the client.
-    // Both COPY and TRANSFER keep the assignment: the only difference is whether the
-    // source retains the client (COPY) or loses it (TRANSFER).
-    // Phase 3 in switchPlanningSession validates that the driverId exists in the
-    // destination session's driver pool and falls back to 'unassigned' if not.
+    // In drivers mode (non-cleanMode): driverId and motoristaId travel with the client.
+    // switchPlanningSession validates driverId against destination driver pool.
     return c;
   });
   // Adicionar ao destino
+  // ── LOG DIAGNÓSTICO TEMPORÁRIO ──
+  var _mntDiagDstBefore = _rawSessionClients(dstId).length;
+  console.warn('[MNT-DIAG] executeMaintenanceTransfer PRÉ-APPEND', {
+    operation: plan.operation, cleanMode: !!plan.cleanMode,
+    srcId: srcId, dstId: dstId,
+    clientsToMoveLength: clientsToMove.length, copiesLength: copies.length,
+    primeiroCliente: copies.length ? (function(c) { return { id: c.id, clientGroupId: c.clientGroupId, nome: (c.nomeFantasia || c.name || '?'), ddd: c.ddd, week: c.week, day: c.day, driverId: c.driverId }; })(copies[0]) : null,
+    dstRawBefore: _mntDiagDstBefore
+  });
   appendSessionClients(dstId, copies);
+  var _mntDiagDstAfter = _rawSessionClients(dstId).length;
+  console.warn('[MNT-DIAG] executeMaintenanceTransfer PÓS-APPEND', {
+    dstRawBefore: _mntDiagDstBefore, dstRawAfter: _mntDiagDstAfter,
+    delta: _mntDiagDstAfter - _mntDiagDstBefore
+  });
   // Se TRANSFER (mover), remover da origem
   if (plan.operation === 'transfer') {
+    // Proteção de segurança: só remover da origem após confirmar que TODOS os clientes
+    // foram efetivamente gravados no destino. appendSessionClients não retorna indicador
+    // de sucesso — verificamos explicitamente via _rawSessionClients pós-append.
+    var _dstAfterIds = new Set(_rawSessionClients(dstId).map(function(c) { return String(c.id); }));
+    var _allConfirmed = copies.every(function(c) { return _dstAfterIds.has(String(c.id)); });
+    if (!_allConfirmed) {
+      console.error('[MNT-TRANSFER] CRÍTICO: clientes não confirmados no destino — remoção da origem abortada');
+      return false;
+    }
     removeSessionClients(srcId, plan.clientIds);
   }
   return true;
@@ -6535,13 +7029,17 @@ function executeMaintenanceTransfer(plan) {
 
 // ── Manutenção de Carteiras — UI state ───────────────────────────────────
 var _maintenanceUIState = {
-  selectedDriverIds: new Set()
+  selectedDriverIds: new Set(),
+  selectedClientIds: new Set(),
+  scopeMode: 'drivers'  // 'drivers' | 'clients'
 };
 
 function openMaintenanceModal() {
   var modal = document.getElementById('maintenance-modal');
   if (!modal) return;
   _maintenanceUIState.selectedDriverIds.clear();
+  _maintenanceUIState.selectedClientIds.clear();
+  _maintenanceUIState.scopeMode = 'drivers';
   _maintenanceInitDefaults();
   modal.hidden = false;
 }
@@ -6571,6 +7069,15 @@ function _maintenanceInitDefaults() {
   // Destino = primeira sessão diferente da origem
   var firstOther = sessions.find(function(m) { return m.id !== originSelect.value; });
   if (firstOther) destSelect.value = firstOther.id;
+  // Reset scope mode UI to drivers
+  var _scopeGrid  = document.getElementById('mnt-scope-grid');
+  var _driverPill = document.getElementById('mnt-mode-drivers');
+  var _clientPill = document.getElementById('mnt-mode-clients');
+  if (_scopeGrid)  _scopeGrid.classList.remove('is-clients-mode');
+  if (_driverPill) _driverPill.classList.add('is-active');
+  if (_clientPill) _clientPill.classList.remove('is-active');
+  var _fs = document.querySelector('.mnt-filters-section');
+  if (_fs) _fs.style.opacity = '';
   refreshMaintenanceModal();
 }
 
@@ -6606,6 +7113,10 @@ function refreshMaintenanceModal() {
   if (dMeta) dMeta.textContent = dstClients.length + ' clientes (DDD ' + (dstMeta && dstMeta.ddd) + ')';
   _renderMaintenanceDriverList(srcDrivers, srcClients);
   _renderMaintenanceLasso(srcClients);
+  if (_maintenanceUIState.scopeMode === 'clients') {
+    _renderMaintenanceClientList(srcClients);
+  }
+  _mntRefreshLassoImportBtn();
   _renderMaintenanceSummary();
 }
 
@@ -6671,6 +7182,136 @@ function _renderMaintenanceLasso(srcClients) {
   _renderMaintenanceSummary();
 }
 
+function _switchMntScopeMode(mode) {
+  _maintenanceUIState.scopeMode = mode;
+  var grid       = document.getElementById('mnt-scope-grid');
+  var driverPill = document.getElementById('mnt-mode-drivers');
+  var clientPill = document.getElementById('mnt-mode-clients');
+  var fs         = document.querySelector('.mnt-filters-section');
+  if (grid)       grid.classList.toggle('is-clients-mode', mode === 'clients');
+  if (driverPill) driverPill.classList.toggle('is-active', mode === 'drivers');
+  if (clientPill) clientPill.classList.toggle('is-active', mode === 'clients');
+  // Dim filters section when in client mode (agenda/sequence less relevant)
+  if (fs) fs.style.opacity = mode === 'clients' ? '0.45' : '';
+  if (mode === 'clients') {
+    var originId   = document.getElementById('mnt-origin-select').value;
+    var srcClients = originId ? _rawSessionClients(originId) : [];
+    _renderMaintenanceClientList(srcClients);
+  }
+  _mntRefreshLassoImportBtn();
+  _renderMaintenanceSummary();
+}
+
+function _renderMaintenanceClientList(srcClients) {
+  var list = document.getElementById('mnt-client-list');
+  if (!list) return;
+  if (!srcClients || !srcClients.length) {
+    list.innerHTML = '<div class="mnt-client-empty">Nenhum cliente na sessão de origem.</div>';
+    _updateMntClientCounter();
+    return;
+  }
+  // Sort by name for stable display
+  var sorted = srcClients.slice().sort(function(a, b) {
+    return String(a.name || a.nome || a.id).localeCompare(String(b.name || b.nome || b.id));
+  });
+  list.innerHTML = '';
+  sorted.forEach(function(c) {
+    var cid     = String(c.id);
+    var name     = c.nomeFantasia || c.tradeName || c.name || c.nome || cid;
+    // CRM code: clientGroupId is always the real CRM identifier (e.g. "CRM-000004")
+    var crmLabel = c.crmCode || c.crm_code || c.clientGroupId || c.code || '';
+    // Mapa code: computed internal numeric code from getClientCrmCode (e.g. "100041")
+    var mapaCode = getClientCrmCode(c);
+    // Build code line — show both when they differ; fall back to just Mapa when equal
+    var codeLine = (crmLabel && crmLabel !== mapaCode)
+      ? 'CRM:\u00a0' + crmLabel + '\u00a0\u00b7\u00a0Mapa:\u00a0' + mapaCode
+      : 'Mapa:\u00a0' + mapaCode;
+    var checked = _maintenanceUIState.selectedClientIds.has(cid);
+    var row     = document.createElement('div');
+    row.className         = 'mnt-client-row';
+    row.dataset.clientId  = cid;
+    row.dataset.searchName = String(name).toLowerCase();
+    // Searchable tokens: CRM label + mapa code + full composite id
+    row.dataset.searchCode = [crmLabel, mapaCode, cid].join(' ').toLowerCase();
+    row.innerHTML =
+      '<label class="mnt-client-row-label">' +
+        '<input type="checkbox" data-client-id="' + cid + '"' + (checked ? ' checked' : '') + '>' +
+        '<span class="mnt-client-row-info">' +
+          '<span class="mnt-client-row-name">' + _mntEscapeHtml(name) + '</span>' +
+          '<span class="mnt-client-row-code">' + _mntEscapeHtml(codeLine) + '</span>' +
+        '</span>' +
+      '</label>';
+    row.querySelector('input').addEventListener('change', function(ev) {
+      if (ev.target.checked) {
+        _maintenanceUIState.selectedClientIds.add(cid);
+      } else {
+        _maintenanceUIState.selectedClientIds.delete(cid);
+      }
+      _updateMntClientCounter();
+      _renderMaintenanceSummary();
+    });
+    list.appendChild(row);
+  });
+  _mntFilterClientSearch();
+  _updateMntClientCounter();
+}
+
+function _updateMntClientCounter() {
+  var counter = document.getElementById('mnt-client-counter');
+  if (!counter) return;
+  var count = _maintenanceUIState.selectedClientIds.size;
+  counter.textContent = count + (count === 1 ? ' selecionado' : ' selecionados');
+  counter.classList.toggle('is-zero', count === 0);
+}
+
+function _mntFilterClientSearch() {
+  var searchEl = document.getElementById('mnt-client-search');
+  var query    = searchEl ? searchEl.value.toLowerCase().trim() : '';
+  var list     = document.getElementById('mnt-client-list');
+  if (!list) return;
+  var rows    = list.querySelectorAll('.mnt-client-row');
+  var visible = 0;
+  rows.forEach(function(row) {
+    var name    = row.dataset.searchName || '';
+    var code    = row.dataset.searchCode || '';
+    var matches = !query || name.includes(query) || code.includes(query);
+    row.hidden  = !matches;
+    if (matches) visible++;
+  });
+  // Show/hide "no results" empty state
+  var searchEmpty = list.querySelector('.mnt-search-empty');
+  if (visible === 0 && rows.length > 0) {
+    if (!searchEmpty) {
+      var empty = document.createElement('div');
+      empty.className   = 'mnt-client-empty mnt-search-empty';
+      empty.textContent = 'Nenhum cliente encontrado.';
+      list.appendChild(empty);
+    }
+  } else if (searchEmpty) {
+    searchEmpty.remove();
+  }
+}
+
+function _mntEscapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function _mntRefreshLassoImportBtn() {
+  var btn = document.getElementById('mnt-lasso-import-btn');
+  if (!btn) return;
+  var lassoCount = state.lassoSelectionIds ? state.lassoSelectionIds.size : 0;
+  btn.disabled = lassoCount === 0;
+  btn.title    = lassoCount > 0
+    ? lassoCount + ' cliente(s) no laço — clique para importar a seleção'
+    : 'Nenhum cliente selecionado no laço';
+  var countSpan = btn.querySelector('.mnt-lasso-import-count');
+  if (countSpan) countSpan.textContent = lassoCount > 0 ? ' (' + lassoCount + ')' : '';
+}
+
 // ── Canonical visit-day helpers ──────────────────────────────────────────────
 
 /**
@@ -6726,6 +7367,56 @@ function _computeMaintenancePlan() {
   if (srcMeta && dstMeta && String(srcMeta.ddd) !== String(dstMeta.ddd)) {
     return { crossDDD: true, srcDDD: String(srcMeta.ddd), dstDDD: String(dstMeta.ddd) };
   }
+  // ── Clients mode (cleanMode — copy/transfer with clean state, no driver/day/week) ──
+  var scopeMode = _maintenanceUIState.scopeMode || 'drivers';
+  if (scopeMode === 'clients') {
+    var hasClientScope = _maintenanceUIState.selectedClientIds.size > 0;
+    if (!hasClientScope) {
+      return {
+        sourceSessionId: originId, destSessionId: destId,
+        operation: operation.value, clientIds: [], keepSequence: keepSeq,
+        noScope: true, cleanMode: true
+      };
+    }
+    var srcClientsForClients = _rawSessionClients(originId);
+    var clientIdSet = _maintenanceUIState.selectedClientIds;
+    var clientsFiltered = srcClientsForClients.filter(function(c) {
+      return clientIdSet.has(String(c.id));
+    });
+    // Duplicate guard: skip clients whose clientGroupId already exists in destination
+    var dstClientsCheck = _rawSessionClients(destId);
+    var dstGroupIds = new Set(dstClientsCheck.map(function(c) {
+      return String(c.clientGroupId || String(c.id).replace(/-w\d+$/i, ''));
+    }));
+    var transferable = clientsFiltered.filter(function(c) {
+      var gid = String(c.clientGroupId || String(c.id).replace(/-w\d+$/i, ''));
+      return !dstGroupIds.has(gid);
+    });
+    var skippedCount = clientsFiltered.length - transferable.length;
+    // ── LOG DIAGNÓSTICO TEMPORÁRIO ──
+    console.warn('[MNT-DIAG] _computeMaintenancePlan [clients]', {
+      originId: originId, destId: destId, scopeMode: scopeMode,
+      selectedClientIds: _maintenanceUIState.selectedClientIds.size,
+      srcClientsCount: srcClientsForClients.length,
+      clientsFilteredCount: clientsFiltered.length,
+      transferableCount: transferable.length,
+      skippedCount: skippedCount,
+      clientIds: transferable.map(function(c) { return String(c.id); })
+    });
+    return {
+      sourceSessionId: originId,
+      destSessionId:   destId,
+      operation:       operation.value,
+      clientIds:       transferable.map(function(c) { return String(c.id); }),
+      keepSequence:    keepSeq,
+      scopeLabel:      _maintenanceUIState.selectedClientIds.size + ' cliente(s) — seleção manual',
+      agendaLabel:     '—',
+      skippedCount:    skippedCount,
+      cleanMode:       true
+    };
+  }
+
+  // ── Drivers mode (existing logic) ──
   // Escopo: precisa selecionar pelo menos motoristas OU laço (sem "todos" implícito)
   var hasDriverScope = _maintenanceUIState.selectedDriverIds.size > 0;
   var hasLassoScope  = !!(useLasso && state.lassoSelectionIds && state.lassoSelectionIds.size > 0);
@@ -6807,10 +7498,22 @@ function _renderMaintenanceSummary() {
   if (sumOp)     sumOp.textContent     = opLabel;
   if (sumOrigin) sumOrigin.textContent = srcLabel;
   if (sumDest)   sumDest.textContent   = dstLabel;
-  if (sumScope)  sumScope.textContent  = plan.noScope ? 'selecione motoristas ou laço' : (plan.scopeLabel || '—');
-  if (sumAgenda) sumAgenda.textContent = plan.agendaLabel || 'Todos os clientes';
+  var noScopeText = plan.cleanMode ? 'selecione clientes na lista' : 'selecione motoristas ou laço';
+  if (sumScope)  sumScope.textContent  = plan.noScope ? noScopeText : (plan.scopeLabel || '—');
+  if (sumAgenda) sumAgenda.textContent = plan.agendaLabel || '—';
   if (sumCount)  sumCount.textContent  = plan.noScope ? '—' : plan.clientIds.length;
-  if (sumSeq)    sumSeq.textContent    = plan.keepSequence ? 'Mantida' : 'Removida';
+  if (sumSeq)    sumSeq.textContent    = plan.cleanMode ? 'Removida (modo Clientes)' : (plan.keepSequence ? 'Mantida' : 'Removida');
+  var summaryEl   = document.querySelector('#maintenance-modal .mnt-summary');
+  var draftNoteEl = document.getElementById('mnt-summary-draft-note');
+  // Show skip note when duplicate clients are blocked; use is-draft class to reveal the note element
+  if (plan.cleanMode && plan.skippedCount > 0) {
+    if (summaryEl)   summaryEl.classList.add('is-draft');
+    if (draftNoteEl) draftNoteEl.textContent = plan.skippedCount + ' ignorado(s): já exist' +
+      (plan.skippedCount === 1 ? 'e' : 'em') + ' no destino.';
+  } else {
+    if (summaryEl)   summaryEl.classList.remove('is-draft');
+    if (draftNoteEl) draftNoteEl.textContent = '';
+  }
   var canExec = !plan.noScope && plan.clientIds.length > 0;
   if (execBtn) {
     execBtn.disabled = !canExec;
@@ -6875,6 +7578,8 @@ function _executeMaintenance() {
       destSessionId: plan.destSessionId,
       destLabel: dstLabel,
       clientCount: plan.clientIds.length,
+      cleanMode: plan.cleanMode || false,
+      skippedCount: plan.skippedCount || 0,
       driverIds: Array.from(_maintenanceUIState.selectedDriverIds),
       usedLasso: !!document.getElementById('mnt-use-lasso').checked,
       keepSequence: plan.keepSequence,
@@ -6884,6 +7589,7 @@ function _executeMaintenance() {
     _showMaintenanceFeedback(plan.clientIds.length + ' clientes ' + verb + ' para "' + dstLabel + '". Use o seletor de sessão para visualizar.', false);
     // Limpar escopo (evita re-execução acidental)
     _maintenanceUIState.selectedDriverIds.clear();
+    if (plan.cleanMode) _maintenanceUIState.selectedClientIds.clear();
     var lassoChk = document.getElementById('mnt-use-lasso');
     if (lassoChk) lassoChk.checked = false;
     // Atualiza apenas a sessão ATIVA — destino só re-renderiza se for a ativa.
@@ -7762,6 +8468,12 @@ function switchPlanningSession(sessionId, options = {}) {
         console.warn('[SCENARIO-ACTIVATE] ' + _orphanCount + ' cliente(s) com driverId sem par no pool do cenário → reassinalado para "unassigned"');
       }
       updateState({ clients: _scenBuf });
+      // Clientes transferidos em cleanMode chegam com week=null.
+      // state.activeWeeks herda os valores de produção (ex: Set(['S1','S2'])) ao entrar no
+      // cenário — null nunca está nesse Set. Resultado: weekOk=false → cliente invisível.
+      // Garantir que null está incluído para que clientes não-agendados renderizem normalmente.
+      // Ao sair do cenário, _productionActiveWeeksBackup é restaurado (sem null). Produção não é afetada.
+      state.activeWeeks.add(null);
       var _scenBufSample = Array.isArray(_scenBuf) ? _scenBuf.slice(0, 3).map(function(c) { return { id: c.id, ddd: c.ddd, driverId: c.driverId, lat: c.lat, lon: c.lon, clientType: c.clientType, week: c.week, day: c.day }; }) : [];
       console.info('[SCENARIO-ACTIVATE]', {
         scenarioId: target.id,
@@ -7774,6 +8486,16 @@ function switchPlanningSession(sessionId, options = {}) {
         showActiveClients: state.showActiveClients,
         activeWeeks: Array.from(state.activeWeeks || []),
         activeDays: Array.from(state.activeDays || []),
+      });
+      // ── LOG DIAGNÓSTICO TEMPORÁRIO ──
+      console.warn('[MNT-DIAG] switchPlanningSession — CENÁRIO ATIVADO', {
+        sessionId: target.id,
+        rawClientsLength: _rawSessionClients(target.id).length,
+        stateClientsLength: (state.clients || []).length,
+        weekNullCount: (state.clients || []).filter(function(c) { return c.week === null; }).length,
+        unassignedCount: (state.clients || []).filter(function(c) { return c.driverId === 'unassigned'; }).length,
+        activeWeeks: Array.from(state.activeWeeks || []),
+        activeWeeksHasNull: (state.activeWeeks || new Set()).has(null)
       });
 
       // ── LIMPEZA SÍNCRONA DE CACHES E RENDER ────────────────────────────────
@@ -8011,22 +8733,16 @@ function _restoreSimulationSession() {
       const scenarioIds = JSON.parse(indexRaw);
       if (Array.isArray(scenarioIds) && scenarioIds.length > 0) {
         console.info('[SESSION-RESTORE] índice encontrado:', scenarioIds);
+        let hasOrphans = false;
         scenarioIds.forEach(function(scenarioId) {
           try {
             const bufRaw = localStorage.getItem('rfx:scenario:buf:' + scenarioId);
             if (!bufRaw) {
-              // Cenário no índice mas sem buffer: registrar com buffer vazio
-              console.warn('[SESSION-RESTORE] buffer ausente para', scenarioId, '— registrando vazio');
-              if (!planningSessionRegistry.has(scenarioId)) {
-                planningSessionRegistry.set(scenarioId, {
-                  id: scenarioId, ddd, tipo_sessao: 'SIMULACAO', type: 'scenario',
-                  name: null, isolated: true, allowCRM: false, allowPALM: false,
-                  createdAt: new Date().toISOString(), sourceSessionId: realId,
-                });
-              }
-              planningSessionClients.set(scenarioId, []);
-              planningSessionDrivers.set(scenarioId, []);
-              restored = true;
+              // Buffer ausente: cenário foi apagado ou corrompido.
+              // NÃO recriar sessão vazia — isso causaria zombie loop infinito entre F5s.
+              // Marcar como órfão para que o índice seja corrigido após o forEach.
+              console.warn('[SESSION-RESTORE] buffer ausente para', scenarioId, '— id órfão, será removido do índice');
+              hasOrphans = true;
               return;
             }
             const bufParsed = JSON.parse(bufRaw);
@@ -8058,6 +8774,13 @@ function _restoreSimulationSession() {
             console.warn('[SESSION-RESTORE] falha ao restaurar cenário', scenarioId, e);
           }
         });
+        // Se havia IDs órfãos (buffer ausente), reescrever o índice sem eles.
+        // planningSessionRegistry não contém os órfãos (não foram registrados acima),
+        // então _saveScenarioRegistry produz o índice limpo automaticamente.
+        if (hasOrphans) {
+          _saveScenarioRegistry(ddd);
+          console.info('[SESSION-RESTORE] índice atualizado — IDs órfãos removidos para DDD', ddd);
+        }
       }
     }
   } catch(e) {
@@ -8266,6 +8989,15 @@ function deleteActiveSimulationSessionForDDD(options = {}) {
   // Limpar localStorage: buffer do cenário e índice de cenários do DDD
   try { localStorage.removeItem('rfx:scenario:buf:' + meta.id); } catch(_) {}
   _saveScenarioRegistry(ddd);
+  // Sanity check: confirmar que o id foi removido do índice pelo _saveScenarioRegistry
+  try {
+    const _verifyIdx = localStorage.getItem('rfx:sim:scenarios:' + ddd);
+    const _verifyIds = _verifyIdx ? JSON.parse(_verifyIdx) : [];
+    if (Array.isArray(_verifyIds) && _verifyIds.includes(meta.id)) {
+      console.warn('[SCENARIO-DELETE] id ainda no índice após exclusão:', meta.id, '— gravando novamente');
+      _saveScenarioRegistry(ddd);
+    }
+  } catch(_) {}
   state.activePlanningSessionByDDD[ddd] = fallbackSessionId;
   state.mode = 'REAL';
   try { sessionStorage.setItem('rfx:mode', 'REAL'); } catch (_) {}
@@ -8298,7 +9030,13 @@ function deleteRealPlanningSessionForDDD(options = {}) {
     planningSessionSnapshots.delete(session.id);
     planningSessionClients.delete(session.id);
     planningSessionDrivers.delete(session.id);
+    // Limpar buffer do localStorage para cenários (sessão de produção não tem buffer próprio)
+    if (session.type === 'scenario') {
+      try { localStorage.removeItem('rfx:scenario:buf:' + session.id); } catch(_) {}
+    }
   });
+  // Remover índice de cenários do DDD — evita restauração zombie após F5
+  try { localStorage.removeItem('rfx:sim:scenarios:' + ddd); } catch(_) {}
   delete state.activePlanningSessionByDDD[ddd];
   delete state.lastPromotionBackupByDDD[ddd];
   removeDDDOption(ddd);
@@ -15637,6 +16375,15 @@ function applyFilters(options = {}) {
     _applyFiltersScheduled = false;
     const needsFit = _pendingNeedsFitBounds;
     _pendingNeedsFitBounds = false;
+    // ── LOG DIAGNÓSTICO TEMPORÁRIO ──
+    console.warn('[MNT-DIAG] applyFilters → calculateRoutes', {
+      totalClients: (state.clients || []).length,
+      weekNullCount: (state.clients || []).filter(function(c) { return c.week === null; }).length,
+      activeWeeks: Array.from(state.activeWeeks || []),
+      activeWeeksHasNull: (state.activeWeeks || new Set()).has(null),
+      activeDays: Array.from(state.activeDays || []),
+      activePlanningSessionId: state.activePlanningSessionId
+    });
     calculateRoutes({ ...options, skipFitBounds: !needsFit });
   });
 }
@@ -16619,6 +17366,7 @@ document.getElementById('maintenance-modal').onclick = function(ev) {
 };
 document.getElementById('mnt-origin-select').addEventListener('change', function() {
   _maintenanceUIState.selectedDriverIds.clear();
+  _maintenanceUIState.selectedClientIds.clear();
   refreshMaintenanceModal();
 });
 document.getElementById('mnt-dest-select').addEventListener('change', refreshMaintenanceModal);
@@ -16637,6 +17385,23 @@ document.getElementById('mnt-agenda-filter').addEventListener('change', function
   document.getElementById(id).addEventListener('change', _renderMaintenanceSummary);
 });
 document.getElementById('mnt-execute-btn').onclick = _executeMaintenance;
+// Mode toggle
+document.getElementById('mnt-mode-drivers').addEventListener('click', function() { _switchMntScopeMode('drivers'); });
+document.getElementById('mnt-mode-clients').addEventListener('click', function() { _switchMntScopeMode('clients'); });
+// Client search (live DOM filter — no re-render)
+document.getElementById('mnt-client-search').addEventListener('input', _mntFilterClientSearch);
+// Lasso import — adds matching src-client IDs from the lasso selection
+document.getElementById('mnt-lasso-import-btn').addEventListener('click', function() {
+  if (!state.lassoSelectionIds || !state.lassoSelectionIds.size) return;
+  var originId   = document.getElementById('mnt-origin-select').value;
+  var srcClients = _rawSessionClients(originId);
+  var srcIds     = new Set(srcClients.map(function(c) { return String(c.id); }));
+  state.lassoSelectionIds.forEach(function(id) {
+    if (srcIds.has(String(id))) _maintenanceUIState.selectedClientIds.add(String(id));
+  });
+  _renderMaintenanceClientList(srcClients);
+  _renderMaintenanceSummary();
+});
 document.getElementById('export-csv-btn').onclick = exportRoutesCSV;
 document.getElementById('generate-reports-btn').onclick = toggleReportOptions;
 document.getElementById('report-active-btn').onclick = generateReportRoteirizados;
