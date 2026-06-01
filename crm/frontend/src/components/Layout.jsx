@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Sidebar from './Sidebar.jsx';
 
-const SIDEBAR_TRANSITION_MS = 320;
+const SIDEBAR_TRANSITION_MS = 260;
 const SIDEBAR_EXPANDED_WIDTH = 240;
 const SIDEBAR_COLLAPSED_WIDTH = 76;
 
@@ -10,11 +10,16 @@ export default function Layout({ children }) {
   const [sidebarTransitioning, setSidebarTransitioning] = useState(false);
   const [contentOffset, setContentOffset] = useState(0);
   const timeoutRefs = useRef([]);
+  const frameRef = useRef(null);
   const sidebarWidth = sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH;
 
   function clearTransitionTimers() {
     timeoutRefs.current.forEach((timeoutId) => clearTimeout(timeoutId));
     timeoutRefs.current = [];
+    if (frameRef.current) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
   }
 
   function handleSidebarToggle() {
@@ -28,9 +33,10 @@ export default function Layout({ children }) {
     setSidebarTransitioning(true);
     setSidebarCollapsed(nextCollapsed);
 
-    timeoutRefs.current.push(setTimeout(() => {
+    frameRef.current = requestAnimationFrame(() => {
       setContentOffset(0);
-    }, 20));
+      frameRef.current = null;
+    });
 
     timeoutRefs.current.push(setTimeout(() => {
       window.dispatchEvent(new Event('resize'));

@@ -51,8 +51,8 @@
   --radius:         8px;
   --radius-lg:      12px;
   --transition:     0.15s ease;
-  --layout-ease:     cubic-bezier(.22, 1, .36, 1);
-  --layout-speed:    320ms;
+  --layout-ease:     cubic-bezier(.2, .8, .2, 1);
+  --layout-speed:    260ms;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -97,7 +97,7 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   will-change: transform;
   transition:
     transform var(--layout-speed) var(--layout-ease),
-    opacity .18s ease;
+    opacity .16s ease;
 }
 .main-content.is-sidebar-transitioning {
   overflow-x: clip;
@@ -108,9 +108,9 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   backface-visibility: hidden;
   transform: translateZ(0);
   transition:
-    box-shadow .22s ease,
-    border-color .22s ease,
-    opacity .22s ease,
+    box-shadow .18s ease,
+    border-color .18s ease,
+    opacity .18s ease,
     transform var(--layout-speed) var(--layout-ease);
 }
 .main-content.is-sidebar-transitioning .recharts-responsive-container,
@@ -118,11 +118,11 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 .main-content.is-sidebar-transitioning .recharts-surface {
   pointer-events: none;
   opacity: .972;
-  transition: opacity .22s ease;
+  transition: opacity .18s ease;
   transform: translateZ(0);
 }
 .sidebar-shell {
-  contain: layout paint;
+  contain: layout;
   box-shadow: 8px 0 22px rgba(15,27,53,.08);
 }
 .sidebar-shell::after {
@@ -140,19 +140,19 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
     linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,.96));
   border: 1px solid rgba(15,27,53,.14);
   box-shadow:
-    0 10px 22px rgba(15,27,53,.16),
-    0 0 0 3px rgba(255,255,255,.72);
+    0 8px 18px rgba(15,27,53,.13),
+    0 0 0 3px rgba(255,255,255,.68);
   color: var(--primary);
   transition:
     background-color .18s ease,
     border-color .18s ease,
-    box-shadow .22s ease,
-    transform .22s var(--layout-ease);
+    box-shadow .18s ease,
+    transform .18s var(--layout-ease);
 }
 .sidebar-toggle:hover {
   border-color: rgba(255,107,44,.36);
   box-shadow:
-    0 12px 26px rgba(15,27,53,.20),
+    0 10px 22px rgba(15,27,53,.17),
     0 0 0 4px rgba(255,107,44,.10),
     0 0 0 1px rgba(255,255,255,.9) inset;
   transform: translateX(1px);
@@ -174,8 +174,8 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   opacity: 1;
   transform: translateX(0);
   transition:
-    opacity .24s ease,
-    transform .28s var(--layout-ease);
+    opacity .18s ease,
+    transform .22s var(--layout-ease);
 }
 .sidebar-copy.is-hidden {
   opacity: 0;

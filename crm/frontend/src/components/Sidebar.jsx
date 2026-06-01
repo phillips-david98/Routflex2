@@ -60,7 +60,7 @@ export default function Sidebar({ collapsed = false, transitioning = false, onTo
       display: 'flex',
       flexDirection: 'column',
       zIndex: 100,
-      transition: 'width 320ms cubic-bezier(.22, 1, .36, 1)',
+      transition: 'width 260ms cubic-bezier(.2, .8, .2, 1)',
       overflow: 'visible',
     }}>
       <button
@@ -72,15 +72,15 @@ export default function Sidebar({ collapsed = false, transitioning = false, onTo
         aria-expanded={!collapsed}
         style={{
           position: 'absolute',
-          top: 22,
-          right: -15,
-          width: 30,
-          height: 30,
+          top: 76,
+          right: -14,
+          width: 28,
+          height: 28,
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 2,
+          zIndex: 120,
         }}
       >
         <span className="sidebar-toggle-icon">
