@@ -44,7 +44,6 @@ const state = {
   focusDriverId: null,
   showDriverBase: false,
   showActiveClients: true,
-  showNewClients: true,
   showInactiveClients: false,
   territoryViewEnabled: false,
   territoryPdvDisplay: 'sequence',
@@ -107,6 +106,21 @@ const state = {
   lassoSelectionLayer: null,
   lassoDrawPoints: [],
   lassoPendingMove: null,
+  // ── Barreiras (Fase 3 — MVP visual, somente em memória) ──────────────────
+  // Cada barreira: { id, latlngs:[[lat,lng],...], layer }. Não afeta cálculo.
+  barriers: [],
+  barrierMode: false,
+  barrierDrawPoints: [],
+  barrierDrawLayer: null,
+  // ── Pernoite (Fase 3.1 — apenas estrutura, sem uso operacional ainda) ─────
+  // Reservado: routeId → { startSpotId, endSpotId }. Não lido por nenhuma rota.
+  overnightAnchors: {},
+  // ── Troca de sequência no mapa (Fase 2.3 — modo dedicado de 2 cliques) ────
+  // Reutiliza swapStopSequence(). Não move marcador/lat/lon. Só altera sequence.
+  swapModeActive: false,
+  swapSourceId: null,
+  swapSourceRouteId: null,
+  swapHighlightLayer: null,
   lastFilterContext: null,
   viewportRefreshTimer: null,
   simulationSourceCustomers: [],

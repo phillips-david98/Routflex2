@@ -321,6 +321,65 @@ body.login-active .app-shell {
   gap: 14px;
 }
 
+.entry-ops-form {
+  width: min(430px, calc(100vw - 48px));
+  margin: -18px 0 10px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  border: 1px solid rgba(82, 208, 255, 0.22);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(7, 21, 39, 0.74), rgba(6, 17, 31, 0.58)),
+    rgba(82, 208, 255, 0.035);
+  box-shadow:
+    0 0 34px rgba(82, 208, 255, 0.08),
+    inset 0 0 28px rgba(82, 208, 255, 0.035);
+  backdrop-filter: blur(14px);
+}
+
+.entry-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.entry-field label {
+  color: rgba(82, 208, 255, 0.58);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.entry-field input,
+.entry-field select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(82, 208, 255, 0.24);
+  border-radius: 6px;
+  background: rgba(2, 10, 20, 0.52);
+  color: rgba(237, 244, 255, 0.92);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  outline: none;
+  padding: 0 12px;
+}
+
+.entry-field input:focus,
+.entry-field select:focus {
+  border-color: rgba(82, 208, 255, 0.62);
+  box-shadow: 0 0 0 3px rgba(82, 208, 255, 0.09);
+}
+
+.entry-field select option {
+  background: #07111f;
+  color: #edf4ff;
+}
+
 .entry-access-button {
   position: relative;
   min-width: min(280px, calc(100vw - 64px));
@@ -2478,6 +2537,43 @@ body.login-active .app-shell {
   background: rgba(82, 208, 255, 0.12);
 }
 
+/* ── FASE 2.2: troca rápida de sequência por arraste da bolinha ─────────── */
+.timeline-item[draggable="true"] {
+  cursor: grab;
+}
+.timeline-item.is-drag-source {
+  opacity: 0.55;
+  cursor: grabbing;
+  border-color: rgba(82, 208, 255, 0.55);
+}
+.timeline-item.is-drag-over {
+  border-color: rgba(255, 185, 50, 0.72);
+  background: rgba(255, 185, 50, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 185, 50, 0.36);
+  transform: translateY(-1px) scale(1.012);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+.timeline-seq-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: rgba(82, 208, 255, 0.18);
+  border: 1px solid rgba(82, 208, 255, 0.45);
+  color: #c8e8ff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  vertical-align: middle;
+}
+.timeline-item.is-selected .timeline-seq-badge {
+  background: rgba(82, 208, 255, 0.32);
+  border-color: rgba(82, 208, 255, 0.7);
+}
+
 .route-item.is-drag-over {
   border-color: rgba(255, 185, 50, 0.72);
   background: rgba(255, 185, 50, 0.12);
@@ -3963,6 +4059,103 @@ body.login-active .app-shell {
 @keyframes roadRouteMarch {
   to { stroke-dashoffset: -24; }
 }
+/* ── FASE 2: controle de sequência manual ─────────── */
+.seq-control-line .seq-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.seq-control-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.seq-move-btn {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid rgba(82,208,255,0.35);
+  background: rgba(6,16,28,0.6);
+  color: #c8e8ff;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.seq-move-btn:hover:not(:disabled) {
+  background: rgba(82,208,255,0.18);
+  border-color: rgba(82,208,255,0.7);
+}
+.seq-move-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+/* ── FASE 3: barreiras (desenho visual) ───────────── */
+.barrier-shape {
+  stroke: rgba(255,143,102,0.95);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+  fill: rgba(255,120,80,0.12);
+  pointer-events: none;
+}
+.barrier-draft-line {
+  stroke: rgba(255,143,102,0.95);
+  stroke-width: 2;
+  stroke-dasharray: 5 5;
+  fill: none;
+  pointer-events: none;
+}
+.barrier-controls {
+  position: absolute;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 565;
+  display: none;
+  gap: 8px;
+  align-items: center;
+  background: rgba(6,16,28,0.94);
+  border: 1px solid rgba(255,143,102,0.4);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.barrier-controls.is-active {
+  display: inline-flex;
+}
+.barrier-controls .barrier-hint {
+  font-size: 0.74rem;
+  color: #ffd2bf;
+  white-space: nowrap;
+}
+.barrier-controls button {
+  font-size: 0.74rem;
+  padding: 5px 10px;
+  border-radius: 7px;
+  border: 1px solid rgba(255,143,102,0.4);
+  background: rgba(255,120,80,0.12);
+  color: #ffd2bf;
+  cursor: pointer;
+}
+.barrier-controls button:hover {
+  background: rgba(255,120,80,0.24);
+}
+/* ── FASE 2.3: troca de sequência no mapa ─────────── */
+.leaflet-container.swap-mode {
+  cursor: crosshair;
+}
+.swap-source-ring {
+  filter: drop-shadow(0 0 6px rgba(255,185,50,0.85));
+  animation: swapRingPulse 1.1s ease-in-out infinite;
+}
+@keyframes swapRingPulse {
+  0%   { opacity: 0.45; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.45; }
+}
 .road-route-toast {
   position: absolute;
   bottom: 54px;
@@ -5346,8 +5539,8 @@ body.login-active .routex-ai-panel { display:none !important; }
   <!-- Brand -->
   <div class="entry-brand">
     <span class="brand-tag">Routing Control Tower</span>
-    <h1 id="entry-title">ROUTflex</h1>
-    <p class="entry-subtitle">Cockpit operacional de roteirização inteligente</p>
+    <h1 id="entry-title">ROUTflex Planning</h1>
+    <p class="entry-subtitle">Central de Planejamento e Territorializacao</p>
   </div>
 
   <!-- Status row -->
@@ -5359,7 +5552,29 @@ body.login-active .routex-ai-panel { display:none !important; }
 
   <!-- CTA -->
   <div class="entry-stage">
-    <button class="entry-access-button" id="entry-access-button" type="button" autofocus>Acessar</button>
+    <div class="entry-ops-form" aria-label="Preparacao operacional">
+      <div class="entry-field">
+        <label for="entry-planner-name">Nome do Planejador</label>
+        <input id="entry-planner-name" type="text" value="Phillips David" autocomplete="name">
+      </div>
+      <div class="entry-field">
+        <label for="entry-ddd-select">DDD Operacional</label>
+        <select id="entry-ddd-select">
+          <option value="65">DDD 65</option>
+          <option value="38">DDD 38</option>
+          <option value="93">DDD 93</option>
+        </select>
+      </div>
+      <div class="entry-field">
+        <label for="entry-mode-select">Modo Inicial</label>
+        <select id="entry-mode-select">
+          <option value="territorial">Territorial</option>
+          <option value="operational">Operacional</option>
+          <option value="analytics">Analytics</option>
+        </select>
+      </div>
+    </div>
+    <button class="entry-access-button" id="entry-access-button" type="button" autofocus>Entrar no Planning</button>
     <span class="entry-hint" aria-hidden="true">Pressione para iniciar</span>
   </div>
 
@@ -5788,13 +6003,17 @@ body.login-active .routex-ai-panel { display:none !important; }
               <span class="instrument-glyph">PAR</span>
               <span class="instrument-label">Parametro</span>
             </button>
-            <button class="instrument-btn" type="button" title="Barreiras">
+            <button class="instrument-btn" id="toggle-barrier-btn" type="button" title="Barreiras">
               <span class="instrument-glyph">BAR</span>
               <span class="instrument-label">Barreira</span>
             </button>
             <button class="instrument-btn" id="toggle-insight-btn" type="button" title="Modo Insight — análise comercial">
               <span class="instrument-glyph">INS</span>
               <span class="instrument-label">Insight</span>
+            </button>
+            <button class="instrument-btn" id="toggle-swap-btn" type="button" title="Trocar sequência no mapa (2 cliques)">
+              <span class="instrument-glyph">SEQ</span>
+              <span class="instrument-label">Troca</span>
             </button>
           </div>
         </div>
@@ -7712,6 +7931,10 @@ function defineStateAlias(name) {
 const appShell = document.getElementById('app-shell');
 const entryScreen = document.getElementById('entry-screen');
 const entryAccessButton = document.getElementById('entry-access-button');
+const entryPlannerName = document.getElementById('entry-planner-name');
+const entryDddSelect = document.getElementById('entry-ddd-select');
+const entryModeSelect = document.getElementById('entry-mode-select');
+const ENTRY_VISUAL_STORAGE_KEY = 'ROUTflex:planning:entry-visual:v1';
 
 const map = L.map('map', {
   center: [-15.9, -54.8],
@@ -7829,6 +8052,34 @@ function playFuturisticSound() {
   shimmer.start(ts);
   shimmer.stop(ts + 1.1);
 }
+
+function hydrateEntryVisualFields() {
+  try {
+    const raw = localStorage.getItem(ENTRY_VISUAL_STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (entryPlannerName && typeof saved.plannerName === 'string') entryPlannerName.value = saved.plannerName;
+    if (entryDddSelect && saved.ddd) entryDddSelect.value = String(saved.ddd);
+    if (entryModeSelect && saved.mode) entryModeSelect.value = String(saved.mode);
+  } catch (_) {}
+}
+
+function saveEntryVisualFields() {
+  try {
+    localStorage.setItem(ENTRY_VISUAL_STORAGE_KEY, JSON.stringify({
+      plannerName: entryPlannerName ? entryPlannerName.value : '',
+      ddd: entryDddSelect ? entryDddSelect.value : '65',
+      mode: entryModeSelect ? entryModeSelect.value : 'territorial'
+    }));
+  } catch (_) {}
+}
+
+hydrateEntryVisualFields();
+[entryPlannerName, entryDddSelect, entryModeSelect].forEach((field) => {
+  if (!field) return;
+  field.addEventListener('change', saveEntryVisualFields);
+  field.addEventListener('input', saveEntryVisualFields);
+});
 
 entryAccessButton.addEventListener('click', () => {
   playFuturisticSound();
@@ -10451,9 +10702,14 @@ function clearRoadRoute() {
   }
   state.roadRouteId = null;
   state._roadRouteSignature = null;
+  state.roadRouteCompare = null;
   const existing = document.getElementById('road-route-toast');
   if (existing) existing.remove();
   syncRoadRouteVisibility();
+  // Volta o painel da rota ativa ao comportamento padrao (sem comparacao rodoviaria).
+  const cachedGroups = Array.isArray(state.routeGroupsCache) ? state.routeGroupsCache : [];
+  const selected = cachedGroups.find((r) => r.routeId === state.selectedRouteId) || null;
+  renderRouteDetail(selected);
 }
 
 function buildRoadRouteSignature(route) {
@@ -10521,6 +10777,78 @@ function showRoadRouteToast(msg) {
     document.getElementById('map').appendChild(toast);
   }
   toast.textContent = msg;
+}
+
+// ── Diagnóstico de sanidade de percurso (ALT+P / OSRM) ───────────────────
+// Restauradas na Fase 1. Calculam a distância em linha reta dos waypoints,
+// comparam com a distância rodoviária do OSRM e classificam a rota de forma
+// simples. NÃO alteram coordenadas, sequence, driverId, week ou day dos
+// clientes e NÃO bloqueiam o desenho da rota se a classificação falhar.
+
+// Soma haversine dos waypoints no formato [lon, lat] (mesmo usado no OSRM).
+function computeStraightDistanceForWaypointsKm(waypoints) {
+  if (!Array.isArray(waypoints) || waypoints.length < 2) return 0;
+  let total = 0;
+  for (let i = 1; i < waypoints.length; i += 1) {
+    const prev = waypoints[i - 1];
+    const curr = waypoints[i];
+    if (!prev || !curr) continue;
+    // distanceKm espera (lat, lon); waypoints estão em [lon, lat].
+    total += distanceKm(prev[1], prev[0], curr[1], curr[0]);
+  }
+  return total;
+}
+
+// Razão de desvio rodoviário esperada em malha normal: ~1.2–1.6.
+// Acima deste limite a rota é suspeita (coordenada ruim / PDV inacessível).
+const ROAD_ROUTE_DETOUR_MAX = 4.5;
+
+function evaluateRouteDistanceSanity(routeId, routeDistanceKm, straightDistanceKm) {
+  const real = Number(routeDistanceKm) || 0;
+  const straight = Number(straightDistanceKm) || 0;
+
+  let rota_valida = true;
+  let flag = '';
+
+  if (real <= 0) {
+    rota_valida = false;
+    flag = 'OSRM sem distância';
+  } else if (straight > 0) {
+    const ratio = real / straight;
+    if (ratio > ROAD_ROUTE_DETOUR_MAX) {
+      rota_valida = false;
+      flag = `Desvio ${ratio.toFixed(1)}x acima do esperado`;
+    }
+  }
+
+  const tipo_distancia = rota_valida ? 'REAL' : 'ESTIMADA';
+  const distancia_final = rota_valida ? real : straight;
+
+  return {
+    routeId,
+    rota_valida,
+    tipo_distancia,
+    distancia_rota: real,
+    distancia_reta: straight,
+    distancia_final,
+    flag
+  };
+}
+
+// Marca o status de acesso dos clientes (feedback UX). Usa property dedicada
+// (_roadAccess) — não interfere em coordenadas, sequence, driverId, week ou day.
+function setRouteClientsAccessStatus(routeClients, routeId, diagnostic) {
+  if (!Array.isArray(routeClients)) return;
+  const status = diagnostic && diagnostic.rota_valida ? 'ok' : 'revisar';
+  routeClients.forEach((client) => {
+    if (!client) return;
+    client._roadAccess = {
+      routeId,
+      status,
+      tipo: diagnostic ? diagnostic.tipo_distancia : null,
+      ts: Date.now()
+    };
+  });
 }
 
 async function fetchRoadRoute() {
@@ -10601,8 +10929,19 @@ async function fetchRoadRoute() {
 
     state.roadRouteId = route.routeId;
     state._roadRouteSignature = buildRoadRouteSignature(route);
+    // FASE B — comparacao Planejado x Rodoviario apenas para a rota ativa.
+    // Armazenado somente para a rota carregada pelo ALT+P; limpo em clearRoadRoute.
+    if (diagnostic.rota_valida) {
+      const plannedKm = Number(route.totalDistance) || 0;
+      const roadKm = Number(diagnostic.distancia_rota) || 0;
+      const diffPct = plannedKm > 0 ? ((roadKm - plannedKm) / plannedKm) * 100 : null;
+      state.roadRouteCompare = { routeId: route.routeId, plannedKm, roadKm, diffPct };
+    } else {
+      state.roadRouteCompare = null;
+    }
     syncRoadRouteVisibility();
     map.fitBounds(roadRouteLayer.getBounds(), { padding: [50, 50] });
+    renderRouteDetail(route);
 
     const distReal = Number(diagnostic.distancia_rota || 0).toFixed(1);
     const distFinal = Number(diagnostic.distancia_final || 0).toFixed(1);
@@ -11358,6 +11697,255 @@ function toggleRulerMode(force) {
   updatePlannerHint('Régua ativa: clique para definir o ponto A. ESC para cancelar.');
 }
 
+/* ── FASE 3 — Barreiras (MVP visual) ───────────────────────────────────────
+ * Desenho de polígonos puramente visuais, em memória (state.barriers).
+ * NÃO afeta cálculo de rota, sequência, ALT+P ou o motor (OR-Tools).
+ */
+function _ensureBarrierControls() {
+  let bar = document.getElementById('barrier-controls');
+  if (bar) return bar;
+  bar = document.createElement('div');
+  bar.id = 'barrier-controls';
+  bar.className = 'barrier-controls';
+  bar.innerHTML = `
+    <span class="barrier-hint">Barreira: clique no mapa (mín. 3 pontos)</span>
+    <button type="button" id="barrier-finish-btn">Concluir</button>
+    <button type="button" id="barrier-undo-btn">Remover última</button>
+    <button type="button" id="barrier-clear-btn">Limpar</button>`;
+  const mapEl = document.getElementById('map') || map.getContainer();
+  mapEl.appendChild(bar);
+  bar.querySelector('#barrier-finish-btn').onclick = finishBarrierPolygon;
+  bar.querySelector('#barrier-undo-btn').onclick = removeLastBarrier;
+  bar.querySelector('#barrier-clear-btn').onclick = clearAllBarriers;
+  return bar;
+}
+
+function _drawBarrierDraft() {
+  if (state.barrierDrawLayer) {
+    map.removeLayer(state.barrierDrawLayer);
+    state.barrierDrawLayer = null;
+  }
+  const pts = state.barrierDrawPoints;
+  if (!pts.length) return;
+  state.barrierDrawLayer = L.polyline(pts, {
+    className: 'barrier-draft-line',
+    color: '#ff8f66',
+    weight: 2,
+    opacity: 0.95,
+    dashArray: '5 5',
+    interactive: false,
+    pane: 'overlayPane'
+  }).addTo(map);
+}
+
+function handleBarrierClick(e) {
+  if (!e || !e.latlng) return;
+  state.barrierDrawPoints.push([e.latlng.lat, e.latlng.lng]);
+  _drawBarrierDraft();
+  const n = state.barrierDrawPoints.length;
+  updatePlannerHint(n < 3
+    ? `Barreira: ${n} ponto(s). Adicione pelo menos 3 e clique em Concluir.`
+    : `Barreira: ${n} pontos. Clique em Concluir para fechar o polígono.`);
+}
+
+function finishBarrierPolygon() {
+  const pts = state.barrierDrawPoints.slice();
+  if (pts.length < 3) {
+    updatePlannerHint('Barreira: são necessários pelo menos 3 pontos.');
+    return;
+  }
+  const layer = L.polygon(pts, {
+    className: 'barrier-shape',
+    color: '#ff8f66',
+    weight: 2,
+    opacity: 0.95,
+    dashArray: '6 5',
+    fillColor: '#ff7850',
+    fillOpacity: 0.12,
+    interactive: false,
+    pane: 'overlayPane'
+  }).addTo(map);
+  const id = `barrier-${Date.now()}-${state.barriers.length + 1}`;
+  state.barriers.push({ id, latlngs: pts, layer });
+  // Limpa o rascunho atual para permitir desenhar outra barreira.
+  state.barrierDrawPoints = [];
+  if (state.barrierDrawLayer) {
+    map.removeLayer(state.barrierDrawLayer);
+    state.barrierDrawLayer = null;
+  }
+  updatePlannerHint(`Barreira criada (${state.barriers.length} no total). Desenhe outra ou ESC para sair.`);
+}
+
+function removeLastBarrier() {
+  const last = state.barriers.pop();
+  if (last && last.layer) map.removeLayer(last.layer);
+  updatePlannerHint(state.barriers.length
+    ? `Barreira removida (${state.barriers.length} restantes).`
+    : 'Todas as barreiras foram removidas.');
+}
+
+function clearAllBarriers() {
+  state.barriers.forEach((b) => { if (b.layer) map.removeLayer(b.layer); });
+  state.barriers = [];
+  state.barrierDrawPoints = [];
+  if (state.barrierDrawLayer) {
+    map.removeLayer(state.barrierDrawLayer);
+    state.barrierDrawLayer = null;
+  }
+  updatePlannerHint('Barreiras limpas.');
+}
+
+function toggleBarrierMode(force) {
+  const activate = (force !== undefined) ? Boolean(force) : !state.barrierMode;
+
+  if (!activate) {
+    state.barrierMode = false;
+    state.barrierDrawPoints = [];
+    if (state.barrierDrawLayer) {
+      map.removeLayer(state.barrierDrawLayer);
+      state.barrierDrawLayer = null;
+    }
+    const btn = document.getElementById('toggle-barrier-btn');
+    if (btn) btn.classList.remove('is-active');
+    const bar = document.getElementById('barrier-controls');
+    if (bar) bar.classList.remove('is-active');
+    map.getContainer().classList.remove('ruler-mode');
+    if (map.doubleClickZoom) map.doubleClickZoom.enable();
+    updatePlannerHint('Modo Barreira desativado.');
+    return;
+  }
+
+  // Desativa ferramentas conflitantes antes de ativar.
+  if (state.navToolActive) deactivateNavTool();
+  if (state.rulerModeActive) toggleRulerMode(false);
+  if (state.lassoModeActive) {
+    state.lassoModeActive = false;
+    clearLassoSelection({ skipRender: true });
+  }
+  if (state.insightModeActive) toggleInsightMode(false);
+
+  state.barrierMode = true;
+  state.barrierDrawPoints = [];
+  if (state.barrierDrawLayer) {
+    map.removeLayer(state.barrierDrawLayer);
+    state.barrierDrawLayer = null;
+  }
+  const btn = document.getElementById('toggle-barrier-btn');
+  if (btn) btn.classList.add('is-active');
+  _ensureBarrierControls().classList.add('is-active');
+  map.getContainer().classList.add('ruler-mode'); // reaproveita cursor de precisão
+  if (map.doubleClickZoom) map.doubleClickZoom.disable();
+  updatePlannerHint('Modo Barreira: clique para marcar os vértices. Concluir fecha o polígono. ESC para sair.');
+}
+
+/* ── FASE 2.3 — Troca de sequência diretamente no mapa ─────────────────────
+ * Modo dedicado de dois cliques. Reutiliza swapStopSequence() (Fase 2.2).
+ * NÃO move marcador, lat, lon, território, motorista, semana ou dia.
+ * Só permite troca entre paradas da MESMA rota e apenas no modo Operacional.
+ */
+function _showSwapHighlight(client) {
+  _clearSwapHighlightLayer();
+  if (!client || client.lat == null || client.lon == null) return;
+  state.swapHighlightLayer = L.circleMarker([client.lat, client.lon], {
+    radius: 18,
+    className: 'swap-source-ring',
+    color: '#ffb932',
+    weight: 3,
+    opacity: 0.95,
+    fill: false,
+    interactive: false,
+    pane: 'overlayPane'
+  }).addTo(map);
+}
+
+function _clearSwapHighlightLayer() {
+  if (state.swapHighlightLayer) {
+    map.removeLayer(state.swapHighlightLayer);
+    state.swapHighlightLayer = null;
+  }
+}
+
+function _clearSwapSelection() {
+  _clearSwapHighlightLayer();
+  state.swapSourceId = null;
+  state.swapSourceRouteId = null;
+}
+
+function handleSwapModeMarkerClick(marker) {
+  if (!marker || marker._rfxIsSpecial) return;
+  if (state.viewMode !== 'operational') return;
+  const client = marker._rfxClient;
+  const route = marker._rfxRoute;
+  if (!client || !route) return;
+
+  // Primeiro clique — define a parada de origem.
+  if (!state.swapSourceId) {
+    state.swapSourceId = client.id;
+    state.swapSourceRouteId = route.routeId;
+    _showSwapHighlight(client);
+    updatePlannerHint('Troca: parada de origem selecionada. Clique em outra parada da MESMA rota para trocar.');
+    return;
+  }
+
+  // Clicar na mesma parada — cancela a seleção.
+  if (state.swapSourceId === client.id) {
+    _clearSwapSelection();
+    updatePlannerHint('Troca cancelada.');
+    return;
+  }
+
+  // Rotas diferentes — ignora a troca (regra de segurança) e re-seleciona origem.
+  if (route.routeId !== state.swapSourceRouteId) {
+    state.swapSourceId = client.id;
+    state.swapSourceRouteId = route.routeId;
+    _showSwapHighlight(client);
+    updatePlannerHint('Troca ignorada: paradas de rotas diferentes. Nova origem selecionada.');
+    return;
+  }
+
+  // Mesma rota — executa a troca reutilizando swapStopSequence() (Fase 2.2).
+  const sourceId = state.swapSourceId;
+  _clearSwapSelection();
+  swapStopSequence(sourceId, client.id);
+}
+
+function toggleSwapMode(force) {
+  const activate = (force !== undefined) ? Boolean(force) : !state.swapModeActive;
+
+  if (!activate) {
+    state.swapModeActive = false;
+    _clearSwapSelection();
+    const btn = document.getElementById('toggle-swap-btn');
+    if (btn) btn.classList.remove('is-active');
+    map.getContainer().classList.remove('swap-mode');
+    updatePlannerHint('Modo Troca de sequência desativado.');
+    return;
+  }
+
+  // Disponível apenas no modo Operacional.
+  if (state.viewMode !== 'operational') {
+    updatePlannerHint('Troca de sequência disponível apenas no modo Operacional.');
+    return;
+  }
+
+  // Desativa ferramentas conflitantes antes de ativar.
+  if (state.navToolActive) deactivateNavTool();
+  if (state.rulerModeActive) toggleRulerMode(false);
+  if (state.barrierMode) toggleBarrierMode(false);
+  if (state.insightModeActive) toggleInsightMode(false);
+  if (state.lassoModeActive) {
+    state.lassoModeActive = false;
+    clearLassoSelection({ skipRender: true });
+  }
+
+  state.swapModeActive = true;
+  _clearSwapSelection();
+  const btn = document.getElementById('toggle-swap-btn');
+  if (btn) btn.classList.add('is-active');
+  map.getContainer().classList.add('swap-mode');
+  updatePlannerHint('Modo Troca: clique em duas paradas da mesma rota para trocar a ordem. ESC para sair.');
+}
+
 /* ── Insight Mode (INS) ─────────────────────────────────────── */
 let _insClientId = null;   // ID do cliente aberto no modal INS
 let _insSnapshot = null;  // snapshot dos campos ao abrir (para diff no histórico)
@@ -11538,6 +12126,7 @@ function toggleInsightMode(force) {
   // Desativar ferramentas conflitantes ao ativar INS
   if (state.navToolActive) deactivateNavTool();
   if (state.rulerModeActive) clearRuler();
+  if (state.swapModeActive) toggleSwapMode(false);
   if (state.lassoModeActive) {
     state.lassoModeActive = false;
     clearLassoSelection({ skipRender: true });
@@ -13614,14 +14203,19 @@ function renderKpis(filteredClients, routeGroups) {
   }); // end measure renderKpis
 }
 
-function renderCharts(filteredClients) {
+function renderCharts(filteredClients, routeGroups) {
   return window.__rfxPerf.measure('renderCharts', function() {
   const kmChart = document.getElementById('km-chart');
   const dayChart = document.getElementById('day-chart');
   const vehicleTypes = ['carro', 'moto', 'pickup', 'pesado', 'eletrico'];
+  // Km por veiculo a partir da distancia real da rota (Haversine), atribuida ao
+  // veiculo do motorista da rota. Substitui o antigo client.distance (mock seededRandom).
   const kmByVehicle = { carro: 0, moto: 0, pickup: 0, pesado: 0, eletrico: 0 };
-  filteredClients.forEach((client) => {
-    kmByVehicle[client.vehicle] += client.distance;
+  (routeGroups || []).forEach((route) => {
+    const veh = route.driver && route.driver.vehicle;
+    if (veh && Object.prototype.hasOwnProperty.call(kmByVehicle, veh)) {
+      kmByVehicle[veh] += route.totalDistance || 0;
+    }
   });
 
   const maxKm = Math.max(1, ...Object.values(kmByVehicle));
@@ -14137,11 +14731,133 @@ function renderRouteList(routeGroups) {
   });
 }
 
+// ── FASE 2 — Sequência manual dentro da rota ──────────────────────────────
+// Reordena clientes de UMA rota alterando SOMENTE `sequence`.
+// Nunca toca lat/lon, território, motorista, semana ou dia.
+function normalizeRouteSequence(routeId) {
+  const groups = getRouteGroupsSafe();
+  const route = groups.find((r) => r.routeId === routeId);
+  if (!route) return 0;
+  const ordered = route.clients.slice().sort((a, b) =>
+    (a.sequence || 0) - (b.sequence || 0) || String(a.id).localeCompare(String(b.id))
+  );
+  let changed = 0;
+  ordered.forEach((client, index) => {
+    const desired = index + 1;
+    if (client.sequence !== desired) {
+      patchClient(client.id, { sequence: desired });
+      changed += 1;
+    }
+  });
+  return changed;
+}
+
+function moveStopInSequence(clientId, direction) {
+  if (!clientId || (direction !== 'up' && direction !== 'down')) return;
+  // Sequência não se aplica à visão territorial.
+  if (state.viewMode === 'territorial') return;
+  const groups = getRouteGroupsSafe();
+  const route = groups.find((r) => r.clients.some((c) => c.id === clientId));
+  if (!route) return;
+  // Cópia da ordem atual (já ordenada por sequence em buildRouteGroups).
+  const ordered = route.clients.slice();
+  const idx = ordered.findIndex((c) => c.id === clientId);
+  if (idx === -1) return;
+  const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+  if (swapIdx < 0 || swapIdx >= ordered.length) return; // borda: no-op
+  // Troca de posição no array e reatribui sequence contígua (1..N).
+  const tmp = ordered[idx];
+  ordered[idx] = ordered[swapIdx];
+  ordered[swapIdx] = tmp;
+  ordered.forEach((client, index) => {
+    const desired = index + 1;
+    if (client.sequence !== desired) {
+      patchClient(client.id, { sequence: desired });
+    }
+  });
+  if (typeof markPlanAsDirty === 'function') markPlanAsDirty();
+  state.selectedRouteId = route.routeId;
+  state.selectedStopId = clientId;
+  applyFilters({ skipFitBounds: true });
+  if (typeof _scheduleScenarioPersist === 'function') _scheduleScenarioPersist();
+}
+
+// ── FASE 2.2 — Troca rápida de sequência por arraste da bolinha ────────────
+// Troca a posição de DUAS paradas da MESMA rota (swap puro).
+// Reutiliza a mesma mecânica de moveStopInSequence: altera SOMENTE `sequence`.
+// Nunca move cliente, marcador, latitude ou longitude.
+let _seqDragSourceId = null;
+function swapStopSequence(clientIdA, clientIdB) {
+  if (!clientIdA || !clientIdB || clientIdA === clientIdB) return;
+  // Sequência não se aplica à visão territorial.
+  if (state.viewMode === 'territorial') return;
+  const groups = getRouteGroupsSafe();
+  const route = groups.find((r) => r.clients.some((c) => c.id === clientIdA));
+  if (!route) return;
+  // Ambas as paradas precisam pertencer à MESMA rota.
+  if (!route.clients.some((c) => c.id === clientIdB)) return;
+  const ordered = route.clients.slice();
+  const idxA = ordered.findIndex((c) => c.id === clientIdA);
+  const idxB = ordered.findIndex((c) => c.id === clientIdB);
+  if (idxA === -1 || idxB === -1) return;
+  // Swap puro de posições no array.
+  const tmp = ordered[idxA];
+  ordered[idxA] = ordered[idxB];
+  ordered[idxB] = tmp;
+  // Reatribui sequence contígua (1..N) — mesma normalização da Fase 2.
+  ordered.forEach((client, index) => {
+    const desired = index + 1;
+    if (client.sequence !== desired) {
+      patchClient(client.id, { sequence: desired });
+    }
+  });
+  if (typeof markPlanAsDirty === 'function') markPlanAsDirty();
+  state.selectedRouteId = route.routeId;
+  state.selectedStopId = clientIdA;
+  applyFilters({ skipFitBounds: true });
+  if (typeof _scheduleScenarioPersist === 'function') _scheduleScenarioPersist();
+}
+
 function renderRouteDetail(selectedRoute) {
-  const container = document.getElementById('route-detail');
-  if (!selectedRoute) {
-    container.innerHTML = '<div class="empty-state">Selecione uma rota para ver distribuicao, condutor e territorio.</div>';
-    return;
+
+  // FASE B — comparacao Planejado x Rodoviario somente para a rota ativa do ALT+P.
+  const compare = (state.roadRouteCompare && state.roadRouteCompare.routeId === selectedRoute.routeId)
+    ? state.roadRouteCompare
+    : null;
+  let roadComparisonHtml = '';
+  if (compare) {
+    const diffStr = (compare.diffPct == null)
+      ? '-'
+      : `${compare.diffPct >= 0 ? '+' : ''}${compare.diffPct.toFixed(0)}%`;
+    roadComparisonHtml = `
+    <div class="detail-line"><span>KM planejado</span><strong>${compare.plannedKm.toFixed(0)} km</strong></div>
+    <div class="detail-line"><span>KM rodoviario (ALT+P)</span><strong>${compare.roadKm.toFixed(0)} km</strong></div>
+    <div class="detail-line"><span>Diferenca</span><strong>${diffStr}</strong></div>
+  `;
+  }
+
+  // FASE 2 — controle discreto de sequência manual para a parada selecionada.
+  // Move o cliente para cima/baixo na rota (altera apenas sequence).
+  const selectedStop = selectedRoute.clients.find((c) => c.id === state.selectedStopId)
+    || selectedRoute.clients[0]
+    || null;
+  let sequenceControlHtml = '';
+  if (selectedStop) {
+    const pos = selectedRoute.clients.findIndex((c) => c.id === selectedStop.id) + 1;
+    const total = selectedRoute.clients.length;
+    const stopName = selectedStop.nomeFantasia || selectedStop.tradeName || selectedStop.name || selectedStop.id;
+    const atTop = pos <= 1;
+    const atBottom = pos >= total;
+    sequenceControlHtml = `
+    <div class="detail-line seq-control-line">
+      <span>Parada ${pos}/${total}</span>
+      <span class="seq-control">
+        <strong class="seq-control-name">${stopName}</strong>
+        <button type="button" class="seq-move-btn" data-seq-dir="up" data-seq-id="${selectedStop.id}" title="Mover para cima (ALT+\u2191)" ${atTop ? 'disabled' : ''}>&#9650;</button>
+        <button type="button" class="seq-move-btn" data-seq-dir="down" data-seq-id="${selectedStop.id}" title="Mover para baixo (ALT+\u2193)" ${atBottom ? 'disabled' : ''}>&#9660;</button>
+      </span>
+    </div>
+  `;
   }
 
   container.innerHTML = `
@@ -14152,7 +14868,16 @@ function renderRouteDetail(selectedRoute) {
     <div class="detail-line"><span>Territorios</span><strong>${selectedRoute.territories.join(', ')}</strong></div>
     <div class="detail-line"><span>Frota alocada</span><strong>${selectedRoute.uniqueVehicles.join(', ')}</strong></div>
     <div class="detail-line"><span>Risco operacional</span><strong>${selectedRoute.riskCount} pontos</strong></div>
+    ${sequenceControlHtml}
+    ${roadComparisonHtml}
   `;
+
+  Array.from(container.querySelectorAll('.seq-move-btn')).forEach((btn) => {
+    btn.onclick = () => {
+      if (btn.disabled) return;
+      moveStopInSequence(btn.dataset.seqId, btn.dataset.seqDir);
+    };
+  });
 }
 
 function renderTimeline(selectedRoute) {
@@ -14166,8 +14891,8 @@ function renderTimeline(selectedRoute) {
 
   label.textContent = `S${selectedRoute.week} | ${selectedRoute.ddd} | ${selectedRoute.day} | ${selectedRoute.routeLoad} stops`;
   container.innerHTML = selectedRoute.clients.map((client, index) => `
-    <div class="timeline-item ${client.id === state.selectedStopId ? 'is-selected' : ''}" data-stop-id="${client.id}">
-      <strong>${index + 1}. ${client.nomeFantasia || client.tradeName || client.name}</strong>
+    <div class="timeline-item ${client.id === state.selectedStopId ? 'is-selected' : ''}" data-stop-id="${client.id}" draggable="true" title="Arraste a bolinha sobre outra parada para trocar a ordem">
+      <strong><span class="timeline-seq-badge" aria-hidden="true">${index + 1}</span>${client.nomeFantasia || client.tradeName || client.name}</strong>
       <div class="route-meta">
         <span>${client.window}</span>
         <span>${client.vehicle}</span>
@@ -14183,6 +14908,44 @@ function renderTimeline(selectedRoute) {
         skipFitBounds: true,
         skipRouteRecalculate: true,
         skipHeavyPanels: true
+      });
+    };
+
+    // FASE 2.2 — arraste da bolinha para troca rápida de sequência.
+    // Limitado a uma troca A↔B na mesma rota; não move clientes/marcadores.
+    element.ondragstart = (event) => {
+      if (state.viewMode === 'territorial') {
+        event.preventDefault();
+        return;
+      }
+      _seqDragSourceId = element.dataset.stopId;
+      element.classList.add('is-drag-source');
+      event.dataTransfer.effectAllowed = 'move';
+      try { event.dataTransfer.setData('text/plain', _seqDragSourceId); } catch (e) { /* noop */ }
+    };
+    element.ondragover = (event) => {
+      if (!_seqDragSourceId || element.dataset.stopId === _seqDragSourceId) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      element.classList.add('is-drag-over');
+    };
+    element.ondragleave = () => {
+      element.classList.remove('is-drag-over');
+    };
+    element.ondrop = (event) => {
+      event.preventDefault();
+      element.classList.remove('is-drag-over');
+      const targetId = element.dataset.stopId;
+      const sourceId = _seqDragSourceId;
+      _seqDragSourceId = null;
+      if (sourceId && targetId && sourceId !== targetId) {
+        swapStopSequence(sourceId, targetId);
+      }
+    };
+    element.ondragend = () => {
+      _seqDragSourceId = null;
+      Array.from(container.querySelectorAll('.timeline-item')).forEach((el) => {
+        el.classList.remove('is-drag-source', 'is-drag-over');
       });
     };
   });
@@ -14738,7 +15501,13 @@ function updateFocusCards(selectedRoute, filteredClients, routeGroups) {
     })
     : [];
 
-  const driverKm = driverClients.reduce((sum, client) => sum + (client.distance || 0), 0);
+  // Km do motorista em foco a partir da distancia real da rota (Haversine),
+  // somando route.totalDistance das rotas do motorista. Substitui client.distance (mock).
+  const driverKm = activeDriver
+    ? (routeGroups || [])
+        .filter((route) => route.driver && route.driver.id === activeDriver.id)
+        .reduce((sum, route) => sum + (route.totalDistance || 0), 0)
+    : 0;
   const activeVehicle = activeDriver ? activeDriver.vehicle : '-';
 
   document.getElementById('focus-driver-name').textContent = activeDriverName;
@@ -15585,6 +16354,12 @@ function _ensureClientMarkerBaseEvents(marker) {
   marker.on('dblclick', (e) => { L.DomEvent.stopPropagation(e); });
 
   marker.on('popupopen', () => {
+    // FASE 2.3 — no modo SEQ Troca, não exibir popup/card de detalhes.
+    // O clique apenas seleciona origem/destino da troca.
+    if (state.swapModeActive) {
+      marker.closePopup();
+      return;
+    }
     if (!marker._rfxPopupReady) {
       marker.setPopupContent(_buildPopupHtml(marker._rfxClient, marker._rfxRoute));
       marker._rfxPopupReady = true;
@@ -15599,6 +16374,12 @@ function _ensureClientMarkerBaseEvents(marker) {
     // INS mode: intercept click to open insight panel instead of normal flow
     if (state.insightModeActive) {
       openInsightPanel(marker._rfxClient);
+      return;
+    }
+
+    // FASE 2.3 — modo Troca: dois cliques trocam a sequência (mesma rota).
+    if (state.swapModeActive) {
+      handleSwapModeMarkerClick(marker);
       return;
     }
 
@@ -16173,7 +16954,7 @@ function renderDeferredPanels(renderContext, options = {}) {
     }
 
     renderKpis(allFilteredClients, allRouteGroups);
-    renderCharts(allFilteredClients);
+    renderCharts(allFilteredClients, allRouteGroups);
     renderAlerts(allFilteredClients, allRouteGroups);
     renderOperationalStatus(allFilteredClients, allRouteGroups);
     renderAnalyticsSummary(allFilteredClients, allRouteGroups);
@@ -16186,7 +16967,7 @@ function renderDeferredPanels(renderContext, options = {}) {
     logApplyFiltersPerf('skipped heavy panels', { mode: 'operational' });
   } else {
     renderKpis(allFilteredClients, allRouteGroups);
-    renderCharts(allFilteredClients);
+    renderCharts(allFilteredClients, allRouteGroups);
     renderAlerts(allFilteredClients, allRouteGroups);
     renderOperationalStatus(allFilteredClients, allRouteGroups);
     renderAdvancedHistoryPanel();
@@ -17350,6 +18131,10 @@ map.on('click', (e) => {
     handleRulerClick(e);
     return;
   }
+  if (state.barrierMode) {
+    handleBarrierClick(e);
+    return;
+  }
   closeDriverManagerModal();
 });
 
@@ -17414,6 +18199,8 @@ document.getElementById('toggle-nav-btn').onclick = toggleNavTool;
 document.getElementById('toggle-lasso-btn').onclick = toggleLassoMode;
 document.getElementById('toggle-ruler-btn').onclick = toggleRulerMode;
 document.getElementById('toggle-insight-btn').onclick = toggleInsightMode;
+document.getElementById('toggle-barrier-btn').onclick = toggleBarrierMode;
+document.getElementById('toggle-swap-btn').onclick = toggleSwapMode;
 
 // INS modal — persistent event listeners (bound once at startup)
 document.getElementById('ins-panel-close').addEventListener('click', closeInsightPanel);
@@ -17657,6 +18444,18 @@ document.addEventListener('keydown', (event) => {
     return;
   }
 
+  if (event.key === 'Escape' && state.barrierMode) {
+    event.preventDefault();
+    toggleBarrierMode(false);
+    return;
+  }
+
+  if (event.key === 'Escape' && state.swapModeActive) {
+    event.preventDefault();
+    toggleSwapMode(false);
+    return;
+  }
+
   if (event.key === 'Escape' && state.insightModeActive) {
     event.preventDefault();
     toggleInsightMode(false);
@@ -17689,6 +18488,16 @@ document.addEventListener('keydown', (event) => {
   if (event.altKey && event.key.toLowerCase() === 'j') {
     event.preventDefault();
     openLassoClientWindows();
+  }
+  if (event.altKey && event.key === 'ArrowUp') {
+    event.preventDefault();
+    if (state.selectedStopId) moveStopInSequence(state.selectedStopId, 'up');
+    return;
+  }
+  if (event.altKey && event.key === 'ArrowDown') {
+    event.preventDefault();
+    if (state.selectedStopId) moveStopInSequence(state.selectedStopId, 'down');
+    return;
   }
   if (event.altKey && event.key.toLowerCase() === 'u') {
     event.preventDefault();
@@ -19585,3 +20394,4 @@ bootstrapApp();
 </script>
 </body>
 </html>
+

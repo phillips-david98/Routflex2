@@ -246,7 +246,11 @@ function getDriverPortfolio(driverId) {
   });
   const inactiveClients = allClients.filter((client) => (client.clientType || 'ativo') === 'inativo');
   const territories = Array.from(new Set(allClients.map((client) => client.territory)));
-  const totalDistance = mapVisibleClients.reduce((sum, client) => sum + (client.distance || 0), 0);
+  // Distancia real da carteira a partir das rotas (Haversine), somando route.totalDistance
+  // das rotas do motorista. Substitui o antigo client.distance (mock seededRandom).
+  const driverRouteGroups = (typeof getRouteGroupsSafe === 'function' ? getRouteGroupsSafe() : [])
+    .filter((route) => route.driver && route.driver.id === driverId && Number(route.ddd) === selectedDDD);
+  const totalDistance = driverRouteGroups.reduce((sum, route) => sum + (route.totalDistance || 0), 0);
   return {
     stopCount: mapVisibleClients.length,
     mapCount: mapVisibleClients.length,

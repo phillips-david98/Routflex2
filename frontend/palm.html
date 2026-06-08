@@ -56,6 +56,20 @@
       align-items: flex-start;
     }
 
+    body:not(.plan-loaded) .palm-header,
+    body:not(.plan-loaded) .palm-week-tabs,
+    body:not(.plan-loaded) .palm-body {
+      display: none;
+    }
+
+    body.plan-loaded .palm-access-screen {
+      display: none;
+    }
+
+    body:not(.plan-loading) #palm-loader {
+      display: none;
+    }
+
     /* ── APP SHELL ── */
     #palm-app {
       width: 100%;
@@ -107,6 +121,125 @@
     }
 
     .palm-logo-text span { color: var(--primary); }
+
+    .palm-access-screen {
+      min-height: 100vh;
+      padding: 28px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        linear-gradient(160deg, rgba(224,234,246,0.92) 0%, rgba(244,246,249,1) 58%),
+        var(--bg);
+    }
+
+    .palm-access-card {
+      width: 100%;
+      background: rgba(255,255,255,0.76);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 22px 18px;
+      box-shadow: 0 22px 60px rgba(13,31,53,0.14);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .palm-access-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .palm-access-title {
+      font-family: var(--font-h);
+      font-size: 24px;
+      line-height: 1.05;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .palm-access-copy {
+      color: var(--text-2);
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .palm-access-form {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .palm-access-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .palm-access-input {
+      width: 100%;
+      height: 46px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r-sm);
+      background: rgba(255,255,255,0.86);
+      color: var(--text);
+      font-family: var(--font-h);
+      font-size: 16px;
+      font-weight: 700;
+      padding: 0 13px;
+      outline: none;
+      text-transform: uppercase;
+    }
+
+    .palm-access-input:focus {
+      border-color: rgba(0,119,204,0.55);
+      box-shadow: 0 0 0 3px rgba(0,119,204,0.10);
+    }
+
+    .palm-access-button {
+      height: 46px;
+      border: none;
+      border-radius: var(--r-sm);
+      background: var(--primary);
+      color: #fff;
+      font-family: var(--font-h);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .palm-access-error {
+      display: none;
+      margin-top: 11px;
+      color: var(--danger);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .palm-access-error.is-visible { display: block; }
+
+    .palm-territory-shortcuts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 18px;
+    }
+
+    .palm-territory-chip {
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.60);
+      color: var(--text-2);
+      font-family: var(--font-h);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
 
     .palm-badge {
       background: rgba(82, 208, 255, 0.13);
@@ -170,6 +303,40 @@
       background: var(--muted);
       opacity: 0.4;
       flex-shrink: 0;
+    }
+
+    .palm-plan-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .palm-plan-field {
+      background: rgba(255,255,255,0.40);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 9px;
+      min-width: 0;
+    }
+
+    .palm-plan-key {
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 1px;
+    }
+
+    .palm-plan-val {
+      color: var(--text);
+      font-family: var(--font-h);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* ── PROGRESS BAR ── */
@@ -506,7 +673,7 @@
       background: rgba(26, 158, 111, 0.04);
     }
 
-    .btn-start-visit {
+    .btn-plan-preview {
       background: var(--primary);
       color: #fff;
       border: none;
@@ -520,8 +687,8 @@
       transition: opacity 0.15s, transform 0.1s;
       white-space: nowrap;
     }
-    .btn-start-visit:hover  { opacity: 0.88; }
-    .btn-start-visit:active { transform: scale(0.97); }
+    .btn-plan-preview:hover  { opacity: 0.88; }
+    .btn-plan-preview:active { transform: scale(0.97); }
 
     .btn-in-visit {
       background: var(--success);
@@ -537,7 +704,7 @@
       white-space: nowrap;
     }
 
-    .btn-finalize-visit {
+    .btn-plan-future {
       width: 100%;
       background: var(--success);
       color: #fff;
@@ -552,7 +719,7 @@
       letter-spacing: 0.3px;
       transition: opacity 0.15s;
     }
-    .btn-finalize-visit:hover { opacity: 0.88; }
+    .btn-plan-future:hover { opacity: 0.88; }
 
     /* ── EMPTY STATE ── */
     .empty-state {
@@ -950,6 +1117,28 @@
 
 <div id="palm-app">
 
+  <section class="palm-access-screen" id="palm-access-screen">
+    <div class="palm-access-card">
+      <div class="palm-access-brand">
+        <div class="palm-logo-text">ROUT<span>flex</span></div>
+        <div class="palm-badge">PALM</div>
+      </div>
+      <h1 class="palm-access-title">ROUTflex PALM</h1>
+      <p class="palm-access-copy">Executor do Plano Recebido</p>
+
+      <form class="palm-access-form" id="plan-load-form">
+        <label class="palm-access-label" for="consultant-input">Nome do Consultor</label>
+        <input class="palm-access-input" id="consultant-input" type="text" value="Matias Henrique" autocomplete="name" spellcheck="false">
+        <label class="palm-access-label" for="territory-input">Territorio Operacional</label>
+        <input class="palm-access-input" id="territory-input" type="text" value="MT 65-04" autocomplete="off" spellcheck="false">
+        <button class="palm-access-button" type="submit">Receber Plano</button>
+      </form>
+
+      <div class="palm-access-error" id="plan-load-error">Plano nao encontrado para este territorio.</div>
+      <div class="palm-territory-shortcuts" id="territory-shortcuts" aria-label="Territorios disponiveis"></div>
+    </div>
+  </section>
+
   <!-- ══════════════════════════════════════ -->
   <!-- LOADING SCREEN                        -->
   <!-- ══════════════════════════════════════ -->
@@ -986,10 +1175,12 @@
     <div class="palm-consultant-meta">
       <span id="header-territory">—</span>
       <div class="meta-sep"></div>
-      <span>DDD <span id="header-ddd">—</span></span>
+      <span>Dia Operacional: <span id="header-ddd">—</span></span>
       <div class="meta-sep"></div>
       <span id="header-date">—</span>
     </div>
+
+    <div class="palm-plan-grid" id="plan-grid"></div>
 
     <div class="palm-kpi-strip">
       <div class="kpi-chip">
@@ -1014,11 +1205,11 @@
   <!-- WEEK TABS                             -->
   <!-- ══════════════════════════════════════ -->
   <nav class="palm-week-tabs" id="week-tabs">
-    <button class="palm-tab is-active" data-week="hoje">Hoje</button>
-    <button class="palm-tab" data-week="1">Semana 1</button>
-    <button class="palm-tab" data-week="2">Semana 2</button>
-    <button class="palm-tab" data-week="3">Semana 3</button>
-    <button class="palm-tab" data-week="4">Semana 4</button>
+    
+    <button class="palm-tab" data-week="1">S1</button>
+    <button class="palm-tab" data-week="2">S2</button>
+    <button class="palm-tab" data-week="3">S3</button>
+    <button class="palm-tab" data-week="4">S4</button>
   </nav>
 
   <!-- ══════════════════════════════════════ -->
@@ -1032,7 +1223,7 @@
     <!-- Stops section -->
     <div id="stops-section">
       <div class="section-header">
-        <span class="section-title" id="section-title">Paradas do dia</span>
+        <span class="section-title" id="section-title">Paradas da semana</span>
         <span class="section-count" id="section-count">—</span>
       </div>
       <div class="stops-list" id="stops-list"></div>
@@ -1091,7 +1282,7 @@ const PALM_API = {
   // [INTEGRAÇÃO FUTURA] GET /palm/consultant/me
   //   Headers: { Authorization: 'Bearer <jwt>' }
   //   Retorna: { id, name, territory, ddd, region, vehicleType }
-  CONSULTANT_ME: null,
+  PLANNING_PLAN_MOCK: null,
 
   // [INTEGRAÇÃO FUTURA] GET /palm/route
   //   Query: ?ddd=62&date=2026-05-01&consultant_id=<id>
@@ -1120,10 +1311,10 @@ const PALM_API = {
 
 // ── DADOS DO CONSULTOR (mock) ────────────────────────────────────────
 //
-// [INTEGRAÇÃO FUTURA] Substituir por resposta de PALM_API.CONSULTANT_ME
+// [INTEGRAÇÃO FUTURA] Substituir por resposta de PALM_API.PLANNING_PLAN_MOCK
 // após autenticação JWT com token armazenado em localStorage.
 //
-const CONSULTANT = {
+const LEGACY_CONSULTANT_SOURCE = {
   id:          'consultor-001',
   name:        'Carlos Mendes',
   territory:   'Centro-Oeste GO',
@@ -1139,7 +1330,7 @@ const CONSULTANT = {
 // cycleWeek = semana dentro do ciclo (1–4)
 // todayDay  = dia abreviado, igual ao campo `day` dos stops
 //
-const ROUTE_CONTEXT = {
+const LEGACY_ROUTE_SOURCE = {
   cycle:     3,
   cycleWeek: 2,
   todayDay: (function() {
@@ -1156,7 +1347,7 @@ const ROUTE_CONTEXT = {
 // city, address, phone, curve, week, day, suggestedTime, status,
 // lastVisit, observation, lat, lon }
 //
-const STOPS_SEED = [
+const LEGACY_STOP_SOURCE = [
   {
     id: 1, sequence: 1,
     name: 'Mercadinho São José',
@@ -1264,13 +1455,80 @@ const STOPS_SEED = [
 ];
 
 // ── STATE ─────────────────────────────────────────────────────────────
-let activeWeek = 'hoje';
-let stops = STOPS_SEED.map(function(s) { return Object.assign({}, s); });
+const CURRENT_PALM_PLAN_SOURCE = {
+  'MT 65-01': {
+    planId: 'PLAN-2026-C03-S01-65-01',
+    territory: 'MT 65-01',
+    ddd: 65,
+    driver: 'Rafael Souza',
+    supervisor: 'Marina Costa',
+    vehicle: 'Fiorino refrigerada',
+    baseCity: 'Cuiaba - MT',
+    week: 1,
+    cycle: 3,
+    operationalDays: ['SEG', 'TER', 'QUA'],
+    plannedKm: 126.4,
+    plannedTime: '7h 20min',
+    status: 'Plano Recebido',
+    routeDays: [
+      {
+        week: 1, dayKey: 'SEG', dayLabel: 'SEGUNDA', date: '01/06/2026',
+        stops: [
+          { id: 650101, sequence: 1, name: 'Mercado Porto Seco', neighborhood: 'Porto', city: 'Cuiaba - MT', address: 'Av. XV de Novembro, 980 - Porto', phone: '(65) 3021-1188', segment: 'Mercado', curve: 'A', plannedWindow: '08:00 - 08:35', lastVisit: '25/05/2026', observation: 'Manter sequencia definida pelo Planning.', lat: -15.6044, lon: -56.1060 },
+          { id: 650102, sequence: 2, name: 'Farmacia Popular Coxipo', neighborhood: 'Coxipo', city: 'Cuiaba - MT', address: 'Av. Fernando Correa, 2100 - Coxipo', phone: '(65) 3661-2244', segment: 'Farmacia', curve: 'B', plannedWindow: '09:05 - 09:35', lastVisit: '18/05/2026', observation: 'Cliente de frequencia semanal.', lat: -15.6395, lon: -56.0654 },
+        ],
+      },
+    ],
+  },
+  'MT 65-04': {
+    planId: 'PLAN-2026-C03-S02-65-04',
+    territory: 'MT 65-04',
+    ddd: 65,
+    driver: 'Carlos Mendes',
+    supervisor: 'Helena Duarte',
+    vehicle: 'Van leve',
+    baseCity: 'Cuiaba - MT',
+    week: 2,
+    cycle: 3,
+    operationalDays: ['SEG', 'TER', 'QUA', 'QUI'],
+    plannedKm: 164.2,
+    plannedTime: '8h 40min',
+    status: 'Plano Recebido',
+    routeDays: [
+      {
+        week: 2, dayKey: 'SEG', dayLabel: 'SEGUNDA', date: '08/06/2026',
+        stops: [
+          { id: 650401, sequence: 1, name: 'Mercado Sao Jose', neighborhood: 'Centro Sul', city: 'Cuiaba - MT', address: 'Rua Barao de Melgaco, 884 - Centro Sul', phone: '(65) 3021-7744', segment: 'Mercado', curve: 'A', plannedWindow: '08:15 - 08:45', lastVisit: '01/06/2026', observation: 'Planejado como primeiro atendimento do dia.', lat: -15.6023, lon: -56.0966 },
+          { id: 650402, sequence: 2, name: 'Farmacia Bela Vista', neighborhood: 'Bela Vista', city: 'Cuiaba - MT', address: 'Rua das Flores, 212 - Bela Vista', phone: '(65) 98855-3310', segment: 'Farmacia', curve: 'A', plannedWindow: '09:05 - 09:35', lastVisit: '25/05/2026', observation: 'Sequencia recebida do Planning.', lat: -15.5968, lon: -56.0849 },
+          { id: 650403, sequence: 3, name: 'Emporio Cerrado Norte', neighborhood: 'Jardim Italia', city: 'Cuiaba - MT', address: 'Rua Italia, 702 - Jardim Italia', phone: '(65) 3245-8800', segment: 'Conveniencia', curve: 'B', plannedWindow: '10:00 - 10:35', lastVisit: '25/05/2026', observation: 'Manter janela planejada por restricao de recebimento.', lat: -15.5796, lon: -56.0806 },
+        ],
+      },
+      {
+        week: 2, dayKey: 'TER', dayLabel: 'TERCA', date: '09/06/2026',
+        stops: [
+          { id: 650404, sequence: 1, name: 'Distribuidora Cerrado Sul', neighborhood: 'Distrito Industrial', city: 'Cuiaba - MT', address: 'Av. das Industrias, 1440 - Distrito Industrial', phone: '(65) 3224-5500', segment: 'Distribuidor', curve: 'A', plannedWindow: '08:00 - 08:50', lastVisit: '26/05/2026', observation: 'Cliente estrategico na grade semanal.', lat: -15.6610, lon: -56.0474 },
+          { id: 650405, sequence: 2, name: 'Posto Coxipo Express', neighborhood: 'Coxipo', city: 'Cuiaba - MT', address: 'Av. Fernando Correa, 3302 - Coxipo', phone: '(65) 3300-4455', segment: 'Posto', curve: 'B', plannedWindow: '09:35 - 10:05', lastVisit: '19/05/2026', observation: 'Rota planejada por proximidade com distribuidor.', lat: -15.6420, lon: -56.0612 },
+        ],
+      },
+      {
+        week: 2, dayKey: 'QUA', dayLabel: 'QUARTA', date: '10/06/2026',
+        stops: [
+          { id: 650406, sequence: 1, name: 'Constrular Avenida', neighborhood: 'Santa Rosa', city: 'Cuiaba - MT', address: 'Av. Miguel Sutil, 5100 - Santa Rosa', phone: '(65) 3312-8078', segment: 'Material de Construcao', curve: 'B', plannedWindow: '08:40 - 09:20', lastVisit: '27/05/2026', observation: 'Visita planejada para reposicao semanal.', lat: -15.5872, lon: -56.1215 },
+          { id: 650407, sequence: 2, name: 'Mini Box Goiabeiras', neighborhood: 'Goiabeiras', city: 'Cuiaba - MT', address: 'Rua Brigadeiro Eduardo Gomes, 250 - Goiabeiras', phone: '(65) 98450-7788', segment: 'Varejo', curve: 'C', plannedWindow: '10:05 - 10:35', lastVisit: '20/05/2026', observation: 'Ponto final do trecho urbano planejado.', lat: -15.5958, lon: -56.1058 },
+        ],
+      },
+    ],
+  },
+};
+
+let CURRENT_PALM_PLAN = null;
+let activeWeek = '1';
 let _toastTimer = null;
 let _syncTimer  = null;
-let activeVisitId  = null;  // id do stop atualmente em visita
-let _visitStart    = null;  // Date.now() ao iniciar visita
-let _visitInterval = null;  // setInterval do cronômetro
+const PALM_ACCESS_VISUAL_STORAGE_KEY = 'ROUTflex:palm:access-visual:v1';
+let legacyPlanPreviewId  = null;  // id do stop atualmente em visita
+let _legacyPreviewStart    = null;  // Date.now() ao iniciar visita
+let _legacyPreviewInterval = null;  // setInterval do cronômetro
 
 // ── UTILITIES ─────────────────────────────────────────────────────────
 function todayLabel() {
@@ -1279,23 +1537,63 @@ function todayLabel() {
   }).replace(/^\w/, function(c) { return c.toUpperCase(); });
 }
 
+function clonePlan(plan) {
+  return JSON.parse(JSON.stringify(plan));
+}
+
+function normalizeTerritory(value) {
+  return String(value || '').trim().toUpperCase().replace(/\s+/g, ' ');
+}
+
+function loadPalmPlanByTerritory(territory) {
+  return CURRENT_PALM_PLAN_SOURCE[normalizeTerritory(territory)] || null;
+}
+
+function routeDaysForActiveWeek() {
+  if (!CURRENT_PALM_PLAN) return [];
+  var week = Number(activeWeek);
+  return CURRENT_PALM_PLAN.routeDays.filter(function(day) { return day.week === week; });
+}
+
 function filteredStops() {
-  if (activeWeek === 'hoje') {
-    return stops.filter(function(s) {
-      return s.week === ROUTE_CONTEXT.cycleWeek && s.day === ROUTE_CONTEXT.todayDay;
-    });
-  }
-  var w = Number(activeWeek);
-  return stops.filter(function(s) { return s.week === w; });
+  return routeDaysForActiveWeek().reduce(function(acc, day) {
+    return acc.concat(day.stops.map(function(stop) {
+      return Object.assign({
+        routeWeek: day.week,
+        routeDayKey: day.dayKey,
+        routeDayLabel: day.dayLabel,
+        routeDate: day.date,
+      }, stop);
+    }));
+  }, []);
+}
+
+function findStopById(stopId) {
+  return filteredStops().concat(allPlanStops()).find(function(stop) { return stop.id === stopId; });
+}
+
+function allPlanStops() {
+  if (!CURRENT_PALM_PLAN) return [];
+  return CURRENT_PALM_PLAN.routeDays.reduce(function(acc, day) {
+    return acc.concat(day.stops.map(function(stop) {
+      return Object.assign({
+        routeWeek: day.week,
+        routeDayKey: day.dayKey,
+        routeDayLabel: day.dayLabel,
+        routeDate: day.date,
+      }, stop);
+    }));
+  }, []);
 }
 
 function statusLabel(status) {
   var map = {
+    'planejado':   'Aguardando Execucao',
     'visitado':    'Visitado ✓',
     'em-rota':     '→ Em Rota',
     'em-visita':   '● Em Visita',
     'pendente':    'Pendente',
-    'sem-contato': 'Sem Contato',
+    'sem-contato': 'Justificativa Futura',
     'reagendado':  'Reagendado',
   };
   return map[status] || status;
@@ -1303,6 +1601,7 @@ function statusLabel(status) {
 
 function statusClass(status) {
   var map = {
+    'planejado':   'b-em-rota',
     'visitado':    'b-visitado',
     'em-rota':     'b-em-rota',
     'em-visita':   'b-em-visita',
@@ -1351,16 +1650,16 @@ function setSyncState(syncState) {
 
 // ── VISIT FLOW ─────────────────────────────────────────────────────────────
 function startVisit(stopId) {
-  if (activeVisitId !== null) {
+  if (legacyPlanPreviewId !== null) {
     showToast('Finalize a visita atual antes de iniciar outra.');
     return;
   }
   var stop = stops.find(function(s) { return s.id === stopId; });
   if (!stop) return;
-  activeVisitId  = stopId;
-  _visitStart    = Date.now();
+  legacyPlanPreviewId  = stopId;
+  _legacyPreviewStart    = Date.now();
   stop.status    = 'em-visita';
-  _visitInterval = setInterval(updateVisitTimer, 1000);
+  _legacyPreviewInterval = setInterval(updateVisitTimer, 1000);
   setSyncState('pending');
   showToast('● Visita iniciada: ' + stop.name);
   renderAll();
@@ -1369,8 +1668,8 @@ function startVisit(stopId) {
 }
 
 function updateVisitTimer() {
-  if (!activeVisitId) return;
-  var elapsed = Date.now() - _visitStart;
+  if (!legacyPlanPreviewId) return;
+  var elapsed = Date.now() - _legacyPreviewStart;
   var mm  = Math.floor(elapsed / 60000);
   var ss  = Math.floor((elapsed % 60000) / 1000);
   var txt = '● EM VISITA · ' + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss;
@@ -1382,10 +1681,10 @@ function updateVisitTimer() {
 }
 
 function finalizeVisit(stopId) {
-  clearInterval(_visitInterval);
-  _visitInterval = null;
-  activeVisitId  = null;
-  _visitStart    = null;
+  clearInterval(_legacyPreviewInterval);
+  _legacyPreviewInterval = null;
+  legacyPlanPreviewId  = null;
+  _legacyPreviewStart    = null;
   updateStatus(stopId, 'visitado');
 }
 
@@ -1410,14 +1709,10 @@ function renderKPI() {
 
 // ── RENDER: HEADER INFO ───────────────────────────────────────────────
 function renderHeader() {
-  document.getElementById('header-consultant-name').textContent = CONSULTANT.name;
-  document.getElementById('header-territory').textContent = CONSULTANT.territory;
-  document.getElementById('header-ddd').textContent = CONSULTANT.ddd;
-  document.getElementById('header-date').textContent =
-    'CICLO ' + ROUTE_CONTEXT.cycle +
-    ' · SEM '  + ROUTE_CONTEXT.cycleWeek +
-    ' · '      + ROUTE_CONTEXT.todayDay +
-    ' '        + ROUTE_CONTEXT.todayDate;
+  document.getElementById('header-consultant-name').textContent = LEGACY_CONSULTANT_SOURCE.name;
+  document.getElementById('header-territory').textContent = LEGACY_CONSULTANT_SOURCE.territory;
+  document.getElementById('header-ddd').textContent = LEGACY_CONSULTANT_SOURCE.ddd;
+  document.getElementById('header-date').textContent = 'Ciclo: S' + LEGACY_ROUTE_SOURCE.cycleWeek + ' - Dia Operacional: ' + LEGACY_ROUTE_SOURCE.todayDay;
 }
 
 // ── RENDER: PROGRESS BAR ─────────────────────────────────────────────
@@ -1437,8 +1732,8 @@ function renderSummary() {
   var done    = fs.filter(function(s) { return s.status === 'visitado'; }).length;
   var pending = fs.filter(function(s) { return s.status === 'pendente' || s.status === 'em-rota'; }).length;
   // Mock: distância e tempo estimado com base no total de paradas
-  var distKm  = (total * 4.2).toFixed(1);
-  var timeMin = total * 22;
+  var distKm  = '0.0';
+  var timeMin = 0;
   var timeH   = Math.floor(timeMin / 60);
   var timeM   = timeMin % 60;
 
@@ -1477,9 +1772,7 @@ function renderStops() {
   var titleEl   = document.getElementById('section-title');
   var countEl   = document.getElementById('section-count');
 
-  titleEl.textContent = activeWeek === 'hoje'
-    ? 'Paradas do dia'
-    : ('Paradas — Semana ' + activeWeek);
+  titleEl.textContent = 'Paradas - S' + activeWeek;
 
   countEl.textContent = fs.length + (fs.length === 1 ? ' parada' : ' paradas');
 
@@ -1495,15 +1788,15 @@ function renderStops() {
   container.innerHTML = (function() {
     var nextPendingId = (function() {
       var p = fs.find(function(s) {
-        return (s.status === 'pendente' || s.status === 'em-rota') && s.id !== activeVisitId;
+        return (s.status === 'pendente' || s.status === 'em-rota') && s.id !== legacyPlanPreviewId;
       });
       return p ? p.id : null;
     }());
 
     return fs.map(function(stop) {
       var isDone        = stop.status === 'visitado';
-      var isActiveVisit = (stop.id === activeVisitId);
-      var isNext        = (!activeVisitId && stop.id === nextPendingId);
+      var isActiveVisit = (stop.id === legacyPlanPreviewId);
+      var isNext        = (!legacyPlanPreviewId && stop.id === nextPendingId);
       var cardClass = 'stop-card' +
         (isDone        ? ' is-done'         : '') +
         (isActiveVisit ? ' is-active-visit'  : '') +
@@ -1516,7 +1809,7 @@ function renderStops() {
           '<button class="stop-btn" data-action="map" data-id="' + stop.id + '">Mapa ↗</button>';
       } else if (isNext) {
         cardBtns =
-          '<button class="btn-start-visit" data-action="start-visit" data-id="' + stop.id + '">▶ Iniciar Visita</button>' +
+          '<button class="btn-plan-preview" data-action="legacy-preview" data-id="' + stop.id + '">▶ Plano Recebido</button>' +
           '<button class="stop-btn" data-action="map" data-id="' + stop.id + '">Mapa ↗</button>';
       } else {
         cardBtns =
@@ -1564,7 +1857,7 @@ function openSheet(stopId) {
 
     // Status atual
     '<div class="detail-section">' +
-      '<div class="detail-label">Status da Visita</div>' +
+      '<div class="detail-label">Status do Plano</div>' +
       '<span class="badge ' + statusClass(stop.status) + '" style="font-size:12px;padding:5px 12px;">' +
         statusLabel(stop.status) +
       '</span>' +
@@ -1586,7 +1879,7 @@ function openSheet(stopId) {
         '</div>' +
         '<div class="detail-field">' +
           '<div class="detail-field-key">DDD / Região</div>' +
-          '<div class="detail-field-val">DDD ' + CONSULTANT.ddd + '</div>' +
+          '<div class="detail-field-val">DDD ' + LEGACY_CONSULTANT_SOURCE.ddd + '</div>' +
         '</div>' +
         '<div class="detail-field">' +
           '<div class="detail-field-key">Semana</div>' +
@@ -1630,19 +1923,19 @@ function openSheet(stopId) {
 
     // Ações
     '<div class="detail-section">' +
-      '<div class="detail-label">' + (stop.id === activeVisitId ? 'Visita em andamento' : 'Registrar Visita') + '</div>' +
-      (stop.id === activeVisitId
+      '<div class="detail-label">' + (stop.id === legacyPlanPreviewId ? 'Execucao futura' : 'Plano recebido') + '</div>' +
+      (stop.id === legacyPlanPreviewId
         ? '<div id="sheet-timer-display" style="font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--success);margin-bottom:12px;">● EM VISITA · 00:00</div>' +
-          '<button class="btn-finalize-visit" data-action="finalize-visit" data-id="' + stop.id + '">✓ FINALIZAR VISITA</button>' +
+          '<button class="btn-plan-future" data-action="legacy-future" data-id="' + stop.id + '">✓ EXECUCAO FUTURA</button>' +
           '<div class="action-grid">' +
-            '<button class="action-btn ab-blue"   data-action="status" data-status="reagendado"  data-id="' + stop.id + '">↻ Reagendar</button>' +
-            '<button class="action-btn ab-orange" data-action="status" data-status="sem-contato" data-id="' + stop.id + '">✕ Sem Contato</button>' +
+            '<button class="action-btn ab-blue"   data-action="legacy-status" data-legacy-status="reagendado"  data-id="' + stop.id + '">↻ Ajuste Futuro</button>' +
+            '<button class="action-btn ab-orange" data-action="legacy-status" data-legacy-status="sem-contato" data-id="' + stop.id + '">✕ Justificativa Futura</button>' +
             '<button class="action-btn ab-red"    data-action="address-issue"                    data-id="' + stop.id + '">⚠ Prob. Endereço</button>' +
           '</div>'
         : '<div class="action-grid">' +
-            '<button class="action-btn ab-green"  data-action="status" data-status="visitado"    data-id="' + stop.id + '">✓ Marcar Visitado</button>' +
-            '<button class="action-btn ab-blue"   data-action="status" data-status="reagendado"  data-id="' + stop.id + '">↻ Reagendar</button>' +
-            '<button class="action-btn ab-orange" data-action="status" data-status="sem-contato" data-id="' + stop.id + '">✕ Sem Contato</button>' +
+            '<button class="action-btn ab-green"  data-action="legacy-status" data-legacy-status="visitado"    data-id="' + stop.id + '">✓ Execucao Futura</button>' +
+            '<button class="action-btn ab-blue"   data-action="legacy-status" data-legacy-status="reagendado"  data-id="' + stop.id + '">↻ Ajuste Futuro</button>' +
+            '<button class="action-btn ab-orange" data-action="legacy-status" data-legacy-status="sem-contato" data-id="' + stop.id + '">✕ Justificativa Futura</button>' +
             '<button class="action-btn ab-red"    data-action="address-issue"                    data-id="' + stop.id + '">⚠ Prob. Endereço</button>' +
           '</div>'
       ) +
@@ -1674,7 +1967,7 @@ function updateStatus(stopId, newStatus) {
   //   body: JSON.stringify({
   //     status: newStatus,
   //     timestamp: new Date().toISOString(),
-  //     consultant_id: CONSULTANT.id,
+  //     consultant_id: LEGACY_CONSULTANT_SOURCE.id,
   //   }),
   // }).catch(function(err) {
   //   console.warn('[PALM] Falha ao sincronizar status — modo offline.', err);
@@ -1687,9 +1980,9 @@ function updateStatus(stopId, newStatus) {
   //   headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getAuthToken() },
   //   body: JSON.stringify({
   //     action:        newStatus,
-  //     consultant_id: CONSULTANT.id,
+  //     consultant_id: LEGACY_CONSULTANT_SOURCE.id,
   //     timestamp:     new Date().toISOString(),
-  //     ddd:           CONSULTANT.ddd,
+  //     ddd:           LEGACY_CONSULTANT_SOURCE.ddd,
   //   }),
   // });
 
@@ -1717,9 +2010,9 @@ function reportAddressIssue(stopId) {
   //   headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getAuthToken() },
   //   body: JSON.stringify({
   //     customer_id:   stopId,
-  //     consultant_id: CONSULTANT.id,
+  //     consultant_id: LEGACY_CONSULTANT_SOURCE.id,
   //     reported_at:   new Date().toISOString(),
-  //     ddd:           CONSULTANT.ddd,
+  //     ddd:           LEGACY_CONSULTANT_SOURCE.ddd,
   //   }),
   // });
   // Isso gerará um alerta no painel operacional (map.html via postBackendEvent).
@@ -1738,7 +2031,7 @@ function openMap(stopId) {
   // [INTEGRAÇÃO FUTURA] Opção 1: abrir no mapa nativo do dispositivo
   //   var url = 'geo:' + stop.lat + ',' + stop.lon + '?q=' + encodeURIComponent(stop.name);
   // [INTEGRAÇÃO FUTURA] Opção 2: integrar com map.html passando parâmetros:
-  //   var url = '../frontend/map.html?highlight_client=' + stop.id + '&ddd=' + CONSULTANT.ddd;
+  //   var url = '../frontend/map.html?highlight_client=' + stop.id + '&ddd=' + LEGACY_CONSULTANT_SOURCE.ddd;
   // Versão atual: Google Maps (funciona em qualquer navegador)
   var url = 'https://maps.google.com/?q=' + stop.lat + ',' + stop.lon;
   showToast('Abrindo localização de ' + stop.name + '…');
@@ -1746,6 +2039,161 @@ function openMap(stopId) {
 }
 
 // ── EVENT DELEGATION ──────────────────────────────────────────────────
+
+function planStatusPercent() {
+  if (!CURRENT_PALM_PLAN) return 0;
+  var map = { 'Plano Recebido': 0, 'Aguardando Execucao': 0, 'Em Execucao': 50, 'Finalizado': 100 };
+  return map[CURRENT_PALM_PLAN.status] || 0;
+}
+
+function renderKPI() {
+  if (!CURRENT_PALM_PLAN) return;
+  var coverEl = document.getElementById('kpi-coverage');
+  var remEl = document.getElementById('kpi-remaining');
+  if (coverEl) {
+    coverEl.textContent = CURRENT_PALM_PLAN.status;
+    coverEl.className = 'kpi-chip-val warn';
+  }
+  if (remEl) {
+    remEl.textContent = allPlanStops().length + ' clientes';
+    remEl.className = 'kpi-chip-val';
+  }
+}
+
+function renderHeader() {
+  if (!CURRENT_PALM_PLAN) return;
+  var plan = CURRENT_PALM_PLAN;
+  var activeDay = routeDaysForActiveWeek()[0] || plan.routeDays[0];
+  document.getElementById('header-consultant-name').textContent = 'Territorio: ' + plan.territory;
+  document.getElementById('header-territory').textContent = 'Ciclo: S' + plan.week;
+  document.getElementById('header-ddd').textContent = activeDay ? activeDay.dayKey : plan.operationalDays[0];
+  document.getElementById('header-date').textContent = 'Status: ' + plan.status;
+  document.getElementById('plan-grid').innerHTML =
+    '<div class="palm-plan-field"><div class="palm-plan-key">Supervisor</div><div class="palm-plan-val">' + escHtml(plan.supervisor) + '</div></div>' +
+    '<div class="palm-plan-field"><div class="palm-plan-key">Veiculo</div><div class="palm-plan-val">' + escHtml(plan.vehicle) + '</div></div>' +
+    '<div class="palm-plan-field"><div class="palm-plan-key">DDD</div><div class="palm-plan-val">' + escHtml(plan.ddd) + '</div></div>' +
+    '<div class="palm-plan-field"><div class="palm-plan-key">Plano</div><div class="palm-plan-val">' + escHtml(plan.planId) + '</div></div>';
+}
+
+function renderProgress() {
+  var pct = planStatusPercent();
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = CURRENT_PALM_PLAN ? CURRENT_PALM_PLAN.status : '0%';
+}
+
+function renderSummary() {
+  if (!CURRENT_PALM_PLAN) return;
+  var stopsCount = allPlanStops().length;
+  document.getElementById('summary-grid').innerHTML =
+    '<div class="summary-card planned"><div class="s-label">Planejadas</div><div class="s-value">' + stopsCount + '</div><div class="s-sub">clientes</div></div>' +
+    '<div class="summary-card done"><div class="s-label">Dias</div><div class="s-value">' + CURRENT_PALM_PLAN.routeDays.length + '</div><div class="s-sub">operacionais</div></div>' +
+    '<div class="summary-card pending"><div class="s-label">Semana</div><div class="s-value">' + CURRENT_PALM_PLAN.week + '</div><div class="s-sub">ciclo ' + CURRENT_PALM_PLAN.cycle + '</div></div>' +
+    '<div class="summary-wide"><div class="summary-wide-half"><div class="s-label">KM Previsto</div><div class="s-value" style="font-size:19px;">' + CURRENT_PALM_PLAN.plannedKm + ' km</div></div><div class="summary-wide-half"><div class="s-label">Tempo Previsto</div><div class="s-value" style="font-size:19px;">' + CURRENT_PALM_PLAN.plannedTime + '</div></div></div>';
+}
+
+function renderStops() {
+  if (!CURRENT_PALM_PLAN) return;
+  var days = routeDaysForActiveWeek();
+  var fs = filteredStops();
+  var container = document.getElementById('stops-list');
+  document.getElementById('section-title').textContent = 'Plano recebido - S' + activeWeek;
+  document.getElementById('section-count').textContent = fs.length + (fs.length === 1 ? ' parada' : ' paradas');
+  if (!fs.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">--</div><div class="empty-text">Nenhuma parada planejada para este periodo.</div></div>';
+    return;
+  }
+  container.innerHTML = days.map(function(day) {
+    var cards = day.stops.map(function(stop) {
+      return '<div class="stop-card" data-stop-id="' + stop.id + '"><div class="stop-row1"><div class="stop-seq">' + stop.sequence + '</div><div class="stop-info"><div class="stop-name">' + escHtml(stop.name) + '</div><div class="stop-location">' + escHtml(stop.neighborhood) + ' - ' + escHtml(stop.city) + '</div></div><div class="stop-time">' + escHtml(stop.plannedWindow) + '</div></div><div class="stop-row2"><span class="badge b-em-rota">Aguardando Execucao</span><span class="badge b-curve-' + stop.curve + '">Curva ' + stop.curve + '</span><span class="badge b-reagendado">' + escHtml(stop.segment) + '</span><span style="flex:1"></span><div class="stop-btns"><button class="stop-btn" data-action="detail" data-id="' + stop.id + '">Detalhes</button><button class="stop-btn" data-action="map" data-id="' + stop.id + '">Mapa</button></div></div></div>';
+    }).join('');
+    return '<div class="detail-label" style="margin:8px 2px 6px;">' + day.dayLabel + ' - ' + day.date + '</div>' + cards;
+  }).join('');
+}
+
+function renderAll() {
+  renderProgress();
+  renderKPI();
+  renderSummary();
+  renderStops();
+}
+
+function openSheet(stopId) {
+  var stop = findStopById(stopId);
+  if (!stop || !CURRENT_PALM_PLAN) return;
+  document.getElementById('sheet-title').textContent = stop.name;
+  document.getElementById('sheet-body').innerHTML =
+    '<div class="detail-section"><div class="detail-label">Status do Plano</div><span class="badge b-em-rota" style="font-size:12px;padding:5px 12px;">Aguardando Execucao</span></div>' +
+    '<div class="detail-section"><div class="detail-label">Dados Planejados</div><div class="detail-2col">' +
+      '<div class="detail-field"><div class="detail-field-key">Sequencia</div><div class="detail-field-val">#' + stop.sequence + '</div></div>' +
+      '<div class="detail-field"><div class="detail-field-key">Territorio</div><div class="detail-field-val">' + escHtml(CURRENT_PALM_PLAN.territory) + '</div></div>' +
+      '<div class="detail-field"><div class="detail-field-key">Dia</div><div class="detail-field-val">' + escHtml(stop.routeDayLabel) + ' - ' + escHtml(stop.routeDate) + '</div></div>' +
+      '<div class="detail-field"><div class="detail-field-key">Janela</div><div class="detail-field-val">' + escHtml(stop.plannedWindow) + '</div></div>' +
+      '<div class="detail-field"><div class="detail-field-key">Segmento</div><div class="detail-field-val">' + escHtml(stop.segment) + '</div></div>' +
+      '<div class="detail-field"><div class="detail-field-key">Curva</div><div class="detail-field-val">Curva ' + escHtml(stop.curve) + '</div></div>' +
+    '</div></div>' +
+    '<div class="detail-section"><div class="detail-label">Endereco &amp; Contato</div><div class="detail-field"><div class="detail-field-key">Endereco completo</div><div class="detail-field-val">' + escHtml(stop.address) + '</div></div><div class="detail-field"><div class="detail-field-key">Telefone</div><div class="detail-field-val">' + escHtml(stop.phone) + '</div></div></div>' +
+    '<div class="detail-section"><div class="detail-label">Observacao do Planejamento</div><div class="detail-obs">' + escHtml(stop.observation) + '</div></div>' +
+    '<div class="detail-section"><div class="detail-label">Execucao futura</div><div class="detail-obs">Check-in, check-out, justificativas, foto, checklist e sincronizacao com OPS serao ativados em fase posterior.</div></div>';
+  document.getElementById('modal-overlay').classList.add('is-open');
+  document.getElementById('bottom-sheet').classList.add('is-open');
+}
+
+function updateStatus() { showToast('Registro de execucao sera ativado em fase futura.'); }
+function reportAddressIssue() { showToast('Pendencia operacional sera enviada ao OPS em fase futura.'); }
+function startVisit() { showToast('Check-in sera ativado em fase futura.'); }
+function finalizeVisit() { showToast('Check-out sera ativado em fase futura.'); }
+
+function openMap(stopId) {
+  var stop = findStopById(stopId);
+  if (!stop) return;
+  var url = 'https://maps.google.com/?q=' + stop.lat + ',' + stop.lon;
+  showToast('Abrindo mapa do plano recebido: ' + stop.name);
+  setTimeout(function() { window.open(url, '_blank'); }, 350);
+}
+
+function renderTerritoryShortcuts() {
+  var holder = document.getElementById('territory-shortcuts');
+  if (!holder) return;
+  holder.innerHTML = Object.keys(CURRENT_PALM_PLAN_SOURCE).map(function(code) {
+    return '<button class="palm-territory-chip" type="button" data-territory="' + code + '">' + code + '</button>';
+  }).join('');
+}
+
+function hydratePalmAccessVisual() {
+  var input = document.getElementById('consultant-input');
+  if (!input) return;
+  try {
+    var raw = localStorage.getItem(PALM_ACCESS_VISUAL_STORAGE_KEY);
+    if (!raw) return;
+    var saved = JSON.parse(raw);
+    if (saved && typeof saved.consultantName === 'string') {
+      input.value = saved.consultantName;
+    }
+  } catch (_) {}
+}
+
+function savePalmAccessVisual() {
+  var input = document.getElementById('consultant-input');
+  if (!input) return;
+  try {
+    localStorage.setItem(PALM_ACCESS_VISUAL_STORAGE_KEY, JSON.stringify({
+      consultantName: input.value
+    }));
+  } catch (_) {}
+}
+
+function setCurrentPlan(plan) {
+  CURRENT_PALM_PLAN = clonePlan(plan);
+  activeWeek = String(plan.week);
+  document.body.classList.add('plan-loaded');
+  document.body.classList.remove('plan-loading');
+  document.querySelectorAll('.palm-tab').forEach(function(tab) {
+    tab.classList.toggle('is-active', tab.dataset.week === activeWeek);
+  });
+  setSyncState('synced');
+  renderHeader();
+  renderAll();
+}
 
 // Week tabs
 document.getElementById('week-tabs').addEventListener('click', function(e) {
@@ -1759,10 +2207,35 @@ document.getElementById('week-tabs').addEventListener('click', function(e) {
   renderAll();
 });
 
+document.getElementById('plan-load-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  savePalmAccessVisual();
+  var input = document.getElementById('territory-input');
+  var error = document.getElementById('plan-load-error');
+  var plan = loadPalmPlanByTerritory(input.value);
+  if (!plan) {
+    error.classList.add('is-visible');
+    return;
+  }
+  error.classList.remove('is-visible');
+  document.body.classList.add('plan-loading');
+  setSyncState('syncing');
+  setTimeout(function() { setCurrentPlan(plan); }, 360);
+});
+
+document.getElementById('territory-shortcuts').addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-territory]');
+  if (!btn) return;
+  document.getElementById('territory-input').value = btn.dataset.territory;
+  document.getElementById('plan-load-form').dispatchEvent(new Event('submit', { cancelable: true }));
+});
+
+document.getElementById('consultant-input').addEventListener('input', savePalmAccessVisual);
+
 // Stops list — clicks on card, detail btn, map btn
 document.getElementById('stops-list').addEventListener('click', function(e) {
   // Start visit button
-  var startBtn = e.target.closest('[data-action="start-visit"]');
+  var startBtn = e.target.closest('[data-action="legacy-preview"]');
   if (startBtn) { e.stopPropagation(); startVisit(Number(startBtn.dataset.id)); return; }
   // Map button
   var mapBtn = e.target.closest('[data-action="map"]');
@@ -1795,7 +2268,7 @@ document.getElementById('sheet-body').addEventListener('click', function(e) {
     btn.textContent = origText;
     if (action === 'status')          { updateStatus(id, status); return; }
     if (action === 'address-issue')   { reportAddressIssue(id); return; }
-    if (action === 'finalize-visit')  { finalizeVisit(id); return; }
+    if (action === 'legacy-future')  { finalizeVisit(id); return; }
   }, 1500);
 });
 
@@ -1805,6 +2278,8 @@ document.getElementById('sheet-close').addEventListener('click',   closeSheet);
 
 // ── BOOT ──────────────────────────────────────────────────────────────
 (function init() {
+  hydratePalmAccessVisual();
+  renderTerritoryShortcuts();
   renderHeader();
   renderAll();
 
@@ -1842,13 +2317,13 @@ document.getElementById('sheet-close').addEventListener('click',   closeSheet);
   //   fetch(PALM_API.BACKEND_BASE + '/palm/consultant/me', {
   //     headers: { Authorization: 'Bearer ' + getAuthToken() }
   //   }).then(function(r) { return r.ok ? r.json() : null; }),
-  //   fetch(PALM_API.BACKEND_BASE + '/palm/route?ddd=' + CONSULTANT.ddd + '&date=' + getTodayISO(), {
+  //   fetch(PALM_API.BACKEND_BASE + '/palm/route?ddd=' + LEGACY_CONSULTANT_SOURCE.ddd + '&date=' + getTodayISO(), {
   //     headers: { Authorization: 'Bearer ' + getAuthToken() }
   //   }).then(function(r) { return r.ok ? r.json() : null; }),
   // ]).then(function(results) {
   //   var consultantData = results[0];
   //   var routeData      = results[1];
-  //   if (consultantData) Object.assign(CONSULTANT, consultantData);
+  //   if (consultantData) Object.assign(LEGACY_CONSULTANT_SOURCE, consultantData);
   //   if (routeData && Array.isArray(routeData.stops)) {
   //     stops = routeData.stops.map(function(s) { return Object.assign({}, s); });
   //   }
@@ -1863,3 +2338,10 @@ document.getElementById('sheet-close').addEventListener('click',   closeSheet);
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
