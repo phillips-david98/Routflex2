@@ -8383,14 +8383,32 @@ map.getContainer().addEventListener('dragstart', function(e) { e.preventDefault(
 const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const CARTO_TILE_URL = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 let tileFallbackApplied = false;
+// Só cair para o provedor secundário em FALHA REAL do OSM (nenhum tile carregou),
+// não por erros transitórios de tiles isolados durante zoom/pan/refiltro.
+let osmTileLoaded = false;
+let osmTileErrorCount = 0;
+const OSM_TILE_ERROR_THRESHOLD = 8;
 
 let baseTileLayer = L.tileLayer(OSM_TILE_URL, {
   maxZoom: 19,
   attribution: '&copy; OpenStreetMap'
 });
 
+baseTileLayer.on('tileload', () => {
+  osmTileLoaded = true;
+});
+
 baseTileLayer.on('tileerror', () => {
   if (tileFallbackApplied) {
+    return;
+  }
+  // OSM já provou estar funcionando: erros pontuais são transitórios, não trocar.
+  if (osmTileLoaded) {
+    return;
+  }
+  // Exige várias falhas no carregamento inicial antes de assumir provider indisponível.
+  osmTileErrorCount += 1;
+  if (osmTileErrorCount < OSM_TILE_ERROR_THRESHOLD) {
     return;
   }
 
