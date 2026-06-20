@@ -221,6 +221,13 @@ class BatchRoutingCustomer(BaseModel):
     status: ClientStatus = ClientStatus.ATIVO
     eligible_for_routing: bool = False
     service_time_min: int = Field(default=10, ge=0, le=300)
+    # Campos operacionais preservados ponta a ponta (contrato de dados).
+    curva: Optional[str] = None
+    frequencia: Optional[str] = None
+    semanas: Optional[Any] = None
+    dia: Optional[str] = None
+    territory_code: Optional[str] = None
+    segmentacao: Optional[str] = None
 
 
 class BatchRoutingDepot(BaseModel):
@@ -243,6 +250,16 @@ class BatchRoutingRequest(BaseModel):
     options: BatchRoutingOptions = Field(default_factory=BatchRoutingOptions)
 
 
+class BatchRoutingGroupCustomer(BaseModel):
+    id: str
+    curva: Optional[str] = None
+    frequencia: Optional[str] = None
+    semanas: Optional[Any] = None
+    dia: Optional[str] = None
+    territory_code: Optional[str] = None
+    segmentacao: Optional[str] = None
+
+
 class BatchRoutingGroupResult(BaseModel):
     group_id: str
     region: str
@@ -253,6 +270,17 @@ class BatchRoutingGroupResult(BaseModel):
     total_time_min: float
     total_cost: float
     depot_source: str
+    customers: List[BatchRoutingGroupCustomer] = Field(default_factory=list)
+
+
+class BatchRoutingGroupCustomer(BaseModel):
+    id: str
+    curva: Optional[str] = None
+    frequencia: Optional[str] = None
+    semanas: Optional[Any] = None
+    dia: Optional[str] = None
+    territory_code: Optional[str] = None
+    segmentacao: Optional[str] = None
 
 
 class BatchRoutingSummary(BaseModel):

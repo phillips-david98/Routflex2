@@ -62,6 +62,14 @@ function buildBatchPayload(customers) {
       status: toBatchRoutingStatus(customer.status),
       eligible_for_routing: true,
       service_time_min: 10,
+      // Campos operacionais preservados ponta a ponta (contrato de dados).
+      // Quando ausentes na origem permanecem null e não alteram comportamento.
+      curva: customer.curva ?? null,
+      frequencia: customer.frequencia ?? null,
+      semanas: customer.semanas ?? null,
+      dia: customer.dia ?? customer.visit_day ?? null,
+      territory_code: customer.territory_code ?? null,
+      segmentacao: customer.segmentacao ?? customer.segmento ?? null,
     })),
     depots: [],
     options: {
@@ -269,6 +277,13 @@ router.post('/clientes', async (req, res, next) => {
             client_id: customer.client_id,
             name: customer.name,
             status: 'ACCEPTED',
+            // Eco dos campos operacionais preservados (contrato de dados).
+            curva: customer.curva ?? null,
+            frequencia: customer.frequencia ?? null,
+            semanas: customer.semanas ?? null,
+            dia: customer.dia ?? customer.visit_day ?? null,
+            territory_code: customer.territory_code ?? null,
+            segmentacao: customer.segmentacao ?? customer.segmento ?? null,
           })),
           routed_at: new Date().toISOString(),
           source: `live-python (mode=${ROUTING_INTEGRATION_MODE}) → ${integration.endpoint}`,

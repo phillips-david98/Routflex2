@@ -54,12 +54,21 @@ async function loadCustomersFromSimulation() {
 
 // ════════════════════════════════════════════════════════════════
 // TERRITORY → DRIVER RESOLUTION
-// Converts territory_code (e.g. "MT-65-03") to the correct driverId.
-// Round-robin is used ONLY as a final fallback with a console.warn.
+// territory_code é a fonte oficial para motorista / agrupamento / polígonos.
+// A resolução é 100% DETERMINÍSTICA e baseada em chaves territoriais da origem:
+//   1. territory_code / territoryCode  → chave oficial (CRM)
+//   2. driver_base                     → chave territorial determinística da
+//                                        SIMULAÇÃO (ex.: "MOT-CBA-03"), que é o
+//                                        equivalente do territory_code no
+//                                        simulation_store (que não emite código).
+//   3. seller_name                     → casamento determinístico por nome.
+// NÃO há round-robin, fallback por índice nem atribuição aleatória.
+// Quando NENHUMA chave territorial resolve um motorista do DDD, o cliente fica
+// SEM motorista (null) e um aviso é registrado — território nunca é inventado.
 // ════════════════════════════════════════════════════════════════
 
 // Audit counters — reset per load batch, logged after the batch finishes.
-const _territoryAudit = { matched: 0, fallback: 0 };
+const _territoryAudit = { matchedByCode: 0, matchedBySimKey: 0, unresolved: 0 };
 
 // Normalizes any territory/driver code to a comparable canonical string.
 // Examples: "MT-65-03" → "MT-65-03", "MT 65 - 3" → "MT-65-03", "03" → "03"
@@ -82,20 +91,12 @@ function _extractSlotFromCode(code) {
   return String(parseInt(m[1], 10)).padStart(2, '0');
 }
 
-// Tries to resolve the correct driver from source territory fields.
-// Priority:
-//   1. source.territory_code
-//   2. source.territoryCode
-//   3. source.driver_base (if it encodes a driver code like MOT-CBA-03)
-//   4. source.seller_name (if it matches a driver name)
-//   5. Round-robin fallback (with warning)
-function resolveDriverFromTerritory(source, dddDrivers, fallbackIndex) {
+// Resolve o motorista a partir das chaves territoriais DETERMINÍSTICAS da
+// origem. territory_code é a chave oficial; driver_base/seller_name são as
+// chaves determinísticas equivalentes para a SIMULAÇÃO (que não emite código).
+// Nunca usa índice/round-robin. Sem chave válida → null + aviso (não inventa).
+function resolveDriverFromTerritory(source, dddDrivers) {
   if (!dddDrivers || dddDrivers.length === 0) return null;
-
-  const candidateCodes = [
-    source.territory_code,
-    source.territoryCode,
-  ].filter(Boolean);
 
   // Build a lookup: normalized slot ("03") → driver, and normalized full code → driver.
   // Driver name format: "MT 65 - 03" → slot "03"; driver id: "DRV-65-003" → slot "003" → int 3 → "03".
@@ -112,90 +113,93 @@ function resolveDriverFromTerritory(source, dddDrivers, fallbackIndex) {
     byNormFull.set(normName, driver);
   });
 
-  for (const raw of candidateCodes) {
+  // ── 1. Chave oficial: territory_code / territoryCode ──
+  const officialCodes = [source.territory_code, source.territoryCode].filter(Boolean);
+  for (const raw of officialCodes) {
     const norm = normalizeTerritoryKey(raw);
     if (!norm) continue;
 
     // 1a. Exact normalized full match (e.g. "MT-65-03" matches driver name "MT 65 - 03" normalized)
     if (byNormFull.has(norm)) {
-      _territoryAudit.matched++;
+      _territoryAudit.matchedByCode++;
       return byNormFull.get(norm);
     }
 
     // 1b. Slot-only match: extract trailing number and look up
     const slot = _extractSlotFromCode(norm);
     if (slot && bySlot.has(slot)) {
-      _territoryAudit.matched++;
+      _territoryAudit.matchedByCode++;
       return bySlot.get(slot);
     }
 
     // 1c. Partial suffix match: check if any driver's normalized code ends with norm
     for (const [key, driver] of byNormFull) {
       if (key.endsWith(norm) || norm.endsWith(key)) {
-        _territoryAudit.matched++;
+        _territoryAudit.matchedByCode++;
         return driver;
       }
     }
   }
 
-  // Try driver_base: "MOT-CBA-03" → slot "03"
+  // ── 2. Chave determinística da SIMULAÇÃO: driver_base ("MOT-CBA-03") ──
   if (source.driver_base) {
     const slot = _extractSlotFromCode(source.driver_base);
     if (slot && bySlot.has(slot)) {
-      _territoryAudit.matched++;
+      _territoryAudit.matchedBySimKey++;
       return bySlot.get(slot);
     }
   }
 
-  // Try seller_name exact match against driver name
+  // ── 3. Chave determinística por nome: seller_name == driver.name ──
   if (source.seller_name) {
     const normSeller = normalizeTerritoryKey(source.seller_name);
     for (const [key, driver] of byNormFull) {
       if (key === normSeller) {
-        _territoryAudit.matched++;
+        _territoryAudit.matchedBySimKey++;
         return driver;
       }
     }
   }
 
-  // ── Fallback: round-robin (original behavior) ──
-  const fallback = dddDrivers[fallbackIndex % Math.max(dddDrivers.length, 1)] || dddDrivers[0];
-  _territoryAudit.fallback++;
-  const clientGroupId = source.client_id || source.id || `#${fallbackIndex}`;
-  console.warn('[DATA MAP] territory_code sem match; usando fallback round-robin', {
+  // ── Sem nenhuma chave territorial válida: não inventa. ──
+  _territoryAudit.unresolved++;
+  const clientGroupId = source.client_id || source.id || '(sem id)';
+  console.warn('[DATA MAP] cliente sem chave territorial válida (territory_code/driver_base/seller_name) — sem motorista (território não inventado)', {
     clientGroupId,
     territory_code: source.territory_code || source.territoryCode || null,
     driver_base: source.driver_base || null,
     seller_name: source.seller_name || null,
-    fallbackDriver: fallback ? fallback.name : null
   });
-  return fallback;
+  return null;
 }
 
 // Logs a summary of territory resolution quality after a batch load.
 function _logTerritoryAuditSummary(batchLabel) {
-  const total = _territoryAudit.matched + _territoryAudit.fallback;
-  const matchPct = total > 0 ? Math.round((_territoryAudit.matched / total) * 100) : 0;
+  const total = _territoryAudit.matchedByCode + _territoryAudit.matchedBySimKey + _territoryAudit.unresolved;
+  const matched = _territoryAudit.matchedByCode + _territoryAudit.matchedBySimKey;
+  const matchPct = total > 0 ? Math.round((matched / total) * 100) : 0;
   if (total > 0) {
     console.info(`[DATA MAP] territory mapping (${batchLabel})`, {
-      matchedByTerritory: _territoryAudit.matched,
-      matchedByFallback: _territoryAudit.fallback,
+      matchedByTerritoryCode: _territoryAudit.matchedByCode,
+      matchedBySimKey: _territoryAudit.matchedBySimKey,
+      unresolvedNoDriver: _territoryAudit.unresolved,
       total,
       matchPct: matchPct + '%',
     });
-    if (_territoryAudit.fallback > 0) {
-      console.warn(`[DATA MAP] ${_territoryAudit.fallback} cliente(s) sem territory_code — polígonos podem ficar distorcidos`);
+    if (_territoryAudit.unresolved > 0) {
+      console.warn(`[DATA MAP] ${_territoryAudit.unresolved} cliente(s) sem chave territorial válida — sem motorista (território não inventado)`);
     }
   }
-  _territoryAudit.matched = 0;
-  _territoryAudit.fallback = 0;
+  _territoryAudit.matchedByCode = 0;
+  _territoryAudit.matchedBySimKey = 0;
+  _territoryAudit.unresolved = 0;
 }
 
 // ── Mapeamento: formato simulation_store.py → formato interno do mapa ──────
 function mapSimulationCustomerToClient(source, index) {
   const ddd = Number(source.ddd || state.selectedDDD || 65);
   const dddDrivers = getDriversByDDD(ddd);
-  const assignedDriver = resolveDriverFromTerritory(source, dddDrivers, index);
+  const assignedDriver = resolveDriverFromTerritory(source, dddDrivers);
   const rawStatus = String(source.status || 'ATIVO').toUpperCase();
   const clientType = rawStatus === 'SEM_COORDENADA'
     ? 'sem_coordenada'
@@ -418,7 +422,7 @@ function applyFallbacks(validCustomers, invalidCustomers) {
 function mapRealCustomerToClient(source, index) {
   const ddd = Number(source.ddd || state.selectedDDD || 65);
   const dddDrivers = getDriversByDDD(ddd);
-  const assignedDriver = resolveDriverFromTerritory(source, dddDrivers, index);
+  const assignedDriver = resolveDriverFromTerritory(source, dddDrivers);
   const rawStatus = String(source.status || 'ATIVO').toUpperCase();
   const clientType = rawStatus === 'SEM_COORDENADA'
     ? 'sem_coordenada'
@@ -443,11 +447,11 @@ function mapRealCustomerToClient(source, index) {
     territory: territories[index % territories.length],
     city: source.city || (driverBases[ddd] || {}).city || `DDD ${ddd}`,
     neighborhood: source.neighborhood || (driverBases[ddd] || {}).neighborhood || 'Centro',
-    week: 1,
-    day: days[index % days.length],
+    week: Number(source.semana ?? source.week ?? 1) || 1,
+    day: source.dia ?? source.visit_day ?? days[index % days.length],
     vehicle: assignedDriver ? assignedDriver.vehicle : 'carro',
     priority: priorities[index % priorities.length],
-    curva: 'C',
+    curva: source.curva ?? 'C',
     serviceTime: 20,
     distance: Number((3 + seededRandom(index + 70) * 24).toFixed(1)),
     lat,
@@ -462,6 +466,14 @@ function mapRealCustomerToClient(source, index) {
     clientType,
     eligibleForRouting: rawStatus === 'ATIVO' && Boolean(source.eligible_for_routing !== false),
     accessMode: null,
+    // Campos operacionais preservados ponta a ponta (contrato de dados).
+    // Mantidos como passthrough; quando ausentes na origem ficam null e não
+    // alteram render/cálculo. O território sintético (`territory`) é preservado
+    // como antes; `territory_code` é a chave operacional real da origem.
+    territory_code: source.territory_code ?? null,
+    frequencia: source.frequencia ?? null,
+    semanas: source.semanas ?? null,
+    segmentacao: source.segmentacao ?? source.segmento ?? null,
     // Metadados de integração — origem CRM (mockStore/PostgreSQL)
     _source: 'CRM',
   };

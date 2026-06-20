@@ -782,6 +782,19 @@ def plan_batch_routes(customers: List[Dict], depots: List[Dict], options: Dict) 
                 "total_time_min": route_time_min,
                 "total_cost": route_cost,
                 "depot_source": depot_source,
+                # Eco dos campos operacionais preservados (contrato de dados).
+                "customers": [
+                    {
+                        "id": str(item["id"]),
+                        "curva": item.get("curva"),
+                        "frequencia": item.get("frequencia"),
+                        "semanas": item.get("semanas"),
+                        "dia": item.get("dia"),
+                        "territory_code": item.get("territory_code"),
+                        "segmentacao": item.get("segmentacao"),
+                    }
+                    for item in group_customers
+                ],
             }
         )
 

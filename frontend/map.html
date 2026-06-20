@@ -10748,10 +10748,15 @@ function normalizeCurveScheduleForClient(client, options = {}) {
     : (Number.isFinite(client.week) ? Number(client.week) : Number(anchor.week));
   const desiredWeek = Math.max(1, Math.min(4, Number.isFinite(desiredWeekRaw) ? desiredWeekRaw : 1));
 
+  // Distribuição de semanas comandada pela FREQUÊNCIA (eixo independente).
+  // Curva deixou de determinar a semana: para dados legados sem `frequencia`,
+  // resolveVisitFrequency() devolve o default histórico por curva, mantendo o
+  // mesmo resultado. Com frequência real, ela passa a comandar a distribuição.
+  const frequencia = resolveVisitFrequency(anchor);
   let requiredWeeks = [desiredWeek];
-  if (curva === 'B') {
+  if (frequencia === 'Semanal') {
     requiredWeeks = [1, 2, 3, 4];
-  } else if (curva === 'A') {
+  } else if (frequencia === 'Quinzenal') {
     requiredWeeks = desiredWeek % 2 === 0 ? [2, 4] : [1, 3];
   }
 
@@ -10779,6 +10784,13 @@ function normalizeCurveScheduleForClient(client, options = {}) {
     if (occurrence.curva !== curva) {
       occurrence.curva = curva;
       _changedKeys.push('curva');
+      changed += 1;
+    }
+    // Frequência é eixo próprio: quando o grupo possui frequência explícita,
+    // mantém-na consistente entre as ocorrências (sem derivar da curva).
+    if (anchor.frequencia != null && occurrence.frequencia !== anchor.frequencia) {
+      occurrence.frequencia = anchor.frequencia;
+      _changedKeys.push('frequencia');
       changed += 1;
     }
     if (occurrence.day !== desiredDay) {
@@ -13427,9 +13439,10 @@ function generateSimPhone(ddd, seed) {
 }
 
 function visitPattern(curva) {
-  if (curva === 'A') return 'Quinzenal';
-  if (curva === 'B') return 'Semanal';
-  return 'Mensal';
+  // Compat: rótulo de frequência derivado do DEFAULT por curva (dados legados).
+  // A frequência real, quando existe, é resolvida via resolveVisitFrequency()
+  // diretamente no ponto de exibição, sem acoplar curva → frequência.
+  return getDefaultFrequencyForCurve(curva);
 }
 
 function getClientCrmCode(client, seed) {
@@ -13590,7 +13603,7 @@ function openClientPopup(client, latlng, options = {}) {
 
   const seed = parseInt(String(client.id).replace(/\D/g, '')) || 1;
   const curvaClass = `curva-${client.curva.toLowerCase()}`;
-  const pattern = visitPattern(client.curva);
+  const pattern = resolveVisitFrequency(client);
   const phone = generateSimPhone(client.ddd, seed);
   const crmCode = getClientCrmCode(client, seed);
   const driverTerritory = getDriverTerritoryLabel(client.driverId);
