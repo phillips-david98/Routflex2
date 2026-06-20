@@ -433,6 +433,396 @@ body.login-active .app-shell {
   text-transform: uppercase;
 }
 
+/* ================================================================
+   LOGIN SCREEN — isolated from the protected Planning interface
+   ================================================================ */
+.login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 94px 24px 42px;
+  overflow: hidden;
+  color: #edf4ff;
+  background:
+    radial-gradient(circle at 18% 14%, rgba(41, 151, 215, 0.13), transparent 34%),
+    radial-gradient(circle at 82% 88%, rgba(26, 106, 162, 0.1), transparent 32%),
+    linear-gradient(145deg, #06101d 0%, #081725 52%, #07131f 100%);
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.login-screen[hidden] { display: none; }
+
+.login-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(119, 174, 216, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(119, 174, 216, 0.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.76), transparent 94%);
+  pointer-events: none;
+}
+
+.login-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: min(760px, 82vw);
+  height: min(760px, 82vw);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(72, 182, 236, 0.075), transparent 66%);
+  filter: blur(10px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.login-background {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+  mask-image: radial-gradient(ellipse at center, #000 12%, rgba(0,0,0,0.88) 62%, transparent 100%);
+}
+
+.login-network {
+  position: absolute;
+  inset: -4%;
+  width: 108%;
+  height: 108%;
+  overflow: visible;
+}
+
+.login-layer {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.login-layer-far {
+  opacity: 0.3;
+  animation: login-network-drift-far 42s ease-in-out infinite alternate;
+}
+
+.login-layer-middle {
+  opacity: 0.52;
+  animation: login-network-drift-middle 34s ease-in-out infinite alternate;
+}
+
+.login-layer-front {
+  opacity: 0.66;
+  animation: login-network-drift-front 28s ease-in-out infinite alternate;
+}
+
+.login-territory {
+  fill: rgba(34, 105, 156, 0.018);
+  stroke: rgba(83, 157, 207, 0.14);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.login-territory-active {
+  fill: rgba(82, 208, 255, 0.022);
+  stroke: rgba(82, 208, 255, 0.17);
+}
+
+.login-territory-soft {
+  fill: rgba(98, 201, 155, 0.012);
+  stroke: rgba(98, 201, 155, 0.09);
+}
+
+.login-route {
+  fill: none;
+  stroke: rgba(82, 208, 255, 0.3);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.login-layer-far .login-route {
+  stroke: rgba(79, 145, 194, 0.18);
+  stroke-width: 0.75;
+}
+
+.login-layer-middle .login-route {
+  stroke: rgba(82, 208, 255, 0.27);
+}
+
+.login-layer-front .login-route {
+  stroke: rgba(93, 216, 233, 0.34);
+  stroke-width: 1.2;
+}
+
+.login-route-secondary {
+  stroke: rgba(82, 208, 255, 0.16);
+  stroke-dasharray: 2 9;
+}
+
+.login-node {
+  fill: #52d0ff;
+  opacity: 0.58;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: login-node-breathe 6.8s ease-in-out infinite;
+}
+
+.login-node-hub {
+  fill: rgba(7, 24, 39, 0.96);
+  stroke: #52d0ff;
+  stroke-width: 1.2;
+  opacity: 0.76;
+  vector-effect: non-scaling-stroke;
+}
+
+.login-node-soft {
+  fill: #62c99b;
+  opacity: 0.34;
+  animation-delay: -2.2s;
+}
+
+.login-node-violet {
+  fill: #8e86d9;
+  opacity: 0.28;
+  animation-delay: -3.6s;
+}
+
+.login-signal {
+  fill: #bdefff;
+  opacity: 0.82;
+  filter: drop-shadow(0 0 3px rgba(82, 208, 255, 0.64));
+}
+
+.login-signal-soft {
+  fill: #7ddbb1;
+  opacity: 0.62;
+}
+
+.login-signal-violet {
+  fill: #a8a1ec;
+  opacity: 0.48;
+}
+
+@keyframes login-network-drift-far {
+  from { transform: translate3d(-0.4%, -0.2%, 0) scale(1); }
+  to { transform: translate3d(0.35%, 0.3%, 0) scale(1.008); }
+}
+
+@keyframes login-network-drift-middle {
+  from { transform: translate3d(0.3%, -0.25%, 0) scale(1.004); }
+  to { transform: translate3d(-0.35%, 0.32%, 0) scale(1.012); }
+}
+
+@keyframes login-network-drift-front {
+  from { transform: translate3d(-0.22%, 0.26%, 0) scale(1.006); }
+  to { transform: translate3d(0.28%, -0.22%, 0) scale(1.014); }
+}
+
+@keyframes login-node-breathe {
+  0%, 100% { opacity: 0.34; transform: scale(0.9); }
+  50% { opacity: 0.68; transform: scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-layer,
+  .login-node {
+    animation: none;
+  }
+
+  .login-signal { display: none; }
+}
+
+.login-brand {
+  position: absolute;
+  top: 30px;
+  left: 34px;
+  z-index: 3;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.34rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  color: #fff;
+}
+
+.login-brand-flex { color: #52d0ff; }
+
+.login-content {
+  position: relative;
+  z-index: 3;
+  width: min(500px, calc(100vw - 48px));
+  min-width: 0;
+}
+
+.login-heading {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.login-eyebrow {
+  display: block;
+  margin-bottom: 12px;
+  color: rgba(139, 194, 229, 0.74);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.login-title {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.7rem, 7vw, 4.2rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  color: #fff;
+  text-shadow: 0 10px 40px rgba(0, 0, 0, 0.42);
+}
+
+.login-subtitle {
+  margin: 13px 0 0;
+  color: rgba(201, 218, 233, 0.72);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.login-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  width: 100%;
+  padding: 30px;
+  border: 1px solid rgba(135, 180, 214, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(13, 31, 51, 0.94), rgba(7, 20, 34, 0.92));
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(22px);
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-label {
+  color: rgba(218, 231, 242, 0.8);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.login-input,
+.login-select {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid rgba(135, 180, 214, 0.2);
+  border-radius: 10px;
+  outline: none;
+  background: rgba(2, 11, 20, 0.5);
+  color: #edf4ff;
+  font: 500 0.94rem 'IBM Plex Sans', sans-serif;
+  padding: 0 15px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.login-input::placeholder { color: rgba(143, 167, 196, 0.45); }
+
+.login-input:focus,
+.login-select:focus {
+  border-color: rgba(82, 208, 255, 0.58);
+  background: rgba(3, 14, 25, 0.72);
+  box-shadow: 0 0 0 3px rgba(82, 208, 255, 0.09);
+}
+
+.login-select {
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.login-select option {
+  background: #071522;
+  color: #edf4ff;
+}
+
+.login-button {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 4px;
+  padding: 0 24px;
+  border: 1px solid rgba(82, 208, 255, 0.72);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #47c5f4, #249fd2);
+  color: #03111c;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.94rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(37, 161, 212, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.login-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 16px 36px rgba(37, 161, 212, 0.3);
+}
+
+.login-button:focus-visible {
+  outline: 2px solid rgba(177, 229, 252, 0.92);
+  outline-offset: 3px;
+}
+
+.login-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 18px;
+  color: rgba(151, 177, 198, 0.56);
+  font-size: 0.71rem;
+  letter-spacing: 0.025em;
+}
+
+.login-meta-item + .login-meta-item::before {
+  content: '•';
+  margin-right: 9px;
+  color: rgba(82, 208, 255, 0.44);
+}
+
+@media (max-width: 680px) {
+  .login-screen {
+    align-items: flex-start;
+    padding: 112px 18px 30px;
+    overflow-y: auto;
+  }
+
+  .login-brand {
+    top: 25px;
+    left: 22px;
+  }
+
+  .login-content { width: calc(100vw - 36px); }
+  .login-heading { margin-bottom: 20px; }
+  .login-card { padding: 23px 20px; }
+
+  .login-meta {
+    flex-wrap: wrap;
+    padding: 0 12px;
+    text-align: center;
+  }
+}
+
 .app-header {
   display: flex;
   align-items: center;
@@ -5495,89 +5885,123 @@ body.login-active .routex-ai-panel { display:none !important; }
   <button id="rfx-origin-warning-dismiss" type="button" aria-label="Fechar aviso de origem">Fechar ✕</button>
 </div>
 
-<div class="entry-screen" id="entry-screen" aria-labelledby="entry-title">
+<div class="login-screen" id="entry-screen" aria-labelledby="entry-title">
+  <div class="login-grid" aria-hidden="true"></div>
+  <div class="login-glow" aria-hidden="true"></div>
+  <div class="login-background" aria-hidden="true">
+    <svg class="login-network" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+      <g class="login-layer login-layer-far">
+        <polygon class="login-territory" points="-90,110 120,0 330,110 330,348 120,462 -90,348"/>
+        <polygon class="login-territory login-territory-active" points="330,110 540,0 750,110 750,348 540,462 330,348"/>
+        <polygon class="login-territory" points="750,110 960,0 1170,110 1170,348 960,462 750,348"/>
+        <polygon class="login-territory login-territory-soft" points="1170,110 1380,0 1590,110 1590,348 1380,462 1170,348"/>
+        <polygon class="login-territory login-territory-soft" points="120,462 330,348 540,462 540,700 330,814 120,700"/>
+        <polygon class="login-territory" points="540,462 750,348 960,462 960,700 750,814 540,700"/>
+        <polygon class="login-territory login-territory-active" points="960,462 1170,348 1380,462 1380,700 1170,814 960,700"/>
+        <polygon class="login-territory" points="330,814 540,700 750,814 750,1052 540,1166 330,1052"/>
+        <polygon class="login-territory" points="750,814 960,700 1170,814 1170,1052 960,1166 750,1052"/>
+      </g>
 
-  <!-- Radar rings -->
-  <div class="entry-rings">
-    <div class="entry-ring"></div>
-    <div class="entry-ring"></div>
-    <div class="entry-ring"></div>
-    <div class="entry-ring"></div>
+      <g class="login-layer login-layer-middle">
+        <path class="login-route" d="M-40 264 L178 264 L178 350 L352 350 L352 278 L520 278"/>
+        <path class="login-route login-route-secondary" d="M178 350 L178 486 L326 486"/>
+        <path class="login-route" d="M920 246 L1092 246 L1092 338 L1268 338 L1268 270 L1488 270"/>
+        <path class="login-route login-route-secondary" d="M1092 338 L1092 470 L1242 470"/>
+        <path class="login-route" d="M-44 680 L146 680 L146 606 L318 606 L318 714 L498 714"/>
+        <path class="login-route" d="M936 696 L1108 696 L1108 596 L1276 596 L1276 684 L1492 684"/>
+
+        <circle class="login-node login-node-hub" cx="178" cy="264" r="5"/>
+        <circle class="login-node" cx="178" cy="350" r="3.4"/>
+        <circle class="login-node" cx="352" cy="350" r="3.1"/>
+        <circle class="login-node login-node-soft" cx="326" cy="486" r="3.8"/>
+        <circle class="login-node login-node-hub" cx="1092" cy="246" r="5"/>
+        <circle class="login-node" cx="1092" cy="338" r="3.4"/>
+        <circle class="login-node login-node-violet" cx="1268" cy="338" r="3.7"/>
+        <circle class="login-node login-node-soft" cx="1242" cy="470" r="3.6"/>
+        <circle class="login-node" cx="146" cy="680" r="3.1"/>
+        <circle class="login-node" cx="318" cy="606" r="3.5"/>
+        <circle class="login-node login-node-soft" cx="1108" cy="596" r="3.8"/>
+        <circle class="login-node" cx="1276" cy="684" r="3.2"/>
+
+        <circle class="login-signal" r="2.5">
+          <animateMotion dur="18s" repeatCount="indefinite" keyTimes="0;0.22;0.3;0.5;0.58;0.78;0.86;1" keyPoints="0;0.22;0.22;0.5;0.5;0.78;0.78;1" calcMode="linear" path="M-40 264 L178 264 L178 350 L352 350 L352 278 L520 278"/>
+        </circle>
+        <circle class="login-signal login-signal-soft" r="2.3">
+          <animateMotion dur="22s" begin="-10s" repeatCount="indefinite" keyTimes="0;0.24;0.32;0.52;0.6;0.8;0.88;1" keyPoints="0;0.24;0.24;0.52;0.52;0.8;0.8;1" calcMode="linear" path="M1488 270 L1268 270 L1268 338 L1092 338 L1092 246 L920 246"/>
+        </circle>
+      </g>
+
+      <g class="login-layer login-layer-front">
+        <path class="login-route" d="M40 526 L224 526 L224 442 L394 442 L394 558 L548 558"/>
+        <path class="login-route login-route-secondary" d="M224 442 L224 382 L344 382"/>
+        <path class="login-route" d="M892 544 L1046 544 L1046 432 L1218 432 L1218 520 L1402 520"/>
+        <path class="login-route login-route-secondary" d="M1218 432 L1218 374 L1350 374"/>
+
+        <circle class="login-node login-node-hub" cx="224" cy="526" r="5.3"/>
+        <circle class="login-node" cx="224" cy="442" r="3.6"/>
+        <circle class="login-node login-node-violet" cx="394" cy="442" r="3.6"/>
+        <circle class="login-node login-node-soft" cx="344" cy="382" r="3.5"/>
+        <circle class="login-node login-node-hub" cx="1046" cy="544" r="5.3"/>
+        <circle class="login-node" cx="1046" cy="432" r="3.6"/>
+        <circle class="login-node login-node-soft" cx="1218" cy="432" r="3.9"/>
+        <circle class="login-node login-node-violet" cx="1350" cy="374" r="3.5"/>
+
+        <circle class="login-signal" r="2.8">
+          <animateMotion dur="16s" repeatCount="indefinite" keyTimes="0;0.2;0.29;0.48;0.57;0.77;0.86;1" keyPoints="0;0.2;0.2;0.48;0.48;0.77;0.77;1" calcMode="linear" path="M40 526 L224 526 L224 442 L394 442 L394 558 L548 558"/>
+        </circle>
+        <circle class="login-signal login-signal-soft" r="2.6">
+          <animateMotion dur="19s" begin="-7s" repeatCount="indefinite" keyTimes="0;0.2;0.29;0.5;0.59;0.79;0.88;1" keyPoints="0;0.2;0.2;0.5;0.5;0.79;0.79;1" calcMode="linear" path="M1402 520 L1218 520 L1218 432 L1046 432 L1046 544 L892 544"/>
+        </circle>
+        <circle class="login-signal login-signal-violet" r="2.2">
+          <animateMotion dur="21s" begin="-14s" repeatCount="indefinite" keyTimes="0;0.32;0.43;0.72;0.82;1" keyPoints="0;0.32;0.32;0.72;0.72;1" calcMode="linear" path="M344 382 L224 382 L224 442 L394 442"/>
+        </circle>
+      </g>
+    </svg>
   </div>
 
-  <!-- Ambient glow -->
-  <div class="entry-glow"></div>
-
-  <!-- HUD corners -->
-  <div class="entry-corner tl"></div>
-  <div class="entry-corner tr"></div>
-  <div class="entry-corner bl"></div>
-  <div class="entry-corner br"></div>
-
-  <!-- Left data strip -->
-  <div class="entry-side-data left" aria-hidden="true">
-    <span class="entry-data-label">SYS ONLINE</span>
-    <div class="entry-data-line"></div>
-    <span class="entry-data-label">NODE 04 / 04</span>
-    <div class="entry-data-line"></div>
-    <span class="entry-data-label">SYNC 100%</span>
-    <div class="entry-data-line"></div>
-    <span class="entry-data-label">UPTIME 99.9</span>
+  <div class="login-brand" aria-label="ROUTflex">
+    ROUT<span class="login-brand-flex">flex</span>
   </div>
 
-  <!-- Right data strip -->
-  <div class="entry-side-data right" aria-hidden="true">
-    <span class="entry-data-label">CTRL TOWER</span>
-    <div class="entry-data-line"></div>
-    <span class="entry-data-label">LAT -15.90</span>
-    <div class="entry-data-line"></div>
-    <span class="entry-data-label">LON -54.80</span>
-    <div class="entry-data-line"></div>
-    <span class="entry-data-label">ALT 1142 M</span>
-  </div>
+  <main class="login-content">
+    <header class="login-heading">
+      <span class="login-eyebrow">Plataforma de planejamento logístico</span>
+      <h1 class="login-title" id="entry-title">Planning</h1>
+      <p class="login-subtitle">Central de Planejamento Territorial</p>
+    </header>
 
-  <!-- Brand -->
-  <div class="entry-brand">
-    <span class="brand-tag">Routing Control Tower</span>
-    <h1 id="entry-title">ROUTflex Planning</h1>
-    <p class="entry-subtitle">Central de Planejamento e Territorializacao</p>
-  </div>
-
-  <!-- Status row -->
-  <div class="entry-status-row" aria-hidden="true">
-    <span><span class="entry-status-dot"></span>Sistema operacional</span>
-    <span>v2.0</span>
-    <span>BR — UTC-3</span>
-  </div>
-
-  <!-- CTA -->
-  <div class="entry-stage">
-    <div class="entry-ops-form" aria-label="Preparacao operacional">
-      <div class="entry-field">
-        <label for="entry-planner-name">Nome do Planejador</label>
-        <input id="entry-planner-name" type="text" value="Phillips David" autocomplete="name">
+    <div class="login-card" aria-label="Acesso ao ROUTflex Planning">
+      <div class="login-field">
+        <label class="login-label" for="entry-planner-name">Usuário</label>
+        <input class="login-input" id="entry-planner-name" type="text" value="Phillips David" placeholder="Digite seu usuário" autocomplete="username">
       </div>
-      <div class="entry-field">
-        <label for="entry-ddd-select">DDD Operacional</label>
-        <select id="entry-ddd-select">
+
+      <div class="login-field">
+        <label class="login-label" for="login-password">Senha</label>
+        <input class="login-input" id="login-password" type="password" value="routflex" placeholder="Digite sua senha" autocomplete="current-password">
+      </div>
+
+      <div class="login-field">
+        <label class="login-label" for="entry-ddd-select">DDD Operacional</label>
+        <select class="login-select" id="entry-ddd-select">
           <option value="65">DDD 65</option>
-          <option value="38">DDD 38</option>
-          <option value="93">DDD 93</option>
+          <option value="66">DDD 66</option>
+          <option value="67">DDD 67</option>
+          <option value="74">DDD 74</option>
+          <option value="75">DDD 75</option>
+          <option value="77">DDD 77</option>
         </select>
       </div>
-      <div class="entry-field">
-        <label for="entry-mode-select">Modo Inicial</label>
-        <select id="entry-mode-select">
-          <option value="territorial">Territorial</option>
-          <option value="operational">Operacional</option>
-          <option value="analytics">Analytics</option>
-        </select>
-      </div>
-    </div>
-    <button class="entry-access-button" id="entry-access-button" type="button" autofocus>Entrar no Planning</button>
-    <span class="entry-hint" aria-hidden="true">Pressione para iniciar</span>
-  </div>
 
+      <button class="login-button" id="entry-access-button" type="button">Entrar no Planning</button>
+    </div>
+
+    <footer class="login-meta" aria-label="Informações do ambiente">
+      <span class="login-meta-item">ROUTflex Planning</span>
+      <span class="login-meta-item">Versão MVP</span>
+      <span class="login-meta-item">Ambiente de Desenvolvimento</span>
+    </footer>
+  </main>
 </div>
 
 <div class="app-shell" id="app-shell" data-view-mode="territorial" aria-hidden="true" inert>
