@@ -77,12 +77,26 @@ function normalizeFrequencyLabel(frequencia) {
   return null;
 }
 
+// Normalização canônica da CURVA (importância comercial pura): A | B | C | D.
+// D = baixa prioridade / cliente eventual. Curva NÃO determina semana nem
+// frequência — é apenas classificação comercial. Valores desconhecidos/ausentes
+// caem em 'C' (comportamento histórico). Aceita 'curva-d', 'Curva D', 'd' etc.
+function normalizeCurva(curva) {
+  const c = String(curva || '').toUpperCase().replace(/[^ABCD]/g, '');
+  const letter = c.charAt(c.length - 1); // tolera prefixos: "CURVA D" → "D"
+  if (letter === 'A' || letter === 'B' || letter === 'D') return letter;
+  return 'C';
+}
+
 // DEFAULT de compatibilidade (não é regra de negócio): só usado quando a
-// frequência real é desconhecida. Mantém a tabela histórica A/B/C.
+// frequência real é desconhecida. Mantém a tabela histórica A/B/C e trata D
+// como eventual (Mensal), o mesmo fallback neutro de C. NÃO acopla curva→semana:
+// isto define apenas a FREQUÊNCIA-default; a semana deriva da frequência.
 function getDefaultFrequencyForCurve(curva) {
-  const c = String(curva || 'C').toUpperCase();
+  const c = normalizeCurva(curva);
   if (c === 'B') return FREQ_SEMANAL;
   if (c === 'A') return FREQ_QUINZENAL;
+  // C e D → Mensal (eventual). D nunca define semana automaticamente.
   return FREQ_MENSAL;
 }
 

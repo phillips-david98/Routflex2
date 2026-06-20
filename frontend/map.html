@@ -4676,6 +4676,7 @@ body.login-active .app-shell {
 .pdv-popup-badge.curva-a { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
 .pdv-popup-badge.curva-b { background: rgba(52,152,219,0.15); color: #52aef5; border: 1px solid rgba(52,152,219,0.3); }
 .pdv-popup-badge.curva-c { background: rgba(230,126,34,0.15); color: #e6922a; border: 1px solid rgba(230,126,34,0.3); }
+.pdv-popup-badge.curva-d { background: rgba(149,165,166,0.15); color: #95a5a6; border: 1px solid rgba(149,165,166,0.3); }
 .pdv-popup-close {
   display: flex;
   align-items: center;
@@ -13602,7 +13603,7 @@ function openClientPopup(client, latlng, options = {}) {
   }
 
   const seed = parseInt(String(client.id).replace(/\D/g, '')) || 1;
-  const curvaClass = `curva-${client.curva.toLowerCase()}`;
+  const curvaClass = `curva-${normalizeCurva(client.curva).toLowerCase()}`;
   const pattern = resolveVisitFrequency(client);
   const phone = generateSimPhone(client.ddd, seed);
   const crmCode = getClientCrmCode(client, seed);
@@ -16061,8 +16062,8 @@ function getMarkerDisplayContent(client, route, sequenceIndex) {
       }
       return client.driverId || '?';
     case 'curve':
-      // Exibe primeira letra da curva (A, B, ou C)
-      const curve = (client.curva || 'C').substring(0, 1).toUpperCase();
+      // Exibe a letra da curva comercial (A, B, C ou D)
+      const curve = normalizeCurva(client.curva);
       return curve;
     case 'sequence':
     default:
@@ -17728,12 +17729,17 @@ function mapPriorityScore(client) {
   const byPriority = { alta: 10, media: 6, baixa: 3 };
   const key = String(client.priority || '').toLowerCase();
   const base = byPriority[key] || 5;
-  const curveBoost = client.curva === 'A' ? 2 : (client.curva === 'B' ? 1 : 0);
+  // Curva = importância comercial pura (sem relação com semana/frequência).
+  // A (alta) > B > C > D (baixa/eventual). D recebe o menor peso comercial.
+  const curva = normalizeCurva(client.curva);
+  const curveBoost = curva === 'A' ? 2 : (curva === 'B' ? 1 : 0);
   return Math.min(10, base + curveBoost);
 }
 
 function mapDemandScore(client) {
-  const curveBase = client.curva === 'A' ? 3 : (client.curva === 'B' ? 2 : 1);
+  // Peso comercial de demanda por curva: A=3, B=2, C=1, D=1 (piso = eventual).
+  const curva = normalizeCurva(client.curva);
+  const curveBase = curva === 'A' ? 3 : (curva === 'B' ? 2 : 1);
   const serviceFactor = client.serviceTime >= 45 ? 2 : 1;
   return Math.max(1, curveBase * serviceFactor);
 }

@@ -100,7 +100,11 @@ function getClientMapVisibility(client, options = {}) {
   const vehicleOk = state.vehicleFilter === 'all'
     || ((_clientDriver ? _clientDriver.vehicle : client.vehicle) === state.vehicleFilter);
   const territoryOk = state.territoryFilter === 'all' || client.territory === state.territoryFilter;
-  const curvOk = state.curvFilters.size === 0 || state.curvFilters.has(client.curva);
+  // Curva D não possui checkbox no filtro (A/B/C); por isso é isenta do filtro
+  // de curva e sempre passa — garante suporte/visibilidade sem alterar a UI.
+  const curvOk = state.curvFilters.size === 0
+    || state.curvFilters.has(client.curva)
+    || String(client.curva || '').toUpperCase() === 'D';
   const weekOk = state.activeWeeks.has(client.week);
   const matchesBaseFilters = vehicleOk && territoryOk && curvOk && weekOk;
 
