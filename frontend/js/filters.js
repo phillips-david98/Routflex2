@@ -440,32 +440,63 @@ function buildRouteGroups(filteredClients, options = {}) {
 
   return Array.from(groups.values()).map((route) => {
     const orderedClients = [...route.clients].sort((first, second) => first.sequence - second.sequence || first.id.localeCompare(second.id));
-    let totalDistance = 0;
+    let straightDistance = 0;
     let roadTime = 0;
+    let noCoordInRoute = 0;
 
     if (!skipMetrics) {
-      let lastLat = route.driver.lat;
-      let lastLon = route.driver.lon;
+      const _coordOk = (c) => (typeof hasValidCoordinate === 'function')
+        ? hasValidCoordinate(c)
+        : (Number.isFinite(Number(c.lat)) && Number.isFinite(Number(c.lon)));
+      const hasBase = Number.isFinite(Number(route.driver.lat)) && Number.isFinite(Number(route.driver.lon));
+      let lastLat = hasBase ? route.driver.lat : null;
+      let lastLon = hasBase ? route.driver.lon : null;
 
       orderedClients.forEach((client) => {
-        totalDistance += distanceKm(lastLat, lastLon, client.lat, client.lon);
+        // Cliente sem coordenada válida: ignorado no cálculo (não inventa ponto).
+        if (!_coordOk(client)) { noCoordInRoute += 1; return; }
+        if (lastLat != null && lastLon != null) {
+          straightDistance += distanceKm(lastLat, lastLon, client.lat, client.lon);
+        }
         lastLat = client.lat;
         lastLon = client.lon;
       });
 
-      totalDistance += distanceKm(lastLat, lastLon, route.driver.lat, route.driver.lon);
-      roadTime = totalDistance / 42 * 60;
+      // Retorno à base (regra atual do sistema), somente se o motorista tem base.
+      if (hasBase && lastLat != null && lastLon != null) {
+        straightDistance += distanceKm(lastLat, lastLon, route.driver.lat, route.driver.lon);
+      }
+      roadTime = straightDistance / 42 * 60;
     }
 
-    return {
+    const routeObj = {
       ...route,
       clients: orderedClients,
-      totalDistance,
+      // totalDistance é o KM oficial exibido nos painéis. Inicia como Haversine
+      // (valor imediato) e é sobrescrito pelo KM rodoviário real quando disponível.
+      totalDistance: straightDistance,
+      straightDistance,
+      distanceSource: skipMetrics ? 'none' : 'straight',
+      noCoordCount: noCoordInRoute,
       totalTime: Math.round(roadTime + route.totalServiceTime),
       uniqueVehicles: Array.from(route.uniqueVehicles),
       territories: Array.from(route.territories),
       routeLoad: orderedClients.length
     };
+
+    // KM RODOVIÁRIO REAL (OSRM): sobrescreve o Haversine quando cacheado.
+    // O serviço de cálculo/cache vive em map.html (_getCachedRoadKm); o guard
+    // typeof mantém filters.js funcional mesmo se carregado isoladamente.
+    if (!skipMetrics && typeof _getCachedRoadKm === 'function') {
+      const roadKm = _getCachedRoadKm(routeObj);
+      if (roadKm != null && isFinite(roadKm) && roadKm >= 0) {
+        routeObj.totalDistance = roadKm;
+        routeObj.distanceSource = 'road';
+        routeObj.totalTime = Math.round((roadKm / 42 * 60) + route.totalServiceTime);
+      }
+    }
+
+    return routeObj;
   }).sort((first, second) => first.week - second.week || second.routeLoad - first.routeLoad || first.ddd - second.ddd || first.day.localeCompare(second.day));
 }
 

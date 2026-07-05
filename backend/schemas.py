@@ -367,6 +367,25 @@ class CustomerGeocodingResponse(BaseModel):
     timestamp: str
 
 
+class AddressGeocodeRequest(BaseModel):
+    address: Optional[str] = None
+    number: Optional[str] = None
+    neighborhood: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    user: str = "frontend"
+
+
+class AddressGeocodeResponse(BaseModel):
+    success: bool
+    message: str
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+    address_built: str
+    display_name: Optional[str] = None
+    timestamp: str
+
+
 class ExportCustomersRequest(BaseModel):
     customers: List[BatchRoutingCustomer]
     user: str = "frontend"

@@ -3428,6 +3428,16 @@ body.login-active .app-shell {
   background: rgba(25, 52, 84, 0.92);
 }
 
+.instrument-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: rgba(96, 154, 206, 0.18);
+}
+.instrument-btn:disabled:hover {
+  border-color: rgba(96, 154, 206, 0.18);
+  background: rgba(20, 40, 64, 0.8);
+}
+
 .instrument-btn.is-active {
   border-color: rgba(125, 214, 255, 0.82);
   background: rgba(36, 72, 116, 0.96);
@@ -6439,6 +6449,10 @@ body.login-active .routex-ai-panel { display:none !important; }
             <button class="instrument-btn" id="toggle-swap-btn" type="button" title="Trocar sequência no mapa (2 cliques)">
               <span class="instrument-glyph">SEQ</span>
               <span class="instrument-label">Troca</span>
+            </button>
+            <button class="instrument-btn" id="toggle-road-route-btn" type="button" title="Rota real rodoviária da rota selecionada (ALT+P) — apenas no modo Operacional">
+              <span class="instrument-glyph">RTA</span>
+              <span class="instrument-label">Rota real</span>
             </button>
           </div>
         </div>
@@ -10358,6 +10372,148 @@ function initializeDrivers() {
   normalizeDriverTerritoryAssignments();
 }
 
+// ══ BASE GEOGRÁFICA DO MOTORISTA — geocoding + persistência + KM ══════════════
+// A base (driver.lat/lon) é o ponto de partida/retorno do KM rodoviário (OSRM).
+// Antes deste patch o modal só editava texto (city/neighborhood/address) e a
+// coordenada da base nunca mudava → o KM continuava a partir da base antiga.
+// Persistência por DDD em localStorage (drivers são reconstruídos do config a
+// cada F5; o override restaura a base real por driverId). Estrutura por driver:
+// { city, neighborhood, address, name, responsavel, phone, lat, lon,
+//   baseLat, baseLng, baseAddress, baseUpdatedAt, baseGeocodeSource }.
+var DRIVER_BASES_STORAGE_PREFIX = 'ROUTflex:driverbases:ddd:';
+
+function _driverBasesStorageKey(ddd) {
+  return DRIVER_BASES_STORAGE_PREFIX + String(ddd);
+}
+
+// Persiste as bases alteradas do DDD (override por driverId).
+function _persistDriverBases(ddd) {
+  try {
+    var store = {};
+    getDriversByDDD(Number(ddd)).forEach(function(d) {
+      if (d && d.baseUpdatedAt) {
+        store[d.id] = {
+          city: d.city, neighborhood: d.neighborhood, address: d.address,
+          name: d.name, responsavel: d.responsavel, phone: d.phone,
+          lat: d.lat, lon: d.lon,
+          baseLat: d.baseLat, baseLng: d.baseLng, baseAddress: d.baseAddress,
+          baseUpdatedAt: d.baseUpdatedAt, baseGeocodeSource: d.baseGeocodeSource
+        };
+      }
+    });
+    localStorage.setItem(_driverBasesStorageKey(ddd), JSON.stringify(store));
+    return true;
+  } catch (e) {
+    if (typeof console !== 'undefined' && console.warn) console.warn('[DRIVER-BASE] falha ao persistir bases', e);
+    return false;
+  }
+}
+
+// Restaura as bases persistidas do DDD e aplica sobre os drivers já criados.
+function _loadDriverBaseOverrides(ddd) {
+  try {
+    var raw = localStorage.getItem(_driverBasesStorageKey(ddd));
+    if (!raw) return;
+    var store = JSON.parse(raw);
+    if (!store || typeof store !== 'object') return;
+    var applied = 0;
+    getDriversByDDD(Number(ddd)).forEach(function(d) {
+      var ov = store[d.id];
+      if (!ov) return;
+      if (ov.city != null) d.city = ov.city;
+      if (ov.neighborhood != null) d.neighborhood = ov.neighborhood;
+      if (ov.address != null) d.address = ov.address;
+      if (ov.name != null) d.name = ov.name;
+      if (ov.responsavel != null) d.responsavel = ov.responsavel;
+      if (ov.phone != null) d.phone = ov.phone;
+      if (Number.isFinite(Number(ov.lat)) && Number.isFinite(Number(ov.lon))) {
+        d.lat = Number(ov.lat); d.lon = Number(ov.lon);
+      }
+      if (ov.baseLat != null) d.baseLat = ov.baseLat;
+      if (ov.baseLng != null) d.baseLng = ov.baseLng;
+      if (ov.baseAddress != null) d.baseAddress = ov.baseAddress;
+      if (ov.baseUpdatedAt != null) d.baseUpdatedAt = ov.baseUpdatedAt;
+      if (ov.baseGeocodeSource != null) d.baseGeocodeSource = ov.baseGeocodeSource;
+      applied++;
+    });
+    if (applied && typeof console !== 'undefined' && console.info) {
+      console.info('[DRIVER-BASE] ' + applied + ' base(s) restaurada(s) para DDD ' + ddd);
+    }
+  } catch (e) {
+    if (typeof console !== 'undefined' && console.warn) console.warn('[DRIVER-BASE] falha ao restaurar bases', e);
+  }
+}
+
+// Aplica os overrides de base de TODOS os DDDs configurados (chamado no boot).
+function applyAllDriverBaseOverrides() {
+  try {
+    Object.keys(driverBases).forEach(function(d) { _loadDriverBaseOverrides(Number(d)); });
+  } catch (_) { /* noop */ }
+}
+
+// Geocodifica a nova base do motorista e atualiza a coordenada real usada pelo
+// KM rodoviário. Falha de geocoding NÃO altera lat/lon (não finge base nova).
+async function geocodeAndUpdateDriverBase(driver) {
+  if (!driver) return;
+  updatePlannerHint('Geocodificando nova base de ' + (driver.name || driver.id) + '…');
+  try {
+    var resp = await fetch(BACKEND_API_BASE + '/geocode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        address: driver.address || null,
+        neighborhood: driver.neighborhood || null,
+        city: driver.city || null,
+        state: (typeof dddStates !== 'undefined' ? dddStates[driver.ddd] : null) || null,
+        user: 'frontend-driver-base'
+      })
+    });
+    var data = await resp.json();
+    if (!resp.ok || !data || !data.success || data.lat == null || data.lon == null) {
+      throw new Error(data && data.message ? data.message : ('HTTP ' + resp.status));
+    }
+    var lat = Number(Number(data.lat).toFixed(6));
+    var lon = Number(Number(data.lon).toFixed(6));
+    driver.lat = lat;
+    driver.lon = lon;
+    driver.baseLat = lat;
+    driver.baseLng = lon;
+    driver.baseAddress = data.address_built || [driver.address, driver.neighborhood, driver.city].filter(Boolean).join(', ');
+    driver.baseUpdatedAt = new Date().toISOString();
+    driver.baseGeocodeSource = 'geocoded';
+    _persistDriverBases(driver.ddd);
+    invalidateRoadKmCacheForDriver(driver.id);
+    markDriverAsAdjusted(driver.id);
+    // Recalcula rotas + KM rodoviário a partir da nova base (applyFilters →
+    // calculateRoutes → scheduleOperationalRoadKm no modo operacional).
+    applyFilters({ skipFitBounds: true });
+    if (!document.getElementById('driver-manager-modal').hidden) renderDriverManagerPanel();
+    updatePlannerHint('✓ Base de ' + (driver.name || driver.id) + ' atualizada (' + lat.toFixed(5) + ', ' + lon.toFixed(5) + '). KM rodoviário recalculado.');
+  } catch (err) {
+    // Falha controlada: mantém a coordenada anterior e NÃO invalida o cache.
+    driver.baseGeocodeSource = 'unresolved';
+    _persistDriverBases(driver.ddd);
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('[DRIVER-BASE] geocoding falhou: ' + (err && err.message ? err.message : err));
+    }
+    updatePlannerHint('⚠️ Endereço salvo, mas a coordenada da base NÃO foi atualizada (' + (err && err.message ? err.message : 'geocoding falhou') + '). O KM mantém a base anterior.');
+  }
+}
+
+// Detecta mudança de base textual, persiste o texto e dispara o geocoding.
+function _handleDriverBaseChangeOnSave(driver, prevCity, prevNeighborhood, prevAddress) {
+  if (!driver) return;
+  var changed = (driver.city !== prevCity) || (driver.neighborhood !== prevNeighborhood) || (driver.address !== prevAddress);
+  if (!changed) return;
+  // Marca e persiste imediatamente o texto (sobrevive ao F5 mesmo se o geocoding
+  // demorar/falhar). A coordenada só muda quando o geocoding tiver sucesso.
+  driver.baseUpdatedAt = new Date().toISOString();
+  driver.baseGeocodeSource = 'pending';
+  driver.baseAddress = [driver.address, driver.neighborhood, driver.city].filter(Boolean).join(', ');
+  _persistDriverBases(driver.ddd);
+  geocodeAndUpdateDriverBase(driver);
+}
+
 function renderDriverFilterOptions() {
   const deleteButton = document.getElementById('delete-driver-btn');
   const availableDrivers = getDriversByDDD(Number(state.selectedDDD));
@@ -10594,6 +10750,10 @@ function saveDriverEdits(event) {
 
   const newName = sanitizeText(document.getElementById('driver-edit-name-input').value);
 
+  const _prevBaseCity = driver.city;
+  const _prevBaseNeighborhood = driver.neighborhood;
+  const _prevBaseAddress = driver.address;
+
   driver.vehicle = document.getElementById('driver-edit-vehicle-input').value;
   driver.name = newName;
   driver.responsavel = sanitizeText(document.getElementById('driver-edit-manager-input').value);
@@ -10612,6 +10772,8 @@ function saveDriverEdits(event) {
   if (!document.getElementById('driver-manager-modal').hidden) {
     renderDriverManagerPanel();
   }
+  // Base geográfica: se cidade/bairro/endereço mudaram, geocodifica e recalcula KM.
+  _handleDriverBaseChangeOnSave(driver, _prevBaseCity, _prevBaseNeighborhood, _prevBaseAddress);
 }
 
 function openDriverManagerModal() {
@@ -10647,6 +10809,9 @@ function createDriver(event) {
       return;
     }
 
+    const _prevBaseCity = driver.city;
+    const _prevBaseNeighborhood = driver.neighborhood;
+    const _prevBaseAddress = driver.address;
     const updatedName = sanitizeText(document.getElementById('driver-name-input').value);
     driver.name = updatedName;
     driver.responsavel = sanitizeText(document.getElementById('driver-manager-input').value);
@@ -10665,6 +10830,8 @@ function createDriver(event) {
     if (!document.getElementById('driver-manager-modal').hidden) {
       renderDriverManagerPanel();
     }
+    // Base geográfica: se cidade/bairro/endereço mudaram, geocodifica e recalcula KM.
+    _handleDriverBaseChangeOnSave(driver, _prevBaseCity, _prevBaseNeighborhood, _prevBaseAddress);
     return;
   }
 
@@ -11161,6 +11328,7 @@ function clearRoadRoute() {
   const existing = document.getElementById('road-route-toast');
   if (existing) existing.remove();
   syncRoadRouteVisibility();
+  if (typeof setRoadRouteButtonState === 'function') setRoadRouteButtonState();
   // Volta o painel da rota ativa ao comportamento padrao (sem comparacao rodoviaria).
   const cachedGroups = Array.isArray(state.routeGroupsCache) ? state.routeGroupsCache : [];
   const selected = cachedGroups.find((r) => r.routeId === state.selectedRouteId) || null;
@@ -11306,116 +11474,469 @@ function setRouteClientsAccessStatus(routeClients, routeId, diagnostic) {
   });
 }
 
+// ══ KM RODOVIÁRIO REAL (OSRM) — fonte principal do KM no modo Operacional ═════
+// Calcula a distância rodoviária real na ORDEM da sequência planejada
+// (base → PDV1 → PDV2 → ... → base, quando o motorista possui coordenada-base).
+// O Haversine de buildRouteGroups permanece apenas como valor imediato enquanto
+// o OSRM resolve e como FALLBACK controlado se o OSRM falhar — nunca como KM
+// oficial. Cache por assinatura (ddd|motorista|semana|dia|base|IDs+coord na
+// sequência): mudança de sequência/dia/semana/motorista gera nova chave e força
+// recálculo automático; a chave antiga é descartada por LRU.
+var _OSRM_ROUTE_BASE = 'https://router.project-osrm.org/route/v1/driving/';
+var _roadKmCache = new Map();          // key → { km:Number|null, source:'road'|'fallback', ts }
+var _roadKmQueue = [];                 // [{ key, snapshot }]
+var _roadKmInFlight = new Set();
+var _roadKmProcessing = false;
+var _roadKmPending = 0;                // rotas aguardando cálculo (indicador discreto)
+var _roadKmRefreshTimer = null;
+var _roadKmResolvedSinceRefresh = false;
+var _ROAD_KM_MAX_WAYPOINTS = 100;      // limite da API pública do OSRM
+var _ROAD_KM_THROTTLE_MS = 300;        // intervalo mínimo entre chamadas OSRM
+var _ROAD_KM_FAIL_TTL_MS = 60000;      // re-tentar rota que falhou após 60s
+var _ROAD_KM_CACHE_LIMIT = 500;
+
+// Clientes da rota com coordenada válida, ordenados pela sequência planejada.
+function _roadKmOrderedValidClients(route) {
+  if (!route || !Array.isArray(route.clients)) return [];
+  return route.clients
+    .filter(function(c) {
+      return (typeof hasValidCoordinate === 'function')
+        ? hasValidCoordinate(c)
+        : (c && Number.isFinite(Number(c.lat)) && Number.isFinite(Number(c.lon)));
+    })
+    .slice()
+    .sort(function(a, b) {
+      return (a.sequence || 0) - (b.sequence || 0) || String(a.id).localeCompare(String(b.id));
+    });
+}
+
+// Coordenada-base do motorista, se existir (senão o cálculo é PDV→PDV).
+function _roadKmDriverBase(route) {
+  var d = route && route.driver;
+  if (d && Number.isFinite(Number(d.lat)) && Number.isFinite(Number(d.lon))) {
+    return { lat: Number(d.lat), lon: Number(d.lon) };
+  }
+  return null;
+}
+
+// Assinatura determinística da rota — base do cache e da invalidação automática.
+function _buildRoadKmKey(route) {
+  var ordered = _roadKmOrderedValidClients(route);
+  if (ordered.length < 2) return null; // sem trecho rodoviário calculável
+  var base = _roadKmDriverBase(route);
+  var baseKey = base ? 'B' + base.lat.toFixed(5) + ',' + base.lon.toFixed(5) : 'N';
+  var pts = ordered.map(function(c) {
+    return c.id + ',' + Number(c.lat).toFixed(5) + ',' + Number(c.lon).toFixed(5);
+  });
+  return [route.ddd, route.driver && route.driver.id, route.week, route.day, baseKey, pts.join('|')].join('~');
+}
+
+// Distância rodoviária cacheada (km) ou null. Consumida por buildRouteGroups
+// (filters.js) para sobrescrever o Haversine quando houver valor real.
+function _getCachedRoadKm(route) {
+  var key = _buildRoadKmKey(route);
+  if (!key) return null;
+  var entry = _roadKmCache.get(key);
+  if (entry && entry.source === 'road' && entry.km != null) return entry.km;
+  return null; // sem valor real → mantém Haversine (transitório/fallback)
+}
+
+function _trimRoadKmCache() {
+  if (_roadKmCache.size <= _ROAD_KM_CACHE_LIMIT) return;
+  var excess = _roadKmCache.size - _ROAD_KM_CACHE_LIMIT;
+  var it = _roadKmCache.keys();
+  for (var i = 0; i < excess; i++) {
+    var k = it.next().value;
+    if (k !== undefined) _roadKmCache.delete(k);
+  }
+}
+
+// Chamada OSRM somente-distância (overview=false → resposta leve).
+async function _fetchRoadKm(snapshot) {
+  var waypoints = snapshot.waypoints;
+  if (!Array.isArray(waypoints) || waypoints.length < 2 || waypoints.length > _ROAD_KM_MAX_WAYPOINTS) {
+    return null;
+  }
+  var coordsStr = waypoints.map(function(w) { return w[0].toFixed(6) + ',' + w[1].toFixed(6); }).join(';');
+  var url = _OSRM_ROUTE_BASE + coordsStr + '?overview=false';
+  var resp = await fetch(url);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  var data = await resp.json();
+  if (!data.routes || !data.routes.length) throw new Error('sem rota OSRM');
+  return Number(data.routes[0].distance) / 1000;
+}
+
+// Processa a fila sequencialmente, com throttle, sem travar a interface.
+function _processRoadKmQueue() {
+  if (_roadKmProcessing || !_roadKmQueue.length) return;
+  _roadKmProcessing = true;
+  var job = _roadKmQueue.shift();
+  _roadKmInFlight.add(job.key);
+  _fetchRoadKm(job.snapshot).then(function(km) {
+    if (km != null && isFinite(km) && km >= 0) {
+      _roadKmCache.set(job.key, { km: km, source: 'road', ts: Date.now() });
+      _roadKmResolvedSinceRefresh = true;
+    } else {
+      _roadKmCache.set(job.key, { km: null, source: 'fallback', ts: Date.now() });
+    }
+  }).catch(function(err) {
+    _roadKmCache.set(job.key, { km: null, source: 'fallback', ts: Date.now() });
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('[KM-OSRM] falha ao calcular rota (fallback Haversine): ' + (err && err.message ? err.message : err));
+    }
+  }).finally(function() {
+    _roadKmInFlight.delete(job.key);
+    _trimRoadKmCache();
+    _roadKmProcessing = false;
+    _roadKmPending = _roadKmQueue.length + _roadKmInFlight.size;
+    if (_roadKmQueue.length) {
+      setTimeout(_processRoadKmQueue, _ROAD_KM_THROTTLE_MS);
+    } else {
+      _roadKmPending = 0;
+      _scheduleRoadKmRefresh();
+    }
+  });
+}
+
+// Re-renderiza os painéis operacionais UMA vez após o lote OSRM concluir,
+// para que o KM real substitua o valor transitório sem loop de renderização.
+function _scheduleRoadKmRefresh() {
+  if (!_roadKmResolvedSinceRefresh || _roadKmRefreshTimer) return;
+  _roadKmRefreshTimer = setTimeout(function() {
+    _roadKmRefreshTimer = null;
+    _roadKmResolvedSinceRefresh = false;
+    if (state.viewMode === 'operational' && typeof calculateRoutes === 'function') {
+      if (typeof console !== 'undefined' && console.info) {
+        console.info('[KM-OSRM] KM rodoviário atualizado no painel operacional');
+      }
+      calculateRoutes({ skipFitBounds: true });
+    }
+  }, 250);
+}
+
+// Enfileira o cálculo rodoviário das rotas operacionais (debounced/throttled).
+// Chamada por calculateRoutes após buildRouteGroups — somente no modo operacional.
+function scheduleOperationalRoadKm(routeGroups) {
+  if (state.viewMode !== 'operational' || !Array.isArray(routeGroups)) return;
+  var now = Date.now();
+  // Prioriza as rotas do motorista ativo (rota selecionada / foco): o operador
+  // vê o KM real primeiro e reduz-se a pressão sobre o OSRM público.
+  var selected = routeGroups.find(function(r) { return r.routeId === state.selectedRouteId; });
+  var activeDriverId = (selected && selected.driver) ? selected.driver.id : state.focusDriverId;
+  var jobs = [];
+  routeGroups.forEach(function(route) {
+    var key = _buildRoadKmKey(route);
+    if (!key) return;
+    var entry = _roadKmCache.get(key);
+    if (entry) {
+      if (entry.source === 'road') return;                                  // já calculado
+      if (entry.source === 'fallback' && (now - entry.ts) < _ROAD_KM_FAIL_TTL_MS) return; // falha recente
+    }
+    if (_roadKmInFlight.has(key)) return;
+    if (_roadKmQueue.some(function(q) { return q.key === key; })) return;
+    if (jobs.some(function(j) { return j.key === key; })) return;
+    var ordered = _roadKmOrderedValidClients(route);
+    var base = _roadKmDriverBase(route);
+    var pts = ordered.map(function(c) { return [Number(c.lon), Number(c.lat)]; });
+    var waypoints = base ? [[base.lon, base.lat]].concat(pts, [[base.lon, base.lat]]) : pts;
+    var isActive = activeDriverId && route.driver && route.driver.id === activeDriverId;
+    jobs.push({ key: key, snapshot: { waypoints: waypoints }, priority: isActive ? 0 : 1 });
+  });
+  if (jobs.length) {
+    jobs.sort(function(a, b) { return a.priority - b.priority; });
+    jobs.forEach(function(j) { _roadKmQueue.push({ key: j.key, snapshot: j.snapshot }); });
+    _roadKmPending = _roadKmQueue.length + _roadKmInFlight.size;
+    if (typeof console !== 'undefined' && console.debug) {
+      console.debug('[KM-OSRM] ' + jobs.length + ' rota(s) enfileirada(s) para cálculo rodoviário real');
+    }
+    _processRoadKmQueue();
+  }
+}
+
+// Rótulo discreto da origem do KM da rota (para o painel de detalhe).
+function _routeKmSourceLabel(route) {
+  if (route && route.distanceSource === 'road') return 'KM rodoviário (real)';
+  if (_roadKmPending > 0) return 'KM (calculando…)';
+  return 'KM estimado (fallback)';
+}
+
+// Invalida o KM rodoviário cacheado de TODAS as rotas de um motorista.
+// Necessário ao mudar a base do motorista: a assinatura já inclui a base, mas
+// esta limpeza remove entradas antigas e jobs em fila que carregam a base antiga.
+function invalidateRoadKmCacheForDriver(driverId) {
+  if (!driverId) return;
+  var did = String(driverId);
+  var removed = 0;
+  Array.from(_roadKmCache.keys()).forEach(function(k) {
+    // key = ddd~driverId~week~day~baseKey~pts
+    if (k.split('~')[1] === did) { _roadKmCache.delete(k); removed++; }
+  });
+  _roadKmQueue = _roadKmQueue.filter(function(j) { return j.key.split('~')[1] !== did; });
+  // Geometria da polyline também depende da base → invalidar em conjunto.
+  var geomRemoved = 0;
+  Array.from(_roadGeomCache.keys()).forEach(function(k) {
+    if (k.split('~')[1] === did) { _roadGeomCache.delete(k); geomRemoved++; }
+  });
+  // Se há uma rota real desenhada, ela pode usar a base antiga → limpar.
+  if (roadRouteLayer && geomRemoved > 0) {
+    clearRoadRoute();
+  }
+  if ((removed || geomRemoved) && typeof console !== 'undefined' && console.debug) {
+    console.debug('[KM-OSRM] cache invalidado p/ motorista ' + did + ' (KM: ' + removed + ', geometria: ' + geomRemoved + ')');
+  }
+}
+
+// ══ CACHE DE GEOMETRIA DA POLYLINE (separado do cache de KM) ══════════════════
+// O KM usa OSRM overview=false (leve). O DESENHO precisa da geometria completa
+// (overview=full&geometries=geojson). São caches distintos e não se misturam.
+// Chave = ddd~motorista~coordsStr (a própria string de coordenadas enviada ao
+// OSRM). Qualquer mudança de base/sequência/cliente muda o coordsStr → invalida.
+var _roadGeomCache = new Map();          // geomKey → { coords, distanceKm, straightKm, durationMin, valid, diagnostic }
+var _ROAD_GEOM_CACHE_LIMIT = 200;
+
+function _trimRoadGeomCache() {
+  if (_roadGeomCache.size <= _ROAD_GEOM_CACHE_LIMIT) return;
+  var excess = _roadGeomCache.size - _ROAD_GEOM_CACHE_LIMIT;
+  var it = _roadGeomCache.keys();
+  for (var i = 0; i < excess; i++) {
+    var k = it.next().value;
+    if (k !== undefined) _roadGeomCache.delete(k);
+  }
+}
+
+// Resolve a rota operacional que o botão RTA / ALT+P deve desenhar:
+//  A) rota selecionada (clique no card/linha) que tenha clientes;
+//  B) 1ª rota visível do motorista ativo (selectedDriverId/focusDriverId);
+//  C) null → o chamador avisa (não morre em silêncio).
+function getActiveOperationalRouteForRoadDrawing() {
+  var groups = getRouteGroupsSafe();
+  if (!Array.isArray(groups) || !groups.length) return null;
+
+  // A) rota já selecionada com clientes
+  if (state.selectedRouteId) {
+    var sel = groups.find(function(r) { return r.routeId === state.selectedRouteId; });
+    if (sel && sel.clients && sel.clients.length) return sel;
+  }
+
+  // B) motorista ativo → 1ª rota com clientes
+  var activeDriverId = null;
+  if (state.selectedDriverId && state.selectedDriverId !== 'all') activeDriverId = state.selectedDriverId;
+  else if (state.focusDriverId) activeDriverId = state.focusDriverId;
+  else if (state.selectedDriverIds && state.selectedDriverIds.size === 1) activeDriverId = Array.from(state.selectedDriverIds)[0];
+
+  if (activeDriverId) {
+    var driverRoutes = groups.filter(function(r) {
+      return r.driver && r.driver.id === activeDriverId && r.clients && r.clients.length;
+    });
+    if (driverRoutes.length) return driverRoutes[0];
+  }
+
+  return null;
+}
+
+// Resolve a base do motorista: baseLat/baseLng (patch de base) → lat/lon (config)
+// → null (sem base válida). Retorna { lat, lon, source } ou null.
+function getValidDriverBaseForRoadDrawing(route) {
+  var d = route && route.driver;
+  if (!d) return null;
+  if (Number.isFinite(Number(d.baseLat)) && Number.isFinite(Number(d.baseLng))) {
+    return { lat: Number(d.baseLat), lon: Number(d.baseLng), source: 'baseLat/baseLng' };
+  }
+  if (Number.isFinite(Number(d.lat)) && Number.isFinite(Number(d.lon))) {
+    return { lat: Number(d.lat), lon: Number(d.lon), source: 'lat/lon' };
+  }
+  return null;
+}
+
+// Monta os waypoints do desenho: base válida (quando existir) → clientes válidos
+// na ordem da sequência → retorno à base (só se a base for válida). Sem base
+// válida, desenha cliente→cliente. Formato OSRM [lon, lat].
+function buildRoadDrawingWaypoints(route) {
+  var allClients = (route && Array.isArray(route.clients)) ? route.clients : [];
+  var validClients = allClients.filter(function(c) { return hasValidCoordinate(c); });
+  var ignoredNoCoord = allClients.length - validClients.length;
+  var base = getValidDriverBaseForRoadDrawing(route);
+  var clientPts = validClients.map(function(c) { return [Number(c.lon), Number(c.lat)]; });
+  var waypoints = base
+    ? [[base.lon, base.lat]].concat(clientPts, [[base.lon, base.lat]])
+    : clientPts.slice();
+  return { waypoints: waypoints, validClients: validClients, ignoredNoCoord: ignoredNoCoord, base: base };
+}
+
+// Estado visual do botão RTA (Rota real): ativo só no operacional e realça quando
+// há rota desenhada. Fora do operacional fica desabilitado (não executa ação).
+function setRoadRouteButtonState() {
+  var btn = document.getElementById('toggle-road-route-btn');
+  if (!btn) return;
+  var isOp = state.viewMode === 'operational';
+  btn.disabled = !isOp;
+  btn.classList.toggle('is-active', isOp && !!roadRouteLayer);
+}
+
 async function fetchRoadRoute() {
   if (state.viewMode !== 'operational') {
-    updatePlannerHint('Percurso real disponível apenas no modo operacional.');
-    return;
-  }
-  if (!state.selectedRouteId) {
-    updatePlannerHint('Selecione uma rota no mapa antes de usar ALT+P.');
+    updatePlannerHint('Rota real disponível apenas no modo Operacional.');
     return;
   }
 
-  // Toggle off if already showing this route's road path
-  if (roadRouteLayer && state.roadRouteId === state.selectedRouteId) {
+  const route = getActiveOperationalRouteForRoadDrawing();
+
+  console.group('[RTA] Desenho de rota real');
+  console.log('viewMode:', state.viewMode);
+  console.log('selectedRouteId:', state.selectedRouteId);
+  console.log('selectedDriverId:', state.selectedDriverId, '| focusDriverId:', state.focusDriverId);
+  console.log('route resolvida:', route && route.routeId, route);
+  console.log('driver:', route && route.driver);
+
+  // Toggle off: a mesma rota já está desenhada → ocultar.
+  if (roadRouteLayer && route && state.roadRouteId === route.routeId) {
+    console.log('rota já desenhada → ocultando');
+    console.groupEnd();
     clearRoadRoute();
-    updatePlannerHint('Percurso real desativado.');
+    updatePlannerHint('Rota real ocultada.');
     return;
   }
 
-  const routeGroups = getRouteGroupsSafe();
-  const route = routeGroups.find((r) => r.routeId === state.selectedRouteId);
-  if (!route || route.clients.length === 0) {
-    updatePlannerHint('Rota sem clientes para desenhar percurso.');
+  // CASO C — sem rota ativa e sem motorista com rota: avisar, não morrer.
+  if (!route) {
+    console.warn('nenhuma rota ativa/selecionada e nenhum motorista com rota disponível');
+    console.groupEnd();
+    updatePlannerHint('Selecione um motorista ou uma rota operacional para desenhar a rota real.');
     return;
   }
 
-  const clientWaypoints = route.clients.map((c) => [c.lon, c.lat]);
-  const waypoints = state.showDriverBase
-    ? [[route.driver.lon, route.driver.lat], ...clientWaypoints, [route.driver.lon, route.driver.lat]]
-    : clientWaypoints;
+  const built = buildRoadDrawingWaypoints(route);
+  const waypoints = built.waypoints;
+  const validClients = built.validClients;
+  const ignoredNoCoord = built.ignoredNoCoord;
+  const base = built.base;
 
+  console.log('driver base:', base);
+  console.log('clients total:', route.clients ? route.clients.length : 0);
+  console.log('valid clients:', validClients.length);
+  console.log('ignored no coord:', ignoredNoCoord);
+  console.log('waypoints (lon,lat):', waypoints);
+
+  const noCoordLabel = ignoredNoCoord > 0 ? ` | ${ignoredNoCoord} sem coordenada ignorado(s)` : '';
+  const baseLabel = base ? '' : ' | base sem coordenada (rota PDV a PDV)';
+
+  // CASO D/E — pontos insuficientes.
   if (waypoints.length < 2) {
-    updatePlannerHint('Com a base oculta, a rota precisa ter pelo menos 2 PDVs para desenhar o percurso real entre clientes.');
+    console.warn('waypoints insuficientes (<2) — não chama OSRM');
+    console.groupEnd();
+    updatePlannerHint(`Pontos válidos insuficientes para desenhar a rota real (mínimo 2).${noCoordLabel}${baseLabel}`);
     return;
   }
-
-  // OSRM public API limit: 100 waypoints
   if (waypoints.length > 100) {
+    console.warn('waypoints > 100 (limite OSRM público)');
+    console.groupEnd();
     updatePlannerHint('Rota tem muitos pontos (>98 PDVs). Filtre para um subset menor.');
     return;
   }
 
-  const routeScopeLabel = state.showDriverBase ? 'incluindo a base' : 'apenas entre PDVs';
-  updatePlannerHint(`Buscando percurso real nas estradas (${routeScopeLabel})…`);
-  showRoadRouteToast(`Buscando percurso nas estradas (${routeScopeLabel})…`);
-
+  // ── Cache de geometria (chave = ddd~motorista~coordsStr; separado do KM) ──
   const coordsStr = waypoints.map(([lon, lat]) => `${lon.toFixed(6)},${lat.toFixed(6)}`).join(';');
-  const url = `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`;
+  const geomKey = [route.ddd, route.driver && route.driver.id, coordsStr].join('~');
+  const cachedGeom = _roadGeomCache.get(geomKey);
+  let geom = cachedGeom || null;
 
-  try {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
-    if (!data.routes || data.routes.length === 0) throw new Error('nenhuma rota retornada');
+  if (!geom) {
+    updatePlannerHint(`Calculando rota real nas estradas${base ? ' (com base)' : ' (PDV a PDV)'}…`);
+    showRoadRouteToast('Calculando rota real…');
+    const url = `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`;
+    console.log('OSRM url:', url);
+    try {
+      const resp = await fetch(url);
+      console.log('OSRM response status:', resp.status);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      console.log('OSRM data:', data);
+      if (!data.routes || data.routes.length === 0) throw new Error('nenhuma rota retornada pelo OSRM');
 
-    const routeDistanceKm = Number(data.routes[0].distance) / 1000;
-    const straightDistanceKm = computeStraightDistanceForWaypointsKm(waypoints);
-    const diagnostic = evaluateRouteDistanceSanity(route.routeId, routeDistanceKm, straightDistanceKm);
-    setRouteClientsAccessStatus(route.clients, route.routeId, diagnostic);
+      const geometryCoords = data.routes[0].geometry && data.routes[0].geometry.coordinates;
+      console.log('geometry coords length:', geometryCoords && geometryCoords.length);
+      if (!geometryCoords || !geometryCoords.length) throw new Error('OSRM retornou sem geometria');
 
-    // Remove old road layer if switching to a different route
-    clearRoadRoute();
-
-    const coords = diagnostic.rota_valida
-      ? data.routes[0].geometry.coordinates.map(([lon, lat]) => [lat, lon])
-      : waypoints.map(([lon, lat]) => [lat, lon]);
-    const lineColor = (state.weekColorMode && state.viewMode === 'operational')
-      ? (weekCycleColors[parseInt(route.week, 10)] || '#52d0ff')
-      : (dayColors[route.day] || '#52d0ff');
-
-    roadRouteLayer = L.polyline(coords, {
-      color: lineColor,
-      weight: 6,
-      opacity: 0.92,
-      dashArray: '12,6',
-      className: 'road-route-line'
-    }).addTo(map);
-
-    state.roadRouteId = route.routeId;
-    state._roadRouteSignature = buildRoadRouteSignature(route);
-    // FASE B — comparacao Planejado x Rodoviario apenas para a rota ativa.
-    // Armazenado somente para a rota carregada pelo ALT+P; limpo em clearRoadRoute.
-    if (diagnostic.rota_valida) {
-      const plannedKm = Number(route.totalDistance) || 0;
-      const roadKm = Number(diagnostic.distancia_rota) || 0;
-      const diffPct = plannedKm > 0 ? ((roadKm - plannedKm) / plannedKm) * 100 : null;
-      state.roadRouteCompare = { routeId: route.routeId, plannedKm, roadKm, diffPct };
-    } else {
-      state.roadRouteCompare = null;
+      const routeDistanceKm = Number(data.routes[0].distance) / 1000;
+      const straightDistanceKm = computeStraightDistanceForWaypointsKm(waypoints);
+      const diagnostic = evaluateRouteDistanceSanity(route.routeId, routeDistanceKm, straightDistanceKm);
+      geom = {
+        coords: diagnostic.rota_valida
+          ? geometryCoords.map(([lon, lat]) => [lat, lon])
+          : waypoints.map(([lon, lat]) => [lat, lon]),
+        distanceKm: routeDistanceKm,
+        straightKm: straightDistanceKm,
+        durationMin: Math.round(Number(data.routes[0].duration) / 60),
+        valid: diagnostic.rota_valida,
+        diagnostic
+      };
+      _roadGeomCache.set(geomKey, geom);
+      _trimRoadGeomCache();
+    } catch (err) {
+      console.error('[RTA] Erro ao desenhar rota real:', err);
+      console.groupEnd();
+      clearRoadRoute();
+      updatePlannerHint(`Erro ao carregar rota real: ${err.message}. Verifique a conexão/OSRM.`);
+      showRoadRouteToast('Erro ao carregar rota real.');
+      return;
     }
-    syncRoadRouteVisibility();
-    map.fitBounds(roadRouteLayer.getBounds(), { padding: [50, 50] });
-    renderRouteDetail(route);
-
-    const distReal = Number(diagnostic.distancia_rota || 0).toFixed(1);
-    const distFinal = Number(diagnostic.distancia_final || 0).toFixed(1);
-    const durMin = Math.round(data.routes[0].duration / 60);
-    const modeLabel = diagnostic.tipo_distancia === 'REAL' ? 'REAL' : 'ESTIMADA';
-    const barrierLabel = diagnostic.flag ? ` | ${diagnostic.flag}` : '';
-    const msg = diagnostic.rota_valida
-      ? `Percurso real ${state.showDriverBase ? 'com base' : 'entre PDVs'}: ${distReal} km | ${durMin} min | ${route.clients.length} paradas — pressione ALT+P para fechar`
-      : `Rota invalida detectada (${modeLabel}). Usando fallback em linha reta: ${distFinal} km.${barrierLabel} Clientes marcados para tratamento manual.`;
-    updatePlannerHint(msg);
-    showRoadRouteToast(
-      diagnostic.rota_valida
-        ? `${distReal} km reais | ${durMin} min | ${state.showDriverBase ? 'com base' : 'PDV a PDV'}`
-        : `${distFinal} km estimados | rota inválida`
-    );
-  } catch (err) {
-    clearRoadRoute();
-    updatePlannerHint(`Erro ao buscar percurso real: ${err.message}. Verifique sua conexao.`);
+  } else {
+    console.log('geometria reaproveitada do cache');
   }
+
+  const diagnostic = geom.diagnostic
+    || evaluateRouteDistanceSanity(route.routeId, geom.distanceKm, geom.straightKm);
+  setRouteClientsAccessStatus(validClients, route.routeId, diagnostic);
+
+  // Remove a camada anterior antes de desenhar a nova (evita duplicação).
+  clearRoadRoute();
+
+  const lineColor = (state.weekColorMode && state.viewMode === 'operational')
+    ? (weekCycleColors[parseInt(route.week, 10)] || '#52d0ff')
+    : (dayColors[route.day] || '#52d0ff');
+
+  roadRouteLayer = L.polyline(geom.coords, {
+    color: lineColor,
+    weight: 6,
+    opacity: 0.92,
+    dashArray: '12,6',
+    className: 'road-route-line'
+  }).addTo(map);
+
+  console.log('roadRouteLayer criado:', !!roadRouteLayer, '| no mapa:', !!(map && roadRouteLayer && map.hasLayer(roadRouteLayer)));
+  console.log('map exists:', !!map);
+  console.groupEnd();
+
+  // Fixa a rota desenhada como selecionada (Caso B: motorista sem rota clicada).
+  state.selectedRouteId = route.routeId;
+  state.roadRouteId = route.routeId;
+  state._roadRouteSignature = buildRoadRouteSignature(route);
+  if (geom.valid) {
+    const plannedKm = Number(route.totalDistance) || 0;
+    const roadKm = Number(geom.distanceKm) || 0;
+    const diffPct = plannedKm > 0 ? ((roadKm - plannedKm) / plannedKm) * 100 : null;
+    state.roadRouteCompare = { routeId: route.routeId, plannedKm, roadKm, diffPct };
+  } else {
+    state.roadRouteCompare = null;
+  }
+  syncRoadRouteVisibility();
+  setRoadRouteButtonState();
+  try { map.fitBounds(roadRouteLayer.getBounds(), { padding: [50, 50] }); } catch (_) {}
+  renderRouteDetail(route);
+
+  const distReal = Number(geom.distanceKm || 0).toFixed(1);
+  const distFinal = geom.valid ? distReal : Number(geom.straightKm || 0).toFixed(1);
+  const durMin = geom.durationMin;
+  const cachedLabel = cachedGeom ? ' (cache)' : '';
+  const msg = geom.valid
+    ? `Rota real ${base ? 'com base' : 'PDV a PDV'}${cachedLabel}: ${distReal} km | ${durMin} min | ${validClients.length} paradas${noCoordLabel}${baseLabel} — ALT+P ou RTA para fechar`
+    : `Rota inválida detectada. Fallback em linha reta: ${distFinal} km.${noCoordLabel}${baseLabel} Clientes marcados para tratamento manual.`;
+  updatePlannerHint(msg);
+  showRoadRouteToast(
+    geom.valid
+      ? `${distReal} km reais | ${durMin} min${cachedLabel}`
+      : `${distFinal} km estimados | rota inválida`
+  );
 }
 
 function clearManualRebalanceState(message) {
@@ -12432,6 +12953,45 @@ function _getOrCreateInsight(clientId) {
   return state.clientInsights[clientId];
 }
 
+// ── Persistência da ficha INS ────────────────────────────────────────────────
+// state.clientInsights é a fonte da verdade (mesma keyed-por-client.id usada
+// por marcadores territorial/operacional). Antes desta camada os dados INS eram
+// apenas em memória e se perdiam ao trocar de modo / atualizar a página.
+var INS_STORAGE_KEY = 'ROUTflex:insights:v1';
+
+function _persistClientInsights() {
+  try {
+    localStorage.setItem(INS_STORAGE_KEY, JSON.stringify(state.clientInsights || {}));
+    if (typeof console !== 'undefined' && console.debug) {
+      console.debug('[INS] fichas persistidas (' + Object.keys(state.clientInsights || {}).length + ' clientes)');
+    }
+    return true;
+  } catch (e) {
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('[INS] falha ao persistir fichas', e);
+    }
+    return false;
+  }
+}
+
+function _loadClientInsights() {
+  try {
+    var raw = localStorage.getItem(INS_STORAGE_KEY);
+    if (!raw) return;
+    var parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object') {
+      state.clientInsights = parsed;
+      if (typeof console !== 'undefined' && console.info) {
+        console.info('[INS] fichas restauradas (' + Object.keys(parsed).length + ' clientes)');
+      }
+    }
+  } catch (e) {
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('[INS] falha ao restaurar fichas', e);
+    }
+  }
+}
+
 function hasClientInsightData(clientId) {
   var ins = state.clientInsights[clientId];
   if (!ins) return false;
@@ -12481,7 +13041,7 @@ function _renderInsObsList(observacoes) {
     btn.addEventListener('click', function() {
       var idx = parseInt(btn.dataset.idx, 10);
       var ins = state.clientInsights[_insClientId];
-      if (ins && !isNaN(idx)) { ins.observacoes.splice(idx, 1); _renderInsObsList(ins.observacoes); }
+      if (ins && !isNaN(idx)) { ins.observacoes.splice(idx, 1); _renderInsObsList(ins.observacoes); _persistClientInsights(); }
     });
   });
 }
@@ -15183,6 +15743,10 @@ function renderRouteList(routeGroups) {
         skipRouteRecalculate: true,
         skipHeavyPanels: true
       });
+      // Se a rota real já está ativa, redesenhar para a rota recém-selecionada.
+      if (roadRouteLayer && state.viewMode === 'operational') {
+        fetchRoadRoute();
+      }
     };
   });
 }
@@ -15276,6 +15840,18 @@ function swapStopSequence(clientIdA, clientIdB) {
 
 function renderRouteDetail(selectedRoute) {
 
+  // Container do painel de detalhe da rota. Antes era usado sem declaração
+  // (ReferenceError em runtime, quebrando o fluxo do chamador). Fallback seguro:
+  // se o elemento não existir, avisa e retorna sem lançar — nunca impede o mapa.
+  const container = document.getElementById('route-detail');
+  if (!container) {
+    console.warn('[renderRouteDetail] #route-detail não encontrado — painel de detalhe ignorado.');
+    return;
+  }
+  if (!selectedRoute) {
+    return;
+  }
+
   // FASE B — comparacao Planejado x Rodoviario somente para a rota ativa do ALT+P.
   const compare = (state.roadRouteCompare && state.roadRouteCompare.routeId === selectedRoute.routeId)
     ? state.roadRouteCompare
@@ -15321,6 +15897,8 @@ function renderRouteDetail(selectedRoute) {
     <div class="detail-line"><span>Ciclo de visita</span><strong>Semana ${selectedRoute.week} | ${selectedRoute.day}</strong></div>
     <div class="detail-line"><span>DDD / regiao</span><strong>${selectedRoute.ddd} - ${selectedRoute.region}</strong></div>
     <div class="detail-line"><span>Volume da rota</span><strong>${selectedRoute.routeLoad} stops</strong></div>
+    <div class="detail-line"><span>${_routeKmSourceLabel(selectedRoute)}</span><strong>${(Number(selectedRoute.totalDistance) || 0).toFixed(1)} km</strong></div>
+    ${selectedRoute.noCoordCount ? `<div class="detail-line"><span>PDVs sem coordenada (fora do KM)</span><strong>${selectedRoute.noCoordCount}</strong></div>` : ''}
     <div class="detail-line"><span>Territorios</span><strong>${selectedRoute.territories.join(', ')}</strong></div>
     <div class="detail-line"><span>Frota alocada</span><strong>${selectedRoute.uniqueVehicles.join(', ')}</strong></div>
     <div class="detail-line"><span>Risco operacional</span><strong>${selectedRoute.riskCount} pontos</strong></div>
@@ -17059,6 +17637,10 @@ function renderMap(filteredClients, routeGroups, _precomputedSelect) {
               skipRouteRecalculate: true,
               skipHeavyPanels: true
             });
+            // Se a rota real já está ativa, redesenhar para a rota clicada no mapa.
+            if (roadRouteLayer && state.viewMode === 'operational') {
+              fetchRoadRoute();
+            }
           });
           _polylineRegistry.set(routeId, {
             polyline: pl, pointsFP: fp,
@@ -17527,6 +18109,11 @@ function calculateRoutes(options = {}) {
   window.__rfxPerf.calls['buildRouteGroups'].lastMs = _t1_brg - _t0_brg;
   if (_t1_brg - _t0_brg > window.__rfxPerf.calls['buildRouteGroups'].maxMs) window.__rfxPerf.calls['buildRouteGroups'].maxMs = _t1_brg - _t0_brg;
   window.__rfxPerf.count('routeGroups.count', allRouteGroups.length);
+  // KM RODOVIÁRIO REAL: no modo operacional, enfileira o cálculo OSRM das rotas.
+  // O resultado é aplicado (via cache) num re-render único quando o lote conclui.
+  if (isOperational && typeof scheduleOperationalRoadKm === 'function') {
+    scheduleOperationalRoadKm(allRouteGroups);
+  }
   ensureSelections(allRouteGroups);
 
   // ── Operational mode: restrict map to active driver only ──
@@ -17577,6 +18164,10 @@ function calculateRoutes(options = {}) {
     renderDayButtons();
     renderFilterSummary(allFilteredClients);
   }
+
+  // Mantém o botão RTA (Rota real) em sincronia com o modo em qualquer entrada
+  // no operacional (switchViewMode, restore de cenário, F5).
+  if (typeof setRoadRouteButtonState === 'function') setRoadRouteButtonState();
 
   scheduleRenderPass({
     allFilteredClients,
@@ -17966,6 +18557,13 @@ function switchViewMode(newMode) {
   } else if (previousMode === 'analytics' && state.insightModeActive) {
     toggleInsightMode(false);
   }
+
+  // Rota real (RTA) é exclusiva do operacional: ao sair, limpar a polyline e
+  // sincronizar o estado do botão (desabilitado fora do operacional).
+  if (newMode !== 'operational') {
+    if (typeof clearRoadRoute === 'function') clearRoadRoute();
+  }
+  if (typeof setRoadRouteButtonState === 'function') setRoadRouteButtonState();
 
   // Re-run pipeline for the new mode — preserve viewport (user controls pan)
   applyFilters({ skipFitBounds: true });
@@ -18662,6 +19260,11 @@ document.getElementById('toggle-ruler-btn').onclick = toggleRulerMode;
 document.getElementById('toggle-insight-btn').onclick = toggleInsightMode;
 document.getElementById('toggle-barrier-btn').onclick = toggleBarrierMode;
 document.getElementById('toggle-swap-btn').onclick = toggleSwapMode;
+// RTA — Rota real: mesma ação do atalho ALT+P. Só executa no modo Operacional
+// (fetchRoadRoute já valida o modo internamente). setRoadRouteButtonState()
+// mantém o estado visual (ativo/desabilitado) sincronizado.
+document.getElementById('toggle-road-route-btn').onclick = fetchRoadRoute;
+setRoadRouteButtonState();
 
 // INS modal — persistent event listeners (bound once at startup)
 document.getElementById('ins-panel-close').addEventListener('click', closeInsightPanel);
@@ -18712,8 +19315,14 @@ document.getElementById('ins-save-btn').addEventListener('click', function() {
   _insSnapshot = { categoria: ins.categoria, status: ins.status, faturamento: ins.faturamento,
     moeda: ins.moeda, mixProduto: ins.mixProduto, concorrente: ins.concorrente, operador: ins.operador };
 
-  document.getElementById('ins-ultima-atualizacao').textContent =
-    'Salvo: ' + new Date(ins.ultimaAtualizacao).toLocaleString('pt-BR');
+  // Persistência real: grava em localStorage e reflete o status verdadeiro.
+  var _tsEl = document.getElementById('ins-ultima-atualizacao');
+  var _saved = _persistClientInsights();
+  if (_tsEl) {
+    _tsEl.textContent = _saved
+      ? 'Salvo: ' + new Date(ins.ultimaAtualizacao).toLocaleString('pt-BR')
+      : '⚠️ Erro ao salvar (armazenamento indisponível)';
+  }
   _renderInsHistList(ins.historico);
   updateMarkerIconsOnly();
 });
@@ -18727,6 +19336,7 @@ document.getElementById('ins-obs-add-btn').addEventListener('click', function() 
   ins.observacoes.push(sanitizeText(text));
   textarea.value = '';
   _renderInsObsList(ins.observacoes);
+  _persistClientInsights();
 });
 
 function syncStatusLegendToggles() {
@@ -19011,6 +19621,11 @@ async function initializeApp() {
 
   initializeDrivers();
 
+  // Restaura as bases geográficas de motorista alteradas (coordenada real por
+  // driverId, escopada por DDD). Deve rodar após initializeDrivers (que recria os
+  // drivers do config) e antes do primeiro cálculo de rotas/KM.
+  applyAllDriverBaseOverrides();
+
   // Fase 1: carregar apenas o DDD padrão no boot (lazy loading dos demais ao trocar)
   const loadedCustomers = await loadCustomersFromSource(state.selectedDDD, { entryPoint: 'boot' });
   logger.info(`[BOOT] DDD ${state.selectedDDD}: ${loadedCustomers.length} clientes carregados`);
@@ -19032,6 +19647,10 @@ async function initializeApp() {
   syncInstrumentsPanelUI();
   syncTerritoryViewUI();
   updateDataModeUI();
+
+  // INS: restaura fichas de inteligência persistidas antes do primeiro render,
+  // para que a coloração/status dos marcadores reflita os dados salvos.
+  _loadClientInsights();
 
   // Fase 2: carrega planejamento DDD-scoped (backend → localStorage → legacy).
   // Must run before any render so clients have correct driver/day/week assignments.

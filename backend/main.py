@@ -28,6 +28,7 @@ from schemas import (CustomerCreate, Customer as CustomerSchema, VehicleCreate, 
                      ExportCustomersRequest, ExportCustomersResponse,
                      CustomerCoordinateUpdateRequest, CustomerCoordinateUpdateResponse,
                      CustomerGeocodingRequest, CustomerGeocodingResponse,
+                     AddressGeocodeRequest, AddressGeocodeResponse,
                      HealthResponse, GenericStatusResponse,
                      ManualPlanSaveResponse, CustomerStatusEventResponse,
                      CustomerVisitDayEventResponse, SimulationScenarioResponse)
@@ -575,6 +576,49 @@ async def geocode_customer_address(customer_id: int, payload: CustomerGeocodingR
         raise HTTPException(status_code=422, detail=result.get("message", "Geocoding falhou."))
 
     return CustomerGeocodingResponse(**result)
+
+
+@app.post("/geocode", response_model=AddressGeocodeResponse)
+async def geocode_address(payload: AddressGeocodeRequest):
+    """
+    Geocodifica um endereco avulso (ex.: base/ponto de partida de motorista) via
+    Nominatim, SEM vinculo com cliente e SEM escrita em banco. Reutiliza o
+    GeocodingService existente (retry/backoff + validacao de coordenada BR).
+    Em caso de falha retorna 200 com success=false (o chamador decide o fallback).
+    """
+    address = (payload.address or "").strip() or None
+    number = (payload.number or "").strip() or None
+    neighborhood = (payload.neighborhood or "").strip() or None
+    city = (payload.city or "").strip() or None
+    state = (payload.state or "").strip() or None
+
+    if not any([address, number, neighborhood, city, state]):
+        raise HTTPException(
+            status_code=422,
+            detail="Endereco insuficiente para geocoding. Informe cidade, bairro ou logradouro.",
+        )
+
+    svc = get_geocoding_service()
+    address_full = svc.build_address(address, number, neighborhood, city, state)
+    result = await svc.geocode_nominatim(address_full)
+    timestamp = datetime.now().isoformat()
+
+    if result:
+        return AddressGeocodeResponse(
+            success=True,
+            message="Geocoding bem-sucedido",
+            lat=result["lat"],
+            lon=result["lon"],
+            address_built=address_full,
+            display_name=result.get("display_name"),
+            timestamp=timestamp,
+        )
+    return AddressGeocodeResponse(
+        success=False,
+        message="Geocoding falhou ou coordenada invalida",
+        address_built=address_full,
+        timestamp=timestamp,
+    )
 
 
 @app.get("/events", response_model=list[EventLogRecord])

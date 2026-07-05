@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Sidebar from './Sidebar.jsx';
+import RoutflexAssist from './RoutflexAssist.jsx';
 
 const SIDEBAR_TRANSITION_MS = 260;
 const SIDEBAR_EXPANDED_WIDTH = 240;
@@ -62,6 +63,7 @@ export default function Layout({ children }) {
           {children}
         </div>
       </div>
+      <RoutflexAssist />
     </div>
   );
 }
