@@ -4807,6 +4807,33 @@ body.login-active .app-shell {
   display: flex; align-items: center; gap: 5px;
 }
 .pdv-save-hint::before { content: '\25CF'; font-size: 0.6rem; }
+/* Filtro compacto de curva (multi-seleção A–Z + Sem curva) — painel de parâmetros */
+.curve-filter-field { position: relative; display: block; }
+.curve-filter-trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  width: 100%; padding: 7px 10px; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1); background: #1e2a3a; color: #e3f1ff;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.12s, background 0.12s;
+}
+.curve-filter-trigger:hover { border-color: rgba(94,191,255,0.5); background: #223247; }
+.curve-filter-trigger:focus-visible { outline: 2px solid rgba(94,191,255,0.6); outline-offset: 1px; }
+.curve-filter-popover {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 30;
+  padding: 8px; border-radius: 8px;
+  background: #16222f; border: 1px solid rgba(94,140,190,0.4);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+}
+.curve-filter-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 7px; gap: 8px;
+}
+.curve-filter-linkbtn {
+  background: none; border: none; color: #7aaad0; font-size: 0.68rem; font-weight: 700;
+  cursor: pointer; padding: 2px 4px; border-radius: 4px;
+}
+.curve-filter-linkbtn:hover { color: #fff; text-decoration: underline; }
+.curve-filter-count { font-size: 0.64rem; color: #5e87ae; font-weight: 700; }
+.curve-filter-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
 .pdv-popup-crm-note {
   padding: 5px 12px 7px;
   border-top: 1px solid rgba(129,183,231,0.07);
@@ -6961,22 +6988,20 @@ body.login-active .routex-ai-panel { display:none !important; }
             </label>
           </div>
           
-          <!-- Filtro de curva (aparece só em modo "curve") -->
+          <!-- Filtro de curva (aparece só em modo "curve") — usa client.curveCode (A–Z + Sem curva) -->
           <div id="curve-filter-container" style="display:none; padding:8px 0; border-top:1px solid rgba(255,255,255,0.1);">
             <div class="params-section-tag" style="margin-bottom:8px; margin-top:0;">Filtrar por curva</div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px;">
-                <input type="checkbox" id="curve-filter-a" checked style="cursor:pointer;">
-                <span>Curva A</span>
-              </label>
-              <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px;">
-                <input type="checkbox" id="curve-filter-b" checked style="cursor:pointer;">
-                <span>Curva B</span>
-              </label>
-              <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px;">
-                <input type="checkbox" id="curve-filter-c" checked style="cursor:pointer;">
-                <span>Curva C</span>
-              </label>
+            <div class="curve-filter-field" id="curve-filter-field">
+              <button type="button" id="curve-filter-trigger" class="curve-filter-trigger" aria-haspopup="true" aria-expanded="false" onclick="toggleCurveFilterPopover(event)">
+                <span id="curve-filter-trigger-label">Todas</span><span class="pdv-curve-caret">&#9662;</span>
+              </button>
+              <div id="curve-filter-popover" class="curve-filter-popover" style="display:none;" role="listbox" aria-multiselectable="true">
+                <div class="curve-filter-actions">
+                  <button type="button" class="curve-filter-linkbtn" onclick="clearCurveFilter()">Limpar (Todas)</button>
+                  <span class="curve-filter-count" id="curve-filter-count"></span>
+                </div>
+                <div class="curve-filter-grid" id="curve-filter-grid"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -14733,7 +14758,14 @@ async function savePdvDraft(clientId) {
       // Sucesso: aplica curveCode ao objeto real e atualiza SÓ o marcador afetado.
       const groupId = client.clientGroupId;
       clients.forEach(function(c) { if (c.clientGroupId === groupId) c.curveCode = newCode; });
-      if (typeof updateMarkerIconsOnly === 'function' && _markerRegistry.size > 0) {
+      // Se um filtro de curva estiver ativo, a visibilidade pode mudar (o cliente
+      // pode passar a casar/deixar de casar). Reaplica os filtros EM MEMÓRIA
+      // (sem reload, sem OSRM, sem recálculo de rota). Sem filtro ativo, basta
+      // atualizar o ícone do marcador afetado.
+      if (state.curvFilters && state.curvFilters.size > 0) {
+        if (typeof invalidateClassifyCache === 'function') invalidateClassifyCache();
+        applyFilters({ skipFitBounds: true });
+      } else if (typeof updateMarkerIconsOnly === 'function' && _markerRegistry.size > 0) {
         updateMarkerIconsOnly();
       }
       d.original.curveCode = newCode;
@@ -19694,11 +19726,29 @@ document.getElementById('ctx-open-windows').onclick = () => { _hideContextMenu()
 document.getElementById('open-params-btn').onclick = openParamsModal;
 document.getElementById('close-params-btn').onclick = closeParamsModal;
 document.getElementById('territory-pdv-display-select').onchange = (event) => {
+  const _prevDisplay = state.territoryPdvDisplay;
   state.territoryPdvDisplay = event.target.value;
   
   // Mostrar/esconder filtro de curva baseado no modo selecionado
   const curveFilterContainer = document.getElementById('curve-filter-container');
-  curveFilterContainer.style.display = event.target.value === 'curve' ? 'block' : 'none';
+  const _curveMode = event.target.value === 'curve';
+  curveFilterContainer.style.display = _curveMode ? 'block' : 'none';
+  if (_curveMode) {
+    refreshCurveFilterUI();
+  } else {
+    closeCurveFilterPopover();
+  }
+
+  // Ao SAIR do modo "Curva" (filtro exclusivo desse modo), limpa automaticamente
+  // o filtro de curva para não deixar clientes ocultos por um filtro invisível.
+  // clearCurveFilter() já limpa, volta a UI para "Todas" e reaplica os filtros EM
+  // MEMÓRIA (uma única vez). Demais filtros (território/motorista/veículo/semana/
+  // dia/busca/status) são preservados. Sem API, sem OSRM, sem recálculo.
+  if (_prevDisplay === 'curve' && !_curveMode && state.curvFilters.size > 0) {
+    clearCurveFilter();
+    updatePlannerHint('Filtro de curva removido ao alterar a visualização.');
+    return; // evita segunda renderização (fast path abaixo)
+  }
   
   // Fast path: only update marker icons, skip full calculateRoutes+renderMap pipeline
   if (_markerRegistry.size > 0) {
@@ -19721,20 +19771,95 @@ document.getElementById('week-color-toggle').onchange = (event) => {
   updatePlannerHint(state.weekColorMode ? 'Cores por Semana/Ciclo ativadas (modo operacional).' : 'Cores por Semana/Ciclo desativadas.');
 };
 
-// Handlers para checkboxes de filtro de curva
-['curve-filter-a', 'curve-filter-b', 'curve-filter-c'].forEach((checkboxId) => {
-  document.getElementById(checkboxId).onchange = (event) => {
-    const curva = checkboxId.replace('curve-filter-', '').toUpperCase();
-    if (event.target.checked) {
-      state.curvFilters.add(curva);
-    } else {
-      state.curvFilters.delete(curva);
-    }
-    applyFilters({ skipFitBounds: true });
-    const selectedCurves = Array.from(state.curvFilters).sort().join(', ');
-    updatePlannerHint(`Filtro de curva ajustado: ${selectedCurves || 'nenhuma'}`);
-  };
-});
+// Handlers do filtro compacto de curva (multi-seleção A–Z + Sem curva).
+// Popula a grade uma vez; seleção múltipla aplica os filtros em memória
+// (mesma via dos demais filtros — sem reload, sem OSRM, sem recálculo de rota).
+(function _initCurveFilterGrid() {
+  const grid = document.getElementById('curve-filter-grid');
+  if (!grid) return;
+  const noneBtn = `<button type="button" class="pdv-curve-opt curve-filter-opt curve-filter-opt--none" data-curve="${CURVE_FILTER_NONE}" style="grid-column:1/-1;" onclick="toggleCurveFilterOption('${CURVE_FILTER_NONE}')">Sem curva</button>`;
+  const letters = Array.from({ length: 26 }, (_, i) => {
+    const l = String.fromCharCode(65 + i);
+    return `<button type="button" class="pdv-curve-opt curve-filter-opt" data-curve="${l}" onclick="toggleCurveFilterOption('${l}')">${l}</button>`;
+  }).join('');
+  grid.innerHTML = noneBtn + letters;
+  refreshCurveFilterUI();
+})();
+
+function _curveFilterClosedLabel() {
+  const sel = state.curvFilters;
+  if (!sel || sel.size === 0) return 'Todas';
+  const tokens = Array.from(sel).map((t) => (t === CURVE_FILTER_NONE ? 'Sem curva' : t));
+  // "Sem curva" primeiro, letras em ordem.
+  tokens.sort((a, b) => {
+    if (a === 'Sem curva') return -1;
+    if (b === 'Sem curva') return 1;
+    return a.localeCompare(b);
+  });
+  if (sel.size <= 3) return tokens.join(', ');
+  return `${sel.size} curvas selecionadas`;
+}
+
+function refreshCurveFilterUI() {
+  const label = document.getElementById('curve-filter-trigger-label');
+  if (label) label.textContent = _curveFilterClosedLabel();
+  const count = document.getElementById('curve-filter-count');
+  if (count) count.textContent = state.curvFilters.size ? `${state.curvFilters.size} selecionada(s)` : '';
+  document.querySelectorAll('.curve-filter-opt').forEach((btn) => {
+    btn.classList.toggle('is-selected', state.curvFilters.has(btn.dataset.curve));
+  });
+}
+
+function toggleCurveFilterOption(token) {
+  if (state.curvFilters.has(token)) {
+    state.curvFilters.delete(token);
+  } else {
+    state.curvFilters.add(token);
+  }
+  refreshCurveFilterUI();
+  applyFilters({ skipFitBounds: true }); // reaplicação em memória (visibilidade)
+  updatePlannerHint(`Filtro de curva: ${_curveFilterClosedLabel()}`);
+}
+
+function clearCurveFilter() {
+  state.curvFilters.clear();
+  refreshCurveFilterUI();
+  applyFilters({ skipFitBounds: true });
+  updatePlannerHint('Filtro de curva: Todas');
+}
+
+function toggleCurveFilterPopover(ev) {
+  if (ev) ev.stopPropagation();
+  const pop = document.getElementById('curve-filter-popover');
+  if (!pop) return;
+  const isOpen = pop.style.display !== 'none' && pop.style.display !== '';
+  if (isOpen) { closeCurveFilterPopover(); return; }
+  pop.style.display = 'block';
+  const trigger = document.getElementById('curve-filter-trigger');
+  if (trigger) trigger.setAttribute('aria-expanded', 'true');
+  setTimeout(() => {
+    document.addEventListener('mousedown', _curveFilterOutsideHandler, true);
+    document.addEventListener('keydown', _curveFilterEscHandler, true);
+  }, 0);
+}
+
+function closeCurveFilterPopover() {
+  const pop = document.getElementById('curve-filter-popover');
+  if (pop) pop.style.display = 'none';
+  const trigger = document.getElementById('curve-filter-trigger');
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  document.removeEventListener('mousedown', _curveFilterOutsideHandler, true);
+  document.removeEventListener('keydown', _curveFilterEscHandler, true);
+}
+
+function _curveFilterOutsideHandler(e) {
+  const field = document.getElementById('curve-filter-field');
+  if (field && !field.contains(e.target)) closeCurveFilterPopover();
+}
+
+function _curveFilterEscHandler(e) {
+  if (e.key === 'Escape') { e.stopPropagation(); closeCurveFilterPopover(); }
+}
 
 // Mode switcher buttons
 document.querySelectorAll('#mode-switcher .mode-btn').forEach((btn) => {

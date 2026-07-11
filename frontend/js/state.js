@@ -3,6 +3,9 @@
 // Depends on: config.js (days constant)
 // Forward ref: _schedulePlanningAutosave() — defined in map.html, called at runtime only
 
+// Token que representa "Sem curva" no filtro visual de curva (curveCode null/vazio).
+const CURVE_FILTER_NONE = '__NONE__';
+
 const state = {
   viewMode: 'territorial', // 'territorial' | 'operational' | 'analytics'
   mode: 'REAL',
@@ -20,7 +23,10 @@ const state = {
   selectedDriverIds: new Set(),
   vehicleFilter: 'all',
   territoryFilter: 'all',
-  curvFilters: new Set(['A', 'B', 'C']),
+  // Filtro VISUAL de curva — baseado exclusivamente em client.curveCode (nova
+  // curva manual A–Z + "Sem curva" via token CURVE_FILTER_NONE). Set vazio = Todas
+  // (sem restrição). NÃO usa a curva legada client.curva.
+  curvFilters: new Set(),
   densityProfile: 'balanced',
   selectedDDD: '65',
   activePlanningSessionId: 'DDD_65',

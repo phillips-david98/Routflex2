@@ -100,11 +100,15 @@ function getClientMapVisibility(client, options = {}) {
   const vehicleOk = state.vehicleFilter === 'all'
     || ((_clientDriver ? _clientDriver.vehicle : client.vehicle) === state.vehicleFilter);
   const territoryOk = state.territoryFilter === 'all' || client.territory === state.territoryFilter;
-  // Curva D não possui checkbox no filtro (A/B/C); por isso é isenta do filtro
-  // de curva e sempre passa — garante suporte/visibilidade sem alterar a UI.
+  // Filtro VISUAL de curva — baseado exclusivamente na nova curva manual
+  // (client.curveCode). Set vazio = Todas. Cliente sem curva (curveCode null/vazio)
+  // casa com o token "Sem curva" (CURVE_FILTER_NONE). SEM fallback para 'C' e SEM
+  // uso da curva legada client.curva.
+  const _clientCurveCode = normalizeCurveCode(client.curveCode); // 'A'..'Z' ou null
   const curvOk = state.curvFilters.size === 0
-    || state.curvFilters.has(client.curva)
-    || String(client.curva || '').toUpperCase() === 'D';
+    || (_clientCurveCode === null
+      ? state.curvFilters.has(CURVE_FILTER_NONE)
+      : state.curvFilters.has(_clientCurveCode));
   const weekOk = state.activeWeeks.has(client.week);
   const matchesBaseFilters = vehicleOk && territoryOk && curvOk && weekOk;
 
