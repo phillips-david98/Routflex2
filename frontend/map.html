@@ -4768,6 +4768,45 @@ body.login-active .app-shell {
 }
 .pdv-day-btn:hover { background: rgba(40,90,148,0.6); color: #fff; border-color: rgba(94,191,255,0.5); }
 .pdv-day-btn.is-current { background: rgba(34,88,132,0.92); border-color: rgba(94,191,255,0.52); color: #7fd8ff; }
+/* Seletor compacto de curva (popover ancorado, sem select nativo) */
+.pdv-curve-field { position: relative; display: inline-flex; justify-content: flex-end; }
+.pdv-curve-trigger {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 8px; min-width: 96px; justify-content: space-between;
+  border-radius: 6px; border: 1px solid rgba(86,146,198,0.35);
+  background: #1e2a3a; color: #e3f1ff; font-size: 0.72rem; font-weight: 700;
+  cursor: pointer; transition: border-color 0.12s, background 0.12s;
+}
+.pdv-curve-trigger:hover:not(:disabled) { border-color: rgba(94,191,255,0.55); background: #223247; }
+.pdv-curve-trigger:focus-visible { outline: 2px solid rgba(94,191,255,0.6); outline-offset: 1px; }
+.pdv-curve-trigger:disabled { cursor: not-allowed; opacity: 0.6; }
+.pdv-curve-trigger.is-dirty { border-color: rgba(240,180,60,0.7); color: #ffcf6b; }
+.pdv-curve-caret { font-size: 0.6rem; color: #6f9ac0; }
+.pdv-curve-popover {
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: 20;
+  width: 176px; max-width: calc(100vw - 24px);
+  padding: 7px; border-radius: 8px;
+  background: #16222f; border: 1px solid rgba(94,140,190,0.4);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+}
+.pdv-curve-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.pdv-curve-opt {
+  padding: 4px 0; border-radius: 5px; font-size: 0.66rem; font-weight: 700;
+  border: 1px solid rgba(86,146,198,0.28); background: rgba(20,42,68,0.85);
+  color: #7aaad0; cursor: pointer; text-align: center;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+.pdv-curve-opt:hover { background: rgba(40,90,148,0.7); color: #fff; border-color: rgba(94,191,255,0.55); }
+.pdv-curve-opt:focus-visible { outline: 2px solid rgba(94,191,255,0.6); outline-offset: 1px; }
+.pdv-curve-opt--none { grid-column: 1 / -1; }
+.pdv-curve-opt.is-persisted { border-color: rgba(94,191,255,0.4); }
+.pdv-curve-opt.is-selected { background: rgba(34,88,132,0.95); border-color: rgba(94,191,255,0.6); color: #7fd8ff; }
+.pdv-popup-badge.is-pending { background: rgba(240,180,60,0.15); color: #ffcf6b; border: 1px solid rgba(240,180,60,0.4); }
+.pdv-save-hint {
+  margin: 0 0 6px; font-size: 0.64rem; font-weight: 700; color: #ffcf6b;
+  display: flex; align-items: center; gap: 5px;
+}
+.pdv-save-hint::before { content: '\25CF'; font-size: 0.6rem; }
 .pdv-popup-crm-note {
   padding: 5px 12px 7px;
   border-top: 1px solid rgba(129,183,231,0.07);
@@ -6911,7 +6950,7 @@ body.login-active .routex-ai-panel { display:none !important; }
           <select id="territory-pdv-display-select" style="width:100%; padding:8px; border:1px solid rgba(255,255,255,0.1); background:#1e2a3a; color:#e3f1ff; border-radius:4px; font-size:13px; cursor:pointer; margin-bottom:16px;">
             <option value="sequence" style="background:#1e2a3a; color:#e3f1ff;">Sequência (01, 02, 03...)</option>
             <option value="driver" style="background:#1e2a3a; color:#e3f1ff;">Motorista (número da motorista)</option>
-            <option value="curve" style="background:#1e2a3a; color:#e3f1ff;">Curva (A, B, C)</option>
+            <option value="curve" style="background:#1e2a3a; color:#e3f1ff;">Curva (A–Z)</option>
           </select>
           
           <!-- Cor por semana/ciclo (independente do conteúdo) -->
@@ -7138,6 +7177,104 @@ function postBackendEvent(path, payload) {
   }).catch(() => {
     // Best effort audit logging; UI flow must not be blocked when backend is unavailable.
   });
+}
+
+// ── Curva manual (Planning) ────────────────────────────────────────────────
+// Fonte da verdade da curva = backend Python (customer_planning_attributes),
+// ISOLADO do CRM. Chave externa estável: _source (source_system) +
+// clientGroupId (external_customer_id). Nesta versão não há multi-tenant, então
+// company_id é vazio (consistente com o default do backend).
+function _curveCompanyId() { return ''; }
+
+// Aplica as curvas persistidas aos clientes recém-carregados. Best-effort:
+// se o backend estiver indisponível, mantém curveCode neutro sem bloquear o mapa.
+async function mergePlanningCurveAttributes(customers) {
+  if (!Array.isArray(customers) || customers.length === 0) return customers;
+  const sources = Array.from(new Set(customers.map((c) => c && c._source).filter(Boolean)));
+  for (const sourceSystem of sources) {
+    try {
+      const resp = await fetch(
+        `${BACKEND_API_BASE}/planning/customers/curve?source_system=${encodeURIComponent(sourceSystem)}&company_id=${encodeURIComponent(_curveCompanyId())}`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+      if (!resp.ok) continue;
+      const payload = await resp.json();
+      const items = Array.isArray(payload && payload.items) ? payload.items : [];
+      const byExtId = new Map(items.map((it) => [String(it.external_customer_id), normalizeCurveCode(it.curve_code)]));
+      customers.forEach((c) => {
+        if (!c || c._source !== sourceSystem) return;
+        const ext = String(c.clientGroupId != null ? c.clientGroupId : '');
+        if (byExtId.has(ext)) c.curveCode = byExtId.get(ext);
+      });
+    } catch (_) {
+      // Sem backend: mantém o estado neutro atual (não inventa curva).
+    }
+  }
+  return customers;
+}
+
+// Persiste SOMENTE curve_code no backend do Planning (nunca outros campos).
+async function persistClientCurve(client, newCode) {
+  const sourceSystem = client && client._source ? client._source : 'CRM';
+  const externalId = String(client && client.clientGroupId != null ? client.clientGroupId : '');
+  const resp = await fetch(`${BACKEND_API_BASE}/planning/customers/curve`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      source_system: sourceSystem,
+      external_customer_id: externalId,
+      company_id: _curveCompanyId(),
+      curve_code: newCode
+    })
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  return await resp.json();
+}
+
+// ── Seletor compacto de curva (popover) ─────────────────────────────────────
+// Seleção altera SOMENTE o rascunho local (draft). NÃO dispara PATCH, NÃO altera
+// o cliente global nem o marcador — apenas registra intenção até "Salvar alterações".
+function setPdvDraftCurve(clientId, rawValue) {
+  if (state.mode === 'SIMULATION') return; // curva somente leitura em simulação
+  const d = state.pdvEditDraft;
+  if (!d || d.clientId !== clientId) return;
+  d.draft.curveCode = normalizeCurveCode(rawValue); // '' → null (sem curva)
+  closePdvCurvePopover();
+  refreshDraftButtons();
+}
+
+function togglePdvCurvePopover(ev) {
+  if (ev) ev.stopPropagation();
+  const pop = document.getElementById('pdv-curve-popover');
+  if (!pop) return;
+  const isOpen = pop.style.display !== 'none' && pop.style.display !== '';
+  if (isOpen) { closePdvCurvePopover(); return; }
+  pop.style.display = 'block';
+  const trigger = document.getElementById('pdv-curve-trigger');
+  if (trigger) trigger.setAttribute('aria-expanded', 'true');
+  // Fecha ao clicar fora ou com Escape (registrado no próximo tick p/ não capturar este clique).
+  setTimeout(() => {
+    document.addEventListener('mousedown', _pdvCurveOutsideHandler, true);
+    document.addEventListener('keydown', _pdvCurveEscHandler, true);
+  }, 0);
+}
+
+function closePdvCurvePopover() {
+  const pop = document.getElementById('pdv-curve-popover');
+  if (pop) pop.style.display = 'none';
+  const trigger = document.getElementById('pdv-curve-trigger');
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  document.removeEventListener('mousedown', _pdvCurveOutsideHandler, true);
+  document.removeEventListener('keydown', _pdvCurveEscHandler, true);
+}
+
+function _pdvCurveOutsideHandler(e) {
+  const field = document.getElementById('pdv-curve-field');
+  if (field && !field.contains(e.target)) closePdvCurvePopover();
+}
+
+function _pdvCurveEscHandler(e) {
+  if (e.key === 'Escape') { e.stopPropagation(); closePdvCurvePopover(); }
 }
 
 const CUSTOMER_SOURCE_STORAGE_PREFIX = 'ROUTflex:customers:ddd:';
@@ -14181,7 +14318,25 @@ function openClientPopup(client, latlng, options = {}) {
   }
 
   const seed = parseInt(String(client.id).replace(/\D/g, '')) || 1;
-  const curvaClass = `curva-${normalizeCurva(client.curva).toLowerCase()}`;
+  const curveCode = normalizeCurveCode(client.curveCode);
+  const curveIsReadOnly = state.mode === 'SIMULATION';
+  const curveTriggerLabel = curveCode ? `Curva ${curveCode}` : 'Sem curva';
+  const curveNoneOpt = `<button type="button" class="pdv-curve-opt pdv-curve-opt--none${curveCode ? '' : ' is-selected'}" onclick="setPdvDraftCurve('${client.id}','')">Sem curva</button>`;
+  const curveLetterOpts = Array.from({ length: 26 }, (_, i) => {
+    const letter = String.fromCharCode(65 + i);
+    return `<button type="button" class="pdv-curve-opt${curveCode === letter ? ' is-selected' : ''}" onclick="setPdvDraftCurve('${client.id}','${letter}')">${letter}</button>`;
+  }).join('');
+  const curveSelector = curveIsReadOnly
+    ? `<div class="pdv-curve-field"><button type="button" class="pdv-curve-trigger" disabled title="Curva é somente leitura em simulação"><span id="pdv-curve-trigger-label">${curveTriggerLabel}</span><span class="pdv-curve-caret">&#9662;</span></button></div>`
+    : `<div class="pdv-curve-field" id="pdv-curve-field">
+        <button type="button" id="pdv-curve-trigger" class="pdv-curve-trigger" aria-haspopup="true" aria-expanded="false" onclick="togglePdvCurvePopover(event)">
+          <span id="pdv-curve-trigger-label">${curveTriggerLabel}</span><span class="pdv-curve-caret">&#9662;</span>
+        </button>
+        <div id="pdv-curve-popover" class="pdv-curve-popover" style="display:none;" role="listbox">
+          <div class="pdv-curve-grid">${curveNoneOpt}${curveLetterOpts}</div>
+        </div>
+      </div>`;
+  const curveBadgeText = curveCode ? `Curva ${curveCode}` : 'Sem curva';
   const pattern = resolveVisitFrequency(client);
   const phone = generateSimPhone(client.ddd, seed);
   const crmCode = getClientCrmCode(client, seed);
@@ -14189,7 +14344,15 @@ function openClientPopup(client, latlng, options = {}) {
   const tradeName = client.nomeFantasia || client.tradeName || client.name;
   state._popupClientId = client.id;
   state._popupLatlng = latlng;
-  state.pdvEditDraft = { clientId: client.id, week: client.week || null, day: client.day || null };
+  // Rascunho do PDV: separa valores ORIGINAIS (persistidos) dos EDITADOS (draft).
+  // Reconstruído a partir dos dados persistidos deste cliente — nunca compartilhado
+  // entre clientes. curveCode/week/day são os únicos campos editáveis nesta versão.
+  state.pdvEditDraft = {
+    clientId: client.id,
+    original: { curveCode: curveCode || null, week: client.week || null, day: client.day || null },
+    draft: { curveCode: curveCode || null, week: client.week || null, day: client.day || null },
+    status: 'idle'
+  };
   const email = `pdv${String(client.id).replace(/\D/g,'').replace(/^0+/,'')}@clientes.com.br`;
   const colaborador = _simCollaborators[(seed + client.ddd) % _simCollaborators.length];
   const cidade = _simCities[client.ddd] || `DDD ${client.ddd}`;
@@ -14249,7 +14412,8 @@ function openClientPopup(client, latlng, options = {}) {
 
   const saveBtnSection = `
     <div class="pdv-popup-day-section" style="padding-top:8px; border-top:1px solid rgba(86,146,198,0.15);">
-      <button class="pdv-day-btn" id="pdv-save-visit-btn" onclick="savePdvDraft('${client.id}')" style="width:100%; background:rgba(0,119,204,0.85); color:#fff; font-weight:700; font-size:0.72rem; padding:6px 10px; border-color:rgba(0,119,204,0.6);">Salvar visita</button>
+      <div class="pdv-save-hint" id="pdv-save-hint" style="display:none;">Alterações não salvas</div>
+      <button class="pdv-day-btn" id="pdv-save-visit-btn" disabled onclick="savePdvDraft('${client.id}')" style="width:100%; background:rgba(0,119,204,0.85); color:#fff; font-weight:700; font-size:0.72rem; padding:6px 10px; border-color:rgba(0,119,204,0.6);">Salvar alterações</button>
     </div>`;
 
   popup.innerHTML = `
@@ -14259,7 +14423,7 @@ function openClientPopup(client, latlng, options = {}) {
         <span id="pdv-popup-visit-label">${visitLabel}</span>
       </div>
       <div class="pdv-popup-header-right">
-        <span class="pdv-popup-badge ${curvaClass}">Curva ${client.curva}</span>
+        <span class="pdv-popup-badge" id="pdv-curve-badge">${curveBadgeText}</span>
         <button class="pdv-popup-close" onclick="closeClientPopup()" title="Fechar">&times;</button>
       </div>
     </div>
@@ -14272,7 +14436,9 @@ function openClientPopup(client, latlng, options = {}) {
       ${row('Telefone', phone)}
       ${row('E-mail', email)}
       ${row('Colaborador', colaborador)}
-      ${row('Curva / Prioridade', `${pattern} &mdash; Curva ${client.curva} / ${client.priority}`)}
+      ${row('Curva', curveSelector)}
+      ${row('Frequência', pattern)}
+      ${row('Prioridade', client.priority)}
       ${row('Janela', client.window)}
       ${row('Atendimento', `${client.serviceTime} min`)}
       ${row('Território', driverTerritory)}
@@ -14327,15 +14493,12 @@ function openClientPopup(client, latlng, options = {}) {
 
 function closeClientPopup(options = {}) {
   if (!options.skipDraftCheck && state.pdvEditDraft) {
-    const _draft = state.pdvEditDraft;
-    const _dc = clients.find(function(c) { return c.id === _draft.clientId; });
-    if (_dc) {
-      const _isDirty = _draft.day !== _dc.day || Number(_draft.week) !== Number(_dc.week);
-      if (_isDirty && !confirm('Existem alterações de visita não salvas. Deseja descartar?')) {
-        return;
-      }
+    const _dirty = _pdvDraftDirty(state.pdvEditDraft);
+    if (_dirty.any && !confirm('Existem alterações não salvas. Deseja descartá-las?')) {
+      return;
     }
   }
+  closePdvCurvePopover();
   state.pdvEditDraft = null;
   if (state._popupDragMoveHandler) {
     document.removeEventListener('mousemove', state._popupDragMoveHandler);
@@ -14411,35 +14574,52 @@ function ensureInactiveManualConfirmation(clientsToCheck, options = {}) {
 }
 
 function setPdvDraftWeek(clientId, newWeek) {
-  if (!state.pdvEditDraft || state.pdvEditDraft.clientId !== clientId) return;
+  const d = state.pdvEditDraft;
+  if (!d || d.clientId !== clientId || d.status === 'saving') return;
   const w = Number(newWeek);
-  if (Number(state.pdvEditDraft.week) === w) {
-    state.pdvEditDraft.week = null;
-    state.pdvEditDraft.day = null;
+  if (Number(d.draft.week) === w) {
+    d.draft.week = null;
+    d.draft.day = null;
   } else {
-    state.pdvEditDraft.week = w;
+    d.draft.week = w;
   }
   refreshDraftButtons();
 }
 
 function setPdvDraftDay(clientId, newDay) {
-  if (!state.pdvEditDraft || state.pdvEditDraft.clientId !== clientId) return;
-  state.pdvEditDraft.day = (state.pdvEditDraft.day === newDay) ? null : newDay;
+  const d = state.pdvEditDraft;
+  if (!d || d.clientId !== clientId || d.status === 'saving') return;
+  d.draft.day = (d.draft.day === newDay) ? null : newDay;
   refreshDraftButtons();
+}
+
+// Campos dirty do rascunho (comparação draft × original persistido).
+function _pdvDraftDirty(d) {
+  if (!d) return { curve: false, visit: false, any: false };
+  const curve = (d.draft.curveCode || null) !== (d.original.curveCode || null);
+  const visit = (d.draft.week || null) !== (d.original.week || null)
+    || (d.draft.day || null) !== (d.original.day || null);
+  return { curve, visit, any: curve || visit };
 }
 
 function refreshDraftButtons() {
   const popup = document.getElementById('pdv-detail-popup');
-  if (!popup || !state.pdvEditDraft) return;
-  const week = state.pdvEditDraft.week;
-  const day = state.pdvEditDraft.day;
-  const clientId = state.pdvEditDraft.clientId;
+  const d = state.pdvEditDraft;
+  if (!popup || !d) return;
+  const week = d.draft.week;
+  const day = d.draft.day;
+  const clientId = d.clientId;
+  const dirty = _pdvDraftDirty(d);
+  const saving = d.status === 'saving';
+
+  // Semana / dia — estado do rascunho.
   popup.querySelectorAll('[data-week]').forEach(function(btn) {
     btn.classList.toggle('is-current', Number(btn.dataset.week) === Number(week));
   });
   popup.querySelectorAll('[data-day]').forEach(function(btn) {
     btn.classList.toggle('is-current', btn.dataset.day === day);
   });
+
   const visitLabel = popup.querySelector('#pdv-popup-visit-label');
   if (visitLabel) {
     const client = clients.find(function(c) { return c.id === clientId; });
@@ -14450,60 +14630,134 @@ function refreshDraftButtons() {
       visitLabel.textContent = 'Sem visita definida \u2022 ' + ddd;
     }
   }
-}
 
-function savePdvDraft(clientId) {
-  const draft = state.pdvEditDraft;
-  const client = clients.find(function(c) { return c.id === clientId; });
-  if (!client || !draft || draft.clientId !== clientId) return;
-  const ct = client.clientType || 'ativo';
-  const draftDay = draft.day || null;
-  const draftWeek = draft.week ? Number(draft.week) : null;
-  const origDay = client.day || null;
-  const origWeek = client.week ? Number(client.week) : null;
+  // Seletor de curva — rótulo do rascunho + marcação de opção selecionada.
+  const draftCurve = d.draft.curveCode || null;
+  const persistedCurve = d.original.curveCode || null;
+  const triggerLabel = popup.querySelector('#pdv-curve-trigger-label');
+  if (triggerLabel) triggerLabel.textContent = draftCurve ? ('Curva ' + draftCurve) : 'Sem curva';
+  const trigger = popup.querySelector('#pdv-curve-trigger');
+  if (trigger) trigger.classList.toggle('is-dirty', dirty.curve);
+  popup.querySelectorAll('.pdv-curve-opt').forEach(function(btn) {
+    const isNone = btn.classList.contains('pdv-curve-opt--none');
+    const letter = isNone ? null : btn.textContent.trim();
+    btn.classList.toggle('is-selected', (letter || null) === draftCurve);
+    btn.classList.toggle('is-persisted', (letter || null) === persistedCurve);
+  });
 
-  console.log('[savePdvDraft] id=' + client.id
-    + ' | ANTES: ct=' + ct + ' week=' + origWeek + ' day=' + origDay
-    + ' | DRAFT: week=' + draftWeek + ' day=' + draftDay);
-
-  // No change — just close
-  if (draftDay === origDay && draftWeek === origWeek) {
-    console.log('[savePdvDraft] sem alteração, fechando');
-    closeClientPopup({ skipDraftCheck: true });
-    return;
+  // Badge do cabeçalho — valor PERSISTIDO; indica pendência sem apresentar como gravado.
+  const badge = popup.querySelector('#pdv-curve-badge');
+  if (badge) {
+    if (dirty.curve) {
+      const fromLabel = persistedCurve ? ('Curva ' + persistedCurve) : 'Sem curva';
+      const toLabel = draftCurve ? draftCurve : 'sem curva';
+      badge.textContent = fromLabel + ' \u2192 ' + toLabel;
+      badge.classList.add('is-pending');
+    } else {
+      badge.textContent = persistedCurve ? ('Curva ' + persistedCurve) : 'Sem curva';
+      badge.classList.remove('is-pending');
+    }
   }
 
-  // Build patch: always apply week + day together from draft
+  // Indicador "Alterações não salvas".
+  const hint = popup.querySelector('#pdv-save-hint');
+  if (hint) hint.style.display = dirty.any && !saving ? 'flex' : 'none';
+
+  // Botão "Salvar alterações".
+  const btn = popup.querySelector('#pdv-save-visit-btn');
+  if (btn) {
+    btn.disabled = saving || !dirty.any;
+    btn.textContent = saving ? 'Salvando\u2026' : 'Salvar alterações';
+  }
+}
+
+// Aplica a parte de VISITA (semana/dia) reutilizando o fluxo existente.
+// Síncrono e local (patch + autosave agendado), exatamente como antes.
+function _applyVisitSave(client, draftWeek, draftDay) {
+  const ct = client.clientType || 'ativo';
   const patch = { day: draftDay, week: draftWeek };
   if (ct === 'inativo') patch.manualRouteInclude = !!(draftDay && draftWeek);
   if (ct === 'novo') patch.eligibleForRouting = !!(draftDay && draftWeek);
-
   patchClient(client.id, patch);
-
-  // Ensure active filter sets include the new values so client is not filtered out
   if (draftWeek) state.activeWeeks.add(draftWeek);
   if (draftDay) state.activeDays.add(draftDay);
-
   markDriverAsAdjusted(client.driverId);
   markPlanAsDirty();
-
-  // Diagnóstico pós-patch
-  const _classified = classifyClients();
-  const _inFiltered = _classified.filtered.some(function(c) { return c.id === clientId; });
-  const _inSpecial = _classified.special.some(function(c) { return c.id === clientId; });
-  const _inTerritorial = _classified.territorial.some(function(c) { return c.id === clientId; });
-  console.log('[savePdvDraft] DEPOIS: week=' + client.week + ' day=' + client.day
-    + ' | filtered=' + _inFiltered + ' special=' + _inSpecial + ' territorial=' + _inTerritorial);
-
   applyFilters({ skipFitBounds: true });
   postBackendEvent('/customers/' + encodeURIComponent(client.id)
     + '/visit-day?day=' + encodeURIComponent(draftDay || '')
     + '&week=' + encodeURIComponent(draftWeek || '')
     + '&user=frontend', {});
-  updatePlannerHint(draftDay && draftWeek ? 'Visita definida: S' + draftWeek + ' / ' + draftDay + '.' : 'Visita removida para este cliente.');
   _scheduleScenarioPersist();
-  state.pdvEditDraft = null;
-  closeClientPopup({ skipDraftCheck: true });
+}
+
+// Orquestrador de "Salvar alterações": curva + semanas + dias.
+// Reutiliza os endpoints existentes; NÃO simula transação única. Quando ambos
+// mudam, salva a visita primeiro e só então a curva (PATCH). Falha parcial é
+// exibida sem declarar sucesso total; o rascunho é preservado para nova tentativa.
+async function savePdvDraft(clientId) {
+  const d = state.pdvEditDraft;
+  if (!d || d.clientId !== clientId || d.status === 'saving') return; // bloqueia duplo clique
+  const client = clients.find(function(c) { return c.id === clientId; });
+  if (!client) return;
+  const dirty = _pdvDraftDirty(d);
+  if (!dirty.any) return;
+
+  d.status = 'saving';
+  refreshDraftButtons();
+
+  // A. VISITA (semana/dia) — fluxo existente, primeiro quando também há curva.
+  if (dirty.visit) {
+    try {
+      _applyVisitSave(client, d.draft.week || null, d.draft.day || null);
+      d.original.week = d.draft.week || null;
+      d.original.day = d.draft.day || null;
+    } catch (err) {
+      console.error('[PDV save] falha ao salvar visita', {
+        endpoint: 'manual-plan (autosave) + POST /customers/{id}/visit-day',
+        externalId: client.clientGroupId,
+        field: 'visitWeeks/visitDays'
+      });
+      d.status = 'error';
+      updatePlannerHint('Não foi possível salvar as alterações. Nenhuma modificação foi aplicada.');
+      refreshDraftButtons();
+      return; // Não envia a curva se a visita falhou.
+    }
+  }
+
+  // B. CURVA — somente após sucesso da visita (quando houver).
+  if (dirty.curve) {
+    const newCode = d.draft.curveCode || null;
+    try {
+      const resp = await persistClientCurve(client, newCode);
+      // Sucesso: aplica curveCode ao objeto real e atualiza SÓ o marcador afetado.
+      const groupId = client.clientGroupId;
+      clients.forEach(function(c) { if (c.clientGroupId === groupId) c.curveCode = newCode; });
+      if (typeof updateMarkerIconsOnly === 'function' && _markerRegistry.size > 0) {
+        updateMarkerIconsOnly();
+      }
+      d.original.curveCode = newCode;
+      void resp;
+    } catch (err) {
+      console.error('[PDV save] falha ao salvar curva', {
+        endpoint: 'PATCH /planning/customers/curve',
+        status: (err && err.message) || 'erro',
+        externalId: client.clientGroupId,
+        field: 'curveCode'
+      });
+      d.status = 'error';
+      updatePlannerHint(dirty.visit
+        ? 'Não foi possível salvar a curva. As semanas e os dias foram preservados.'
+        : 'Não foi possível salvar a curva. Nenhuma modificação foi aplicada.');
+      refreshDraftButtons(); // curva permanece pendente (original inalterado) → botão habilitado
+      return;
+    }
+  }
+
+  // Sucesso total — mantém o painel aberto e o cliente selecionado.
+  d.status = 'idle';
+  updatePlannerHint('Alterações salvas.');
+  refreshDraftButtons();
 }
 
 function changePdvDay(clientId, newDay) {
@@ -16003,7 +16257,9 @@ function renderStopDetail(selectedRoute) {
     <div class="detail-line"><span>Nome Fantasia</span><strong>${tradeName}</strong></div>
     <div class="detail-line"><span>Código CRM</span><strong>${crmCode}</strong></div>
     <div class="detail-line"><span>Endereco</span><strong>${stop.address}</strong></div>
-    <div class="detail-line"><span>Curva / prioridade</span><strong>${stop.curva} / ${stop.priority}</strong></div>
+    <div class="detail-line"><span>Curva</span><strong>${normalizeCurveCode(stop.curveCode) || 'Sem curva'}</strong></div>
+    <div class="detail-line"><span>Frequência</span><strong>${resolveVisitFrequency(stop)}</strong></div>
+    <div class="detail-line"><span>Prioridade</span><strong>${stop.priority}</strong></div>
     <div class="detail-line"><span>Janela</span><strong>${stop.window}</strong></div>
     <div class="detail-line"><span>Tempo de atendimento</span><strong>${stop.serviceTime} min</strong></div>
     <div class="detail-line"><span>Território</span><strong>${driverTerritory}</strong></div>
@@ -16658,9 +16914,9 @@ function getMarkerDisplayContent(client, route, sequenceIndex) {
       }
       return client.driverId || '?';
     case 'curve':
-      // Exibe a letra da curva comercial (A, B, C ou D)
-      const curve = normalizeCurva(client.curva);
-      return curve;
+      // Curva MANUAL neutra: letra A–Z quando definida; ponto neutro quando
+      // "sem curva" (nunca classifica automaticamente).
+      return normalizeCurveCode(client.curveCode) || '\u00b7';
     case 'sequence':
     default:
       // Exibe sequência (1, 2, 3... até 99)
@@ -18922,6 +19178,8 @@ async function activatePlanningSessionScope(ddd, sessionId = null) {
       ensureDDDOperationalContext(dddText);
       const newCustomers = await loadCustomersFromSource(dddText, { entryPoint: 'ddd' });
       if (newCustomers.length > 0) {
+        // Curva manual (Planning): aplica curvas persistidas ao DDD recém-carregado.
+        await mergePlanningCurveAttributes(newCustomers);
         const validation = validateCustomers(newCustomers);
         const validNew = applyFallbacks(validation.validCustomers, validation.invalidCustomers);
         // Merge: adicionar sem duplicar (por id)
@@ -19629,6 +19887,9 @@ async function initializeApp() {
   // Fase 1: carregar apenas o DDD padrão no boot (lazy loading dos demais ao trocar)
   const loadedCustomers = await loadCustomersFromSource(state.selectedDDD, { entryPoint: 'boot' });
   logger.info(`[BOOT] DDD ${state.selectedDDD}: ${loadedCustomers.length} clientes carregados`);
+
+  // Curva manual (Planning): aplica curvas persistidas antes do primeiro render.
+  await mergePlanningCurveAttributes(loadedCustomers);
 
   const validation = validateCustomers(loadedCustomers);
   const nextCustomers = applyFallbacks(validation.validCustomers, validation.invalidCustomers);

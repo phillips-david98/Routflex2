@@ -15,7 +15,9 @@ from coordinate_rules import is_sem_coordenada, normalize_status_with_coordinate
 from geocoding_service import get_geocoding_service
 
 from db import engine, Base, get_db
-from models import SessionRegion as SessionRegionModel, Customer as CustomerModel, Vehicle as VehicleModel, AdvancedPlanHistory
+from models import (SessionRegion as SessionRegionModel, Customer as CustomerModel,
+                    Vehicle as VehicleModel, AdvancedPlanHistory,
+                    CustomerPlanningAttribute as CustomerPlanningAttributeModel)
 from schemas import (CustomerCreate, Customer as CustomerSchema, VehicleCreate, Vehicle as VehicleSchema,
                      SessionRegionCreate, SessionRegion as SessionRegionSchema, RouteReport,
                      ManualPlanSnapshot, AdvancedPlanRequest,
@@ -31,7 +33,9 @@ from schemas import (CustomerCreate, Customer as CustomerSchema, VehicleCreate, 
                      AddressGeocodeRequest, AddressGeocodeResponse,
                      HealthResponse, GenericStatusResponse,
                      ManualPlanSaveResponse, CustomerStatusEventResponse,
-                     CustomerVisitDayEventResponse, SimulationScenarioResponse)
+                     CustomerVisitDayEventResponse, SimulationScenarioResponse,
+                     CurveUpdateRequest, CurveUpdateResponse,
+                     CurveAttributeItem, CurveAttributeListResponse)
 from route_planner import plan_route, plan_advanced_routes, plan_batch_routes
 from logging_manager import app_logger
 
@@ -311,6 +315,120 @@ def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
 @app.get("/customers")
 def list_customers(db: Session = Depends(get_db)):
     return db.query(CustomerModel).all()
+
+
+# ── Curva manual (Planning) ────────────────────────────────────────────────
+# Classificação neutra pertencente ao domínio do ROUTflex Planning. Persistida
+# de forma isolada por chave externa estável (source_system + external_customer_id),
+# sem depender do schema do CRM. Altera SOMENTE curve_code — nunca frequência,
+# semana, dia, prioridade, motorista, território, sequência ou rota.
+
+def _normalize_curve_code(raw) -> Optional[str]:
+    """null/vazio → None (sem curva); uma letra → maiúscula A–Z. Caso contrário, erro."""
+    if raw is None:
+        return None
+    code = str(raw).strip().upper()
+    if code == "":
+        return None
+    if len(code) == 1 and "A" <= code <= "Z":
+        return code
+    raise HTTPException(
+        status_code=400,
+        detail="curve_code invalido: use null/vazio (sem curva) ou uma unica letra A-Z.",
+    )
+
+
+@app.get("/planning/customers/curve", response_model=CurveAttributeListResponse)
+def list_planning_curve(source_system: str, company_id: str = "", db: Session = Depends(get_db)):
+    rows = (
+        db.query(CustomerPlanningAttributeModel)
+        .filter(
+            CustomerPlanningAttributeModel.source_system == source_system,
+            CustomerPlanningAttributeModel.company_id == (company_id or ""),
+        )
+        .all()
+    )
+    return {
+        "items": [
+            {
+                "source_system": r.source_system,
+                "external_customer_id": r.external_customer_id,
+                "curve_code": r.curve_code,
+                "company_id": r.company_id,
+            }
+            for r in rows
+        ]
+    }
+
+
+@app.patch("/planning/customers/curve", response_model=CurveUpdateResponse)
+def update_planning_curve(payload: CurveUpdateRequest, db: Session = Depends(get_db)):
+    source_system = str(payload.source_system or "").strip()
+    external_customer_id = str(payload.external_customer_id or "").strip()
+    company_id = str(payload.company_id or "").strip()
+    if not source_system or not external_customer_id:
+        raise HTTPException(status_code=400, detail="source_system e external_customer_id sao obrigatorios.")
+
+    new_code = _normalize_curve_code(payload.curve_code)
+
+    row = (
+        db.query(CustomerPlanningAttributeModel)
+        .filter(
+            CustomerPlanningAttributeModel.source_system == source_system,
+            CustomerPlanningAttributeModel.external_customer_id == external_customer_id,
+            CustomerPlanningAttributeModel.company_id == company_id,
+        )
+        .one_or_none()
+    )
+    previous_code = row.curve_code if row is not None else None
+
+    try:
+        if row is None:
+            row = CustomerPlanningAttributeModel(
+                company_id=company_id,
+                source_system=source_system,
+                external_customer_id=external_customer_id,
+                curve_code=new_code,
+            )
+            db.add(row)
+        else:
+            # Altera SOMENTE curve_code — nenhum outro campo do cliente é tocado.
+            row.curve_code = new_code
+            row.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(row)
+    except Exception as exc:  # rollback garantido em qualquer falha de persistência
+        db.rollback()
+        app_logger.error(
+            "[CURVE] falha ao persistir curve_code",
+            extra={
+                "source_system": source_system,
+                "external_customer_id": external_customer_id,
+                "error": str(exc),
+            },
+        )
+        raise HTTPException(status_code=500, detail="Falha ao persistir curve_code.")
+
+    append_event(
+        customer_id=f"{source_system}:{external_customer_id}",
+        action="CURVA_ALTERADA",
+        user="frontend",
+        metadata={
+            "from": previous_code,
+            "to": new_code,
+            "source_system": source_system,
+            "external_customer_id": external_customer_id,
+            "company_id": company_id,
+        },
+    )
+
+    return {
+        "status": "saved",
+        "source_system": source_system,
+        "external_customer_id": external_customer_id,
+        "curve_code": new_code,
+        "previous_curve_code": previous_code,
+    }
 
 
 @app.post("/vehicles", response_model=VehicleSchema)

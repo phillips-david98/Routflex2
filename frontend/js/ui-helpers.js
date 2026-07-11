@@ -81,6 +81,8 @@ function normalizeFrequencyLabel(frequencia) {
 // D = baixa prioridade / cliente eventual. Curva NÃO determina semana nem
 // frequência — é apenas classificação comercial. Valores desconhecidos/ausentes
 // caem em 'C' (comportamento histórico). Aceita 'curva-d', 'Curva D', 'd' etc.
+// LEGADO: usada apenas pela coluna legada `client.curva` (scoring do planner
+// avançado e materialização de frequência). NÃO usar para a nova curva manual.
 function normalizeCurva(curva) {
   const c = String(curva || '').toUpperCase().replace(/[^ABCD]/g, '');
   const letter = c.charAt(c.length - 1); // tolera prefixos: "CURVA D" → "D"
@@ -88,10 +90,24 @@ function normalizeCurva(curva) {
   return 'C';
 }
 
-// DEFAULT de compatibilidade (não é regra de negócio): só usado quando a
-// frequência real é desconhecida. Mantém a tabela histórica A/B/C e trata D
-// como eventual (Mensal), o mesmo fallback neutro de C. NÃO acopla curva→semana:
-// isto define apenas a FREQUÊNCIA-default; a semana deriva da frequência.
+// Nova CURVA MANUAL (neutra): null (sem curva) ou uma única letra A–Z.
+// NÃO possui significado fixo e NÃO deriva frequência, semana, prioridade nem
+// rota. Substitui a normalização antiga (que forçava A/B/C/D com default 'C')
+// para o novo conceito de curva manual editável.
+function normalizeCurveCode(value) {
+  if (value === null || value === undefined) return null;
+  const c = String(value).trim().toUpperCase();
+  if (c === '') return null;
+  const letter = c.charAt(0);
+  if (letter >= 'A' && letter <= 'Z') return letter;
+  return null;
+}
+
+// LEGADO / MIGRAÇÃO ÚNICA: default histórico de frequência a partir da curva
+// legada. Mantido EXCLUSIVAMENTE para materializar, no carregamento, a
+// frequência efetiva de clientes sem `frequencia` explícita (preservando a
+// agenda atual). NÃO é mais consultado em runtime por resolveVisitFrequency —
+// a curva deixou de derivar frequência.
 function getDefaultFrequencyForCurve(curva) {
   const c = normalizeCurva(curva);
   if (c === 'B') return FREQ_SEMANAL;
@@ -100,11 +116,13 @@ function getDefaultFrequencyForCurve(curva) {
   return FREQ_MENSAL;
 }
 
-// Fonte única da frequência: explícita do cliente > default por curva (compat).
+// Fonte única da frequência: explícita do cliente. A frequência é EIXO PRÓPRIO,
+// independente da curva. O fallback histórico curva→frequência foi removido;
+// a frequência efetiva legada é materializada no carregamento (data-loader),
+// portanto aqui basta o rótulo explícito, com piso neutro Mensal.
 function resolveVisitFrequency(client) {
   if (!client) return FREQ_MENSAL;
-  return normalizeFrequencyLabel(client.frequencia)
-    || getDefaultFrequencyForCurve(client.curva);
+  return normalizeFrequencyLabel(client.frequencia) || FREQ_MENSAL;
 }
 
 // Semanas a partir da FREQUÊNCIA (eixo independente da curva).

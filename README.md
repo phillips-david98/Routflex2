@@ -28,10 +28,14 @@ DATABASE_URL=postgresql://user:password@localhost:5432/routflex
 pip install -r requirements.txt
 ```
 
-3. Rodar app:
+3. Rodar app (a partir da pasta `backend`, para que os imports funcionem):
 
 ```
-uvicorn main:app --reload
+cd backend
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+> A migração e o servidor devem usar o mesmo virtualenv, o mesmo diretório de
+> trabalho (`backend`) e o mesmo arquivo SQLite. Não use `backend.main:app`.
 
 4. Documentação interativa: `http://localhost:8000/docs`

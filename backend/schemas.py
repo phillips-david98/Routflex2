@@ -429,3 +429,30 @@ class SimulationScenarioResponse(BaseModel):
     status: str
     clients: Dict[str, int]
     checks: List[str]
+
+
+# ── Curva manual (Planning) — classificação neutra A–Z ou "sem curva" ──────────
+class CurveUpdateRequest(BaseModel):
+    source_system: str
+    external_customer_id: str
+    curve_code: Optional[str] = None
+    company_id: Optional[str] = None
+
+
+class CurveUpdateResponse(BaseModel):
+    status: str
+    source_system: str
+    external_customer_id: str
+    curve_code: Optional[str] = None
+    previous_curve_code: Optional[str] = None
+
+
+class CurveAttributeItem(BaseModel):
+    source_system: str
+    external_customer_id: str
+    curve_code: Optional[str] = None
+    company_id: Optional[str] = None
+
+
+class CurveAttributeListResponse(BaseModel):
+    items: List[CurveAttributeItem]

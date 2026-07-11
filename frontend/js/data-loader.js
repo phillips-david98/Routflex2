@@ -212,6 +212,12 @@ function mapSimulationCustomerToClient(source, index) {
   const id = `${clientGroupId}-w${source.visit_week || 1}`;
   const lat = source.lat === null || source.lat === undefined ? null : Number(source.lat);
   const lon = source.lon === null || source.lon === undefined ? null : Number(source.lon);
+  // Curva legada (comercial) — preservada como estava.
+  const legacyCurva = source.curve || 'C';
+  // MIGRAÇÃO ÚNICA: materializa a frequência efetiva (antes derivada da curva
+  // em runtime) num campo explícito, sem alterar a agenda atual do cliente.
+  const frequencia = normalizeFrequencyLabel(source.frequencia)
+    || getDefaultFrequencyForCurve(legacyCurva);
 
   return {
     id,
@@ -228,7 +234,12 @@ function mapSimulationCustomerToClient(source, index) {
     day: source.visit_day || days[index % days.length],
     vehicle: assignedDriver ? assignedDriver.vehicle : 'carro',
     priority: source.priority || priorities[index % priorities.length],
-    curva: source.curve || 'C',
+    curva: legacyCurva,
+    // Frequência como eixo próprio (materializado — não deriva mais da curva).
+    frequencia,
+    // Nova curva MANUAL neutra (null = sem curva). Em SIMULAÇÃO é somente leitura;
+    // não há classificação oficial persistida aqui.
+    curveCode: normalizeCurveCode(source.curve_code ?? source.curveCode ?? null),
     serviceTime: 20,
     distance: Number((3 + seededRandom(index + 70) * 24).toFixed(1)),
     lat,
@@ -435,6 +446,12 @@ function mapRealCustomerToClient(source, index) {
   const id = `${clientGroupId}-w1`;
   const lat = source.lat === null || source.lat === undefined ? null : Number(source.lat);
   const lon = source.lon === null || source.lon === undefined ? null : Number(source.lon);
+  // Curva legada (comercial) — preservada como estava.
+  const legacyCurva = source.curva ?? 'C';
+  // MIGRAÇÃO ÚNICA: materializa a frequência efetiva (antes derivada da curva
+  // em runtime) num campo explícito, sem alterar a agenda atual do cliente.
+  const frequencia = normalizeFrequencyLabel(source.frequencia)
+    || getDefaultFrequencyForCurve(legacyCurva);
 
   return {
     id,
@@ -451,7 +468,8 @@ function mapRealCustomerToClient(source, index) {
     day: source.dia ?? source.visit_day ?? days[index % days.length],
     vehicle: assignedDriver ? assignedDriver.vehicle : 'carro',
     priority: priorities[index % priorities.length],
-    curva: source.curva ?? 'C',
+    curva: legacyCurva,
+    curveCode: normalizeCurveCode(source.curve_code ?? source.curveCode ?? null),
     serviceTime: 20,
     distance: Number((3 + seededRandom(index + 70) * 24).toFixed(1)),
     lat,
@@ -471,7 +489,9 @@ function mapRealCustomerToClient(source, index) {
     // alteram render/cálculo. O território sintético (`territory`) é preservado
     // como antes; `territory_code` é a chave operacional real da origem.
     territory_code: source.territory_code ?? null,
-    frequencia: source.frequencia ?? null,
+    // Frequência materializada (eixo próprio, independente da curva). Preserva
+    // a agenda efetiva legada; não sobrescreve com null.
+    frequencia,
     semanas: source.semanas ?? null,
     segmentacao: source.segmentacao ?? source.segmento ?? null,
     // Metadados de integração — origem CRM (mockStore/PostgreSQL)

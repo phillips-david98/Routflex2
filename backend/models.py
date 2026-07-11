@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, Text, DateTime
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, Text, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from db import Base
@@ -44,6 +44,41 @@ class Customer(Base):
 
     session_id = Column(Integer, ForeignKey("sessions.id"))
     session = relationship("SessionRegion", back_populates="customers")
+
+
+class CustomerPlanningAttribute(Base):
+    """Atributos de PLANNING pertencentes ao domínio do ROUTflex Planning,
+    isolados de qualquer schema externo (CRM/SAP/Senior/TOTVS/importação/cadastro
+    local). A associação com o cliente de origem é feita por chave externa estável
+    (source_system + external_customer_id), nunca presumindo equivalência de IDs
+    entre sistemas distintos.
+
+    Aditiva e retrocompatível: nenhuma coluna existente é alterada. curve_code é
+    nullable (null/vazio = "sem curva"); demais eixos (frequência, prioridade,
+    semana, dia) permanecem fora desta tabela e independentes da curva.
+    """
+
+    __tablename__ = "customer_planning_attributes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    # company_id/tenant_id é opcional (nem toda origem informa). Default "" para
+    # que a restrição de unicidade seja efetiva mesmo sem multi-tenant explícito.
+    company_id = Column(String, nullable=True, default="", server_default="")
+    source_system = Column(String, nullable=False, index=True)
+    external_customer_id = Column(String, nullable=False, index=True)
+    # Classificação manual e neutra: null (sem curva) ou uma letra A–Z.
+    curve_code = Column(String(1), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id",
+            "source_system",
+            "external_customer_id",
+            name="uq_customer_planning_attr",
+        ),
+    )
 
 
 class Vehicle(Base):
