@@ -3157,6 +3157,124 @@ body.login-active .app-shell {
   background: rgba(30, 72, 112, 0.85);
 }
 
+/* Central de pendências geográficas integrada à coluna esquerda. */
+.left-pending-center {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(105, 159, 211, 0.28);
+  border-radius: 12px;
+  background: #091a2e;
+}
+
+.left-pending-toggle {
+  width: 100%;
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 0;
+  background: #0d223a;
+  color: #dcecf8;
+  cursor: pointer;
+  text-align: left;
+}
+
+.left-pending-toggle:hover { background: #102841; }
+.left-pending-icon { display: inline-flex; align-items: center; justify-content: center; color: #f1bd62; }
+.left-pending-title-wrap { min-width: 0; display: grid; gap: 2px; }
+.left-pending-title { overflow: hidden; font-size: 0.72rem; font-weight: 800; white-space: nowrap; text-overflow: ellipsis; }
+.left-pending-subtitle { display: none; color: #8faec9; font-size: 0.62rem; font-weight: 500; }
+.left-pending-count { min-width: 26px; padding: 3px 7px; border-radius: 999px; background: rgba(241, 189, 98, 0.14); color: #ffd996; font-size: 0.68rem; font-weight: 800; text-align: center; }
+.left-pending-chevron { color: #88a9c3; font-size: 0.9rem; transition: transform 0.16s ease; }
+.left-pending-center.is-open .left-pending-chevron { transform: rotate(90deg); }
+.left-pending-center.is-open .left-pending-subtitle { display: block; }
+
+.left-pending-body {
+  display: none;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: clamp(240px, 42vh, 500px);
+  min-height: 0;
+  border-top: 1px solid rgba(104, 153, 202, 0.18);
+}
+
+.left-pending-center.is-open .left-pending-body { display: grid; }
+.left-pending-summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; border-bottom: 1px solid rgba(104, 153, 202, 0.14); color: #8faec9; font-size: 0.62rem; }
+.left-pending-summary strong { color: #dcecf8; font-weight: 700; }
+
+[data-view-mode="territorial"] .left-panel .panel-scroll {
+  display: flex;
+  flex-direction: column;
+}
+
+[data-view-mode="territorial"] .planning-session-section {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-view-mode="territorial"] .left-pending-center.is-open {
+  flex: 1 1 auto;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-view-mode="territorial"] .left-pending-center.is-open .left-pending-body {
+  flex: 1 1 auto;
+  height: auto;
+}
+
+.left-pending-center .no-coord-list { min-height: 0; overflow-y: auto; gap: 0; scrollbar-width: thin; scrollbar-color: rgba(90, 156, 207, 0.5) transparent; }
+.left-pending-center .no-coord-list::-webkit-scrollbar { width: 7px; }
+.left-pending-center .no-coord-list::-webkit-scrollbar-thumb { background: rgba(90, 156, 207, 0.5); border-radius: 999px; }
+.left-pending-center .no-coord-empty { margin: 10px; padding: 14px 10px; border-color: rgba(114, 164, 209, 0.28); border-radius: 10px; text-align: center; }
+.no-coord-empty-icon { display: block; margin-bottom: 8px; color: #72b9c9; font-size: 1.2rem; }
+.left-pending-center .no-coord-empty strong { display: block; margin-bottom: 4px; color: #dcecf8; font-size: 0.74rem; }
+.left-pending-center .no-coord-empty span { font-size: 0.66rem; line-height: 1.4; }
+
+.no-coord-batch { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px 10px; border-top: 1px solid rgba(104, 153, 202, 0.18); background: #0b1e34; }
+.no-coord-select-label { grid-column: 1 / -1; min-width: 0; display: flex; align-items: center; gap: 7px; color: #a8c1d6; font-size: 0.64rem; cursor: pointer; }
+.no-coord-select-label span { flex: 1; }
+.no-coord-selected-label { color: #dcecf8; font-weight: 700; white-space: nowrap; }
+.no-coord-select-label input, .left-pending-center .no-coord-checkbox { width: 15px; height: 15px; margin: 0; accent-color: #4eb7d7; cursor: pointer; }
+
+.left-pending-center .no-coord-card { border: 0; border-bottom: 1px solid rgba(113, 160, 204, 0.14); border-radius: 0; padding: 0; gap: 0; background: #091a2e; }
+.left-pending-center .no-coord-card.is-expanded { background: #0c2138; }
+.no-coord-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 9px; padding: 10px 12px; }
+.no-coord-row-toggle { min-width: 0; display: grid; gap: 4px; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
+.no-coord-row-toggle:focus-visible { outline: 2px solid rgba(82, 208, 255, 0.7); outline-offset: 4px; border-radius: 4px; }
+.no-coord-title-line, .no-coord-subline { display: flex; align-items: center; min-width: 0; gap: 6px; }
+.left-pending-center .no-coord-title { min-width: 0; overflow: hidden; color: #e1eef8; font-size: 0.72rem; font-weight: 700; white-space: nowrap; text-overflow: ellipsis; }
+.no-coord-code, .left-pending-center .no-coord-meta { color: #86a5bf; font-size: 0.62rem; }
+.no-coord-code { white-space: nowrap; }
+.no-coord-subline span { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.no-coord-status { display: inline-flex; padding: 3px 6px; border: 1px solid rgba(241, 189, 98, 0.22); border-radius: 999px; background: rgba(241, 189, 98, 0.1); color: #efc776; font-size: 0.56rem; font-weight: 800; letter-spacing: 0.04em; white-space: nowrap; }
+.no-coord-row-state { display: grid; justify-items: end; gap: 4px; }
+.no-coord-chevron { color: #7fa3be; font-size: 0.9rem; transition: transform 0.16s ease; }
+.no-coord-card.is-expanded .no-coord-chevron { transform: rotate(90deg); }
+.no-coord-details { padding: 0 12px 12px 36px; }
+.no-coord-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; padding: 10px; border: 1px solid rgba(112, 161, 207, 0.16); border-radius: 10px; background: rgba(6, 18, 32, 0.56); }
+.no-coord-detail { min-width: 0; }
+.no-coord-detail.is-wide { grid-column: 1 / -1; }
+.no-coord-detail span, .no-coord-detail strong { display: block; }
+.no-coord-detail span { margin-bottom: 2px; color: #7394af; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.no-coord-detail strong { overflow-wrap: anywhere; color: #cbddea; font-size: 0.68rem; font-weight: 600; line-height: 1.4; }
+.left-pending-center .no-coord-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 9px; }
+.left-pending-center .no-coord-btn { min-height: 30px; border-color: rgba(129, 183, 231, 0.25); background: #12314f; color: #c8dff0; padding: 5px 8px; font-size: 0.62rem; font-weight: 700; }
+.left-pending-center .no-coord-btn:hover:not(:disabled) { border-color: rgba(103, 193, 225, 0.5); background: #194366; }
+.left-pending-center .no-coord-btn.primary { grid-column: 1 / -1; background: #1f6177; border-color: rgba(109, 208, 224, 0.34); color: #e9fbff; }
+.left-pending-center .no-coord-btn:disabled { opacity: 0.48; cursor: not-allowed; }
+.no-coord-batch .no-coord-btn { min-height: 28px; white-space: nowrap; }
+
+@media (max-width: 680px) {
+  .left-pending-body { height: min(44vh, 360px); }
+  .no-coord-details { padding-left: 12px; }
+}
+
 .toolbar {
   display: flex;
   align-items: center;
@@ -6289,6 +6407,28 @@ body.login-active .routex-ai-panel { display:none !important; }
               </div>
             </div>
           </details>
+
+          <div class="left-pending-center" id="no-coord-section" aria-label="Central de pendências geográficas">
+            <button class="left-pending-toggle" id="no-coord-section-toggle" type="button" aria-expanded="false" aria-controls="no-coord-section-body">
+              <span class="left-pending-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><path d="M12 7v4m0 3h.01"/></svg>
+              </span>
+              <span class="left-pending-title-wrap">
+                <span class="left-pending-title">Pendências geográficas</span>
+                <span class="left-pending-subtitle">Clientes sem localização</span>
+              </span>
+              <span class="left-pending-count" id="no-coord-count-label">0</span>
+              <span class="left-pending-chevron" aria-hidden="true">›</span>
+            </button>
+            <div class="left-pending-body" id="no-coord-section-body" aria-hidden="true">
+              <div class="left-pending-summary">
+                <span>Recorte atual</span>
+                <strong id="no-coord-shown-label">0 clientes exibidos</strong>
+              </div>
+              <div class="no-coord-list" id="no-coord-list"></div>
+              <div id="no-coord-footer"></div>
+            </div>
+          </div>
         </section>
 
         <section class="section" id="section-kpis">
@@ -6343,13 +6483,6 @@ body.login-active .routex-ai-panel { display:none !important; }
           <div class="alert-list" id="alert-list"></div>
         </section>
 
-        <section class="section">
-          <div class="section-header">
-            <h3>Clientes sem coordenada</h3>
-            <span id="no-coord-count-label">0 pendentes</span>
-          </div>
-          <div class="no-coord-list" id="no-coord-list"></div>
-        </section>
       </div>
     </aside>
 
@@ -8614,15 +8747,9 @@ function enterMainMenu() {
   appShell.removeAttribute('aria-hidden');
   appShell.removeAttribute('inert');
 
-  // Initialize territorial mode on first entry
-  state.viewMode = 'territorial';
-  document.getElementById('app-shell').dataset.viewMode = 'territorial';
-  syncTerritoryViewUI();
-  document.querySelectorAll('#mode-switcher .mode-btn').forEach((btn) => {
-    btn.classList.toggle('is-active', btn.dataset.mode === 'territorial');
-  });
-  document.getElementById('toolbar-title').textContent = 'Modo Territorial';
-  document.getElementById('toolbar-subtitle').textContent = 'Ajuste de carteira: redistribua clientes entre motoristas usando laço ou arrastar.';
+  // O bootstrap já definiu/restaurou o contexto da sessão ativa.
+  // Apenas refletir esse estado na UI; não sobrescrever Operacional por Territorial.
+  syncPlanningSessionViewContextUI();
 
   window.setTimeout(() => {
     map.invalidateSize(true);
@@ -9142,7 +9269,7 @@ function closeApplyScenarioToProductionModal() {
   _pendingApplyDiff = null;
 }
 
-function confirmApplyScenarioToProduction() {
+async function confirmApplyScenarioToProduction() {
   if (!_pendingApplyDiff || !_pendingApplyDiff.diff.length) {
     closeApplyScenarioToProductionModal();
     return;
@@ -9152,6 +9279,7 @@ function confirmApplyScenarioToProduction() {
   var ddd        = _pendingApplyDiff.ddd;
   var numDdd     = Number(ddd);
   var scenarioId = _pendingApplyDiff.scenarioId;
+  var prodId     = _pendingApplyDiff.prodId;
 
   // Build a by-clientId patch map from the diff
   var patchMap = new Map();
@@ -9160,76 +9288,109 @@ function confirmApplyScenarioToProduction() {
     patchMap.get(row.clientId)[row.field] = row.after;
   });
 
-  // Apply to production backup (which is what becomes production state after
-  // scenario is exited). If backup is absent the scenario is already on top of
-  // production state (edge case after F5 in scenario) — apply to state.clients.
+  // Pool de produção (backup quando cenário ativo; senão o próprio state.clients).
   var prodPool = _productionClientsBackup || state.clients;
+
+  // ── HOTFIX P0 (promoção): backup para rollback caso o backend não confirme. ──
+  var _backupClients = [];
+  prodPool.forEach(function(c) {
+    if (c.ddd !== numDdd || !patchMap.has(c.id)) return;
+    _backupClients.push({ ref: c, day: c.day, week: c.week, driverId: c.driverId, driverName: c.driverName, sequence: c.sequence });
+  });
+  var _backupSnapshot = (planningSessionSnapshots.get(prodId) || []).map(function(s) { return Object.assign({}, s); });
+  var _backupLocalStorage = null;
+  try { _backupLocalStorage = localStorage.getItem('ROUTflex:plan:ddd:' + ddd); } catch (_) {}
+
+  // Aplicar patches à produção em memória. Campos contemplados: week/day/driverId/
+  // sequence; driverName é derivado quando driverId muda (consistência do payload).
   prodPool.forEach(function(c) {
     if (c.ddd !== numDdd) return;
     var patch = patchMap.get(c.id);
     if (!patch) return;
-    Object.keys(patch).forEach(function(field) {
-      c[field] = patch[field];
-    });
+    Object.keys(patch).forEach(function(field) { c[field] = patch[field]; });
+    if ('driverId' in patch) {
+      var _dr = getDriverById(patch.driverId);
+      if (_dr) c.driverName = _dr.name;
+    }
   });
 
-  // Also flush into the production session snapshot so switching back to
-  // production reflects the changes immediately.
-  var prodId = _pendingApplyDiff.prodId;
+  // Atualizar o snapshot de produção em memória (volta ao produção reflete já).
   var prodSnapshot = planningSessionSnapshots.get(prodId) || [];
   var snapByClientId = new Map(prodSnapshot.map(function(s) { return [s.id, s]; }));
   patchMap.forEach(function(patch, clientId) {
     if (!snapByClientId.has(clientId)) {
-      // New snapshot entry from scenario client data
       var scCl = (planningSessionClients.get(scenarioId) || []).find(function(c) { return c.id === clientId; });
       if (scCl) {
         snapByClientId.set(clientId, { id: clientId, week: scCl.week, day: scCl.day, driverId: scCl.driverId, sequence: scCl.sequence });
         prodSnapshot.push(snapByClientId.get(clientId));
       }
     } else {
-      Object.keys(patch).forEach(function(field) {
-        snapByClientId.get(clientId)[field] = patch[field];
-      });
+      Object.keys(patch).forEach(function(field) { snapByClientId.get(clientId)[field] = patch[field]; });
     }
   });
   planningSessionSnapshots.set(prodId, prodSnapshot);
 
-  // Persist to localStorage immediately (same format as Ctrl+S production path).
-  // Backend write is deferred to an explicit Ctrl+S by the user.
+  // ── HOTFIX P0: persistir no BACKEND e AGUARDAR 200 antes de declarar sucesso. ──
+  // Mesmo endpoint e payload de /manual-plan/{ddd} usados pelo salvamento real de
+  // produção (savePlanningAdjustments não é reutilizável aqui: tem guard de modo
+  // SIMULATION e lê state.clients, que é o buffer do cenário no contexto da promoção).
+  var dddProdClients = prodPool.filter(function(c) { return c.ddd === numDdd; });
+  var payload = {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    clients: dddProdClients.map(function(c) {
+      return { id: c.id, week: c.week, day: c.day, driverId: c.driverId, driverName: c.driverName, sequence: c.sequence };
+    })
+  };
+
+  var confirmBtn = document.getElementById('planning-apply-confirm-btn');
+  if (confirmBtn) confirmBtn.disabled = true;
+  updatePlannerHint('Aplicando ao plano real e salvando no backend...');
+
+  var _ok = false, _status = null, _respText = '';
   try {
-    var existingRaw = localStorage.getItem('ROUTflex:plan:ddd:' + ddd);
-    var existingPlan = existingRaw ? JSON.parse(existingRaw) : null;
-    var existingClients = (existingPlan && Array.isArray(existingPlan.clients)) ? existingPlan.clients : [];
-    var existingById = new Map(existingClients.map(function(c) { return [c.id, c]; }));
-    patchMap.forEach(function(patch, clientId) {
-      if (!existingById.has(clientId)) {
-        var scCl = (planningSessionClients.get(scenarioId) || []).find(function(c) { return c.id === clientId; });
-        if (scCl) {
-          existingById.set(clientId, { id: clientId, week: scCl.week, day: scCl.day, driverId: scCl.driverId, sequence: scCl.sequence });
-          existingClients.push(existingById.get(clientId));
-        }
-      } else {
-        Object.keys(patch).forEach(function(field) {
-          existingById.get(clientId)[field] = patch[field];
-        });
-      }
+    var response = await fetch(BACKEND_API_BASE + '/manual-plan/' + encodeURIComponent(ddd), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
-    var newPlan = {
-      version: 1,
-      savedAt: new Date().toISOString(),
-      clients: existingClients
-    };
-    localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(newPlan));
-  } catch(_saveErr) {
-    console.warn('[APPLY-TO-PROD] falha ao persistir localStorage', _saveErr);
+    _status = response.status;
+    _ok = response.ok;
+    if (!_ok) { try { _respText = await response.text(); } catch (_) {} }
+  } catch (err) {
+    _ok = false;
+    _respText = (err && err.message) ? err.message : String(err);
   }
 
-  markPlanAsDirty();
+  if (!_ok) {
+    // Rollback: memória + snapshot + localStorage ao estado anterior. Sem sucesso falso.
+    _backupClients.forEach(function(b) {
+      b.ref.day = b.day; b.ref.week = b.week; b.ref.driverId = b.driverId;
+      b.ref.driverName = b.driverName; b.ref.sequence = b.sequence;
+    });
+    planningSessionSnapshots.set(prodId, _backupSnapshot);
+    try {
+      if (_backupLocalStorage === null) localStorage.removeItem('ROUTflex:plan:ddd:' + ddd);
+      else localStorage.setItem('ROUTflex:plan:ddd:' + ddd, _backupLocalStorage);
+    } catch (_) {}
+    if (confirmBtn) confirmBtn.disabled = false; // permite nova tentativa (cenário preservado)
+    console.error('[APPLY-TO-PROD] backend não confirmou a promoção', {
+      endpoint: 'PUT /manual-plan/' + ddd, status: _status, response: _respText
+    });
+    updatePlannerHint('Falha ao aplicar ao plano real: backend não confirmou (status '
+      + (_status || 'sem resposta') + '). Nenhuma alteração foi aplicada; o cenário foi preservado.');
+    return;
+  }
+
+  // Sucesso confirmado pelo backend: espelhar EXATAMENTE o mesmo payload no localStorage.
+  try { localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(payload)); } catch (_) {}
+  markPlanAsSaved();
   closeApplyScenarioToProductionModal();
 
   var appliedCount = patchMap.size;
-  updatePlannerHint('Ajustes do cenário aplicados ao plano real (' + appliedCount + ' cliente(s)). Use Ctrl+S para salvar no backend.');
-  console.info('[APPLY-TO-PROD] aplicados', appliedCount, 'clientes ao plano real DDD', ddd);
+  updatePlannerHint('Ajustes do cenário aplicados ao plano real e salvos no backend ('
+    + appliedCount + ' cliente(s)).');
+  console.info('[APPLY-TO-PROD] confirmado pelo backend', { ddd: ddd, clientes: appliedCount });
 }
 
 /** Escapa HTML para uso em innerHTML. */
@@ -9253,6 +9414,136 @@ function updatePlanningSessionActionButtons(sessionId) {
   if (applyToProdBtn) {
     const hasProdSession = isSimulation && Boolean(getRealSessionIdForDDD(current && current.ddd));
     applyToProdBtn.hidden = !hasProdSession;
+  }
+}
+
+const PLANNING_SESSION_VIEW_STORAGE_PREFIX = 'rfx:session:view:';
+
+function captureActivePlanningSessionViewContext(sessionId = state.activePlanningSessionId) {
+  if (!sessionId || !planningSessionRegistry.has(sessionId)) return false;
+  try {
+    localStorage.setItem(PLANNING_SESSION_VIEW_STORAGE_PREFIX + sessionId, JSON.stringify({
+      version: 1,
+      viewMode: state.viewMode,
+      selectedDriverId: state.selectedDriverId,
+      selectedDriverIds: Array.from(state.selectedDriverIds || []),
+      focusDriverId: state.focusDriverId,
+      selectedRouteId: state.selectedRouteId,
+      selectedStopId: state.selectedStopId,
+      activeWeeks: Array.from(state.activeWeeks || []),
+      weekCount: state.weekCount,
+      weekStepperDirection: state.weekStepperDirection,
+      activeDays: Array.from(state.activeDays || []),
+      territoryFilter: state.territoryFilter,
+      vehicleFilter: state.vehicleFilter,
+      densityProfile: state.densityProfile,
+      curvFilters: Array.from(state.curvFilters || []),
+      territoryPdvDisplay: state.territoryPdvDisplay,
+      weekColorMode: Boolean(state.weekColorMode),
+      showActiveClients: Boolean(state.showActiveClients),
+      showNewClients: Boolean(state.showNewClients),
+      showInactiveClients: Boolean(state.showInactiveClients)
+    }));
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function syncPlanningSessionViewContextUI() {
+  const validModes = new Set(['territorial', 'operational', 'analytics']);
+  if (!validModes.has(state.viewMode)) state.viewMode = 'territorial';
+
+  const shell = document.getElementById('app-shell');
+  if (shell) shell.dataset.viewMode = state.viewMode;
+  document.querySelectorAll('#mode-switcher .mode-btn').forEach((btn) => {
+    btn.classList.toggle('is-active', btn.dataset.mode === state.viewMode);
+  });
+  syncTerritoryViewUI();
+
+  const modeCopy = {
+    territorial: ['Modo Territorial', 'Ajuste de carteira: redistribua clientes entre motoristas usando laço ou arrastar.'],
+    operational: ['Modo Operacional', 'Roteirização: defina dias, semanas, sequência e execute o planejamento por motorista.'],
+    analytics: ['Modo Inteligência', 'Camada de inteligência comercial: contexto, observações e leitura estratégica dos clientes.']
+  };
+  const copy = modeCopy[state.viewMode];
+  const titleEl = document.getElementById('toolbar-title');
+  const subtitleEl = document.getElementById('toolbar-subtitle');
+  if (titleEl) titleEl.textContent = copy[0];
+  if (subtitleEl) subtitleEl.textContent = copy[1];
+
+  const territorySelect = document.getElementById('territory-filter');
+  const vehicleSelect = document.getElementById('vehicle-filter');
+  const densitySelect = document.getElementById('density-select');
+  if (territorySelect) territorySelect.value = state.territoryFilter;
+  if (vehicleSelect) vehicleSelect.value = state.vehicleFilter;
+  if (densitySelect) densitySelect.value = state.densityProfile;
+  renderDriverFilterOptions();
+  syncStatusLegendToggles();
+
+  const displaySelect = document.getElementById('territory-pdv-display-select');
+  const curveFilterContainer = document.getElementById('curve-filter-container');
+  if (displaySelect) displaySelect.value = state.territoryPdvDisplay || 'sequence';
+  if (curveFilterContainer) curveFilterContainer.style.display = state.territoryPdvDisplay === 'curve' ? 'block' : 'none';
+  if (state.territoryPdvDisplay === 'curve') refreshCurveFilterUI();
+  const weekColorToggle = document.getElementById('week-color-toggle');
+  if (weekColorToggle) weekColorToggle.checked = Boolean(state.weekColorMode);
+  if (typeof setRoadRouteButtonState === 'function') setRoadRouteButtonState();
+  syncMapDragging();
+}
+
+function restorePlanningSessionViewContext(sessionId) {
+  if (!sessionId || !planningSessionRegistry.has(sessionId)) return false;
+  try {
+    const raw = localStorage.getItem(PLANNING_SESSION_VIEW_STORAGE_PREFIX + sessionId);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (!saved || saved.version !== 1) return false;
+
+    const validModes = new Set(['territorial', 'operational', 'analytics']);
+    if (validModes.has(saved.viewMode)) state.viewMode = saved.viewMode;
+
+    const validDriverIds = new Set((state.drivers || []).map((driver) => driver.id));
+    state.selectedDriverId = saved.selectedDriverId === 'all' || validDriverIds.has(saved.selectedDriverId)
+      ? saved.selectedDriverId
+      : 'all';
+    state.selectedDriverIds = new Set((Array.isArray(saved.selectedDriverIds) ? saved.selectedDriverIds : [])
+      .filter((driverId) => validDriverIds.has(driverId)));
+    state.focusDriverId = validDriverIds.has(saved.focusDriverId) ? saved.focusDriverId : null;
+    state.selectedRouteId = typeof saved.selectedRouteId === 'string' ? saved.selectedRouteId : null;
+    state.selectedStopId = typeof saved.selectedStopId === 'string' ? saved.selectedStopId : null;
+
+    if (Array.isArray(saved.activeWeeks)) {
+      const savedWeekNumbers = saved.activeWeeks.filter((week) => Number.isInteger(week) && week >= 1 && week <= MAX_WEEKS);
+      const inferredWeekCount = savedWeekNumbers.length ? Math.max(4, ...savedWeekNumbers) : 4;
+      state.weekCount = Number.isInteger(saved.weekCount)
+        ? Math.max(4, Math.min(MAX_WEEKS, saved.weekCount))
+        : inferredWeekCount;
+      state.weekStepperDirection = saved.weekStepperDirection === -1 || saved.weekStepperDirection === 1
+        ? saved.weekStepperDirection
+        : (state.weekCount >= MAX_WEEKS ? -1 : 1);
+      state.activeWeeks = new Set(saved.activeWeeks.filter((week) => week === null || savedWeekNumbers.includes(week)));
+    }
+    if (Array.isArray(saved.activeDays)) {
+      state.activeDays = new Set(saved.activeDays.filter((day) => days.includes(day)));
+    }
+    if (typeof saved.territoryFilter === 'string') state.territoryFilter = saved.territoryFilter;
+    if (typeof saved.vehicleFilter === 'string') state.vehicleFilter = saved.vehicleFilter;
+    if (typeof saved.densityProfile === 'string') state.densityProfile = saved.densityProfile;
+    state.curvFilters = new Set(Array.isArray(saved.curvFilters) ? saved.curvFilters.filter((value) => typeof value === 'string') : []);
+    if (['sequence', 'driver', 'curve'].includes(saved.territoryPdvDisplay)) {
+      state.territoryPdvDisplay = saved.territoryPdvDisplay;
+    }
+    if (typeof saved.weekColorMode === 'boolean') state.weekColorMode = saved.weekColorMode;
+    if (typeof saved.showActiveClients === 'boolean') state.showActiveClients = saved.showActiveClients;
+    if (typeof saved.showNewClients === 'boolean') state.showNewClients = saved.showNewClients;
+    if (typeof saved.showInactiveClients === 'boolean') state.showInactiveClients = saved.showInactiveClients;
+
+    syncPlanningSessionViewContextUI();
+    return true;
+  } catch (error) {
+    console.warn('[SESSION-VIEW] contexto inválido para', sessionId, error);
+    return false;
   }
 }
 
@@ -9292,6 +9583,10 @@ function switchPlanningSession(sessionId, options = {}) {
   const previousId = state.activePlanningSessionId;
   const previousMeta = previousId ? planningSessionRegistry.get(previousId) : null;
   const skipCapture = Boolean(options.skipCapture);
+
+  if (!skipCapture && previousMeta) {
+    captureActivePlanningSessionViewContext(previousId);
+  }
 
   // 1. Capturar snapshot da sessão que estamos deixando (apenas para PRODUÇÃO).
   //    Cenário tem buffer próprio (planningSessionClients) — snapshot é redundante.
@@ -9496,12 +9791,12 @@ function switchPlanningSession(sessionId, options = {}) {
     }
   }
 
-  // Garantir que _applyFiltersScheduled está limpo antes de agendar o novo render.
-  // Um applyFilters pendente da sessão anterior (microtask) resultaria em:
-  //   a) applyFilters() retornar imediatamente (no-op) por causa do guard, OU
-  //   b) a microtask antiga disparar calculateRoutes() com dados já trocados.
-  // Zerar aqui garante que o applyFilters() no final desta função sempre agenda.
+  // Invalidar qualquer microtask de filtros da sessão anterior antes de agendar
+  // o render do alvo. O epoch impede que a Promise antiga execute calculateRoutes
+  // mesmo que ela já esteja na fila de microtasks.
+  _applyFiltersEpoch += 1;
   _applyFiltersScheduled = false;
+  _pendingNeedsFitBounds = false;
 
   // 3. Aplicar snapshot APENAS para sessões de produção (cenário usa buffer próprio).
   if (isProductionSession(target)) {
@@ -9530,6 +9825,7 @@ function switchPlanningSession(sessionId, options = {}) {
   if (dddSelect) dddSelect.value = String(target.ddd);
   const sessionSelect = document.getElementById('planning-session-select');
   if (sessionSelect) sessionSelect.value = String(sessionId);
+  const restoredViewContext = restorePlanningSessionViewContext(sessionId);
   updatePlanningSessionStatus(sessionId);
   applyFilters({ skipFitBounds: true });
   // Restaurar flag de supressão APÓS o applyFilters assíncrono ter sido agendado
@@ -9537,6 +9833,7 @@ function switchPlanningSession(sessionId, options = {}) {
   // quando o calculateRoutes rodar — mas skipFitBounds:true já garante o bloqueio).
   state.suppressAutoFit = wasSuppressed;
   updatePlannerHint(`Sessão ativa: ${getSessionDisplayLabel(target)}.`);
+  return restoredViewContext;
 }
 
 function initializePlanningSessions() {
@@ -9722,6 +10019,7 @@ function createSimulationSessionForActiveDDD(targetDDD = state.selectedDDD, pref
   if (activeMeta && isProductionSession(activeMeta)) {
     captureActivePlanningSessionSnapshot();
   }
+  captureActivePlanningSessionViewContext();
 
   const ddd = String(targetDDD);
   const sourceSessionId = preferredSourceSessionId && planningSessionRegistry.has(preferredSourceSessionId)
@@ -9734,6 +10032,7 @@ function createSimulationSessionForActiveDDD(targetDDD = state.selectedDDD, pref
   const simulationId = createSimulationSessionFromSnapshot(ddd, sourceSessionId, [], {
     name: options && options.name ? options.name : null,
   });
+  try { localStorage.removeItem(PLANNING_SESSION_VIEW_STORAGE_PREFIX + simulationId); } catch (_) {}
   planningSessionClients.set(simulationId, []);
   // ── Phase 1: clone production drivers into scenario registry ──────────────
   // Scenarios need their own isolated driver pool so that client.driverId
@@ -9858,6 +10157,7 @@ function deleteActiveSimulationSessionForDDD(options = {}) {
   }
   // Limpar localStorage: buffer do cenário e índice de cenários do DDD
   try { localStorage.removeItem('rfx:scenario:buf:' + meta.id); } catch(_) {}
+  try { localStorage.removeItem(PLANNING_SESSION_VIEW_STORAGE_PREFIX + meta.id); } catch(_) {}
   _saveScenarioRegistry(ddd);
   // Sanity check: confirmar que o id foi removido do índice pelo _saveScenarioRegistry
   try {
@@ -9904,6 +10204,7 @@ function deleteRealPlanningSessionForDDD(options = {}) {
     if (session.type === 'scenario') {
       try { localStorage.removeItem('rfx:scenario:buf:' + session.id); } catch(_) {}
     }
+    try { localStorage.removeItem(PLANNING_SESSION_VIEW_STORAGE_PREFIX + session.id); } catch(_) {}
   });
   // Remover índice de cenários do DDD — evita restauração zombie após F5
   try { localStorage.removeItem('rfx:sim:scenarios:' + ddd); } catch(_) {}
@@ -10298,6 +10599,14 @@ async function loadPlanningForDDD(ddd) {
 
   if (!applied) {
     logger.info('[PLAN] DDD ' + dddText + ': nenhum planejamento salvo encontrado — mantendo defaults');
+  }
+
+  if (applied) {
+    planningSessionSnapshots.set(
+      getRealSessionIdForDDD(dddText),
+      buildPlanningSnapshotFromCurrentClients(dddText)
+    );
+    logger.info('[PLAN] DDD ' + dddText + ': snapshot real atualizado com assignments canônicos');
   }
 
   markPlanAsSaved();
@@ -11115,6 +11424,7 @@ function normalizeCurveScheduleForClient(client, options = {}) {
 
   requiredWeeks.forEach((week) => {
     let occurrence = existingByWeek.get(week);
+    let _isNewOccurrence = false;
     if (!occurrence) {
       occurrence = {
         ...anchor,
@@ -11125,6 +11435,7 @@ function normalizeCurveScheduleForClient(client, options = {}) {
       clients.push(occurrence);
       invalidateClassifyCache();
       existingByWeek.set(week, occurrence);
+      _isNewOccurrence = true;
       changed += 1;
     }
 
@@ -11165,13 +11476,30 @@ function normalizeCurveScheduleForClient(client, options = {}) {
     }
     occurrence.clientGroupId = groupId;
     occurrence.id = `${groupId}-w${week}`;
-    occurrence.sequence = getNextSequenceForRoute(
-      occurrence.id,
-      occurrence.ddd,
-      week,
-      desiredDay,
-      desiredDriverId
-    );
+    // HOTFIX P0 (sequência): NÃO reatribuir uma sequência já válida e persistida.
+    // getNextSequenceForRoute() (ordem física do array) só é aplicado quando a
+    // ocorrência é NOVA, quando a sequência atual é inválida, ou quando a
+    // ocorrência mudou de rota (driver/dia/semana) nesta normalização. Assim, boot,
+    // F5 e troca de sessão preservam o sequenciamento manual. Não marca dirty
+    // quando nada muda (só empurra 'sequence' em _changedKeys se o valor mudar).
+    const _seqValid = Number.isFinite(occurrence.sequence) && occurrence.sequence > 0;
+    const _routeChanged = _changedKeys.indexOf('driverId') !== -1
+      || _changedKeys.indexOf('day') !== -1
+      || _changedKeys.indexOf('week') !== -1;
+    if (_isNewOccurrence || !_seqValid || _routeChanged) {
+      const _newSeq = getNextSequenceForRoute(
+        occurrence.id,
+        occurrence.ddd,
+        week,
+        desiredDay,
+        desiredDriverId
+      );
+      if (occurrence.sequence !== _newSeq) {
+        occurrence.sequence = _newSeq;
+        _changedKeys.push('sequence');
+        changed += 1;
+      }
+    }
     if (_changedKeys.length) _onClientMutated(occurrence, _changedKeys);
   });
 
@@ -16420,32 +16748,116 @@ function getNoCoordinateClients() {
   return classifyClients().noCoord;
 }
 
+let noCoordinatePanelOpen = false;
+let expandedNoCoordinateClientId = null;
+
+function syncNoCoordinatePanelUI() {
+  const center = document.getElementById('no-coord-section');
+  const trigger = document.getElementById('no-coord-section-toggle');
+  const body = document.getElementById('no-coord-section-body');
+  if (!center || !trigger || !body) return;
+  center.classList.toggle('is-open', noCoordinatePanelOpen);
+  trigger.setAttribute('aria-expanded', String(noCoordinatePanelOpen));
+  body.setAttribute('aria-hidden', String(!noCoordinatePanelOpen));
+}
+
+function toggleNoCoordinatePanel(forceOpen) {
+  noCoordinatePanelOpen = typeof forceOpen === 'boolean' ? forceOpen : !noCoordinatePanelOpen;
+  syncNoCoordinatePanelUI();
+}
+
+function getNoCoordinateDetailsHtml(client) {
+  const city = client.city || '-';
+  const neighborhood = client.neighborhood || '-';
+  const address = client.address || '-';
+  const driverLabel = getDriverShortCode(client.driverId) || '-';
+  return `
+    <div class="no-coord-details">
+      <div class="no-coord-detail-grid">
+        <div class="no-coord-detail is-wide"><span>Endereço</span><strong>${address}</strong></div>
+        <div class="no-coord-detail"><span>Cidade</span><strong>${city}</strong></div>
+        <div class="no-coord-detail"><span>Bairro</span><strong>${neighborhood}</strong></div>
+        <div class="no-coord-detail"><span>Motorista</span><strong>${driverLabel}</strong></div>
+        <div class="no-coord-detail"><span>Status</span><strong><span class="no-coord-status">SEM_COORDENADA</span></strong></div>
+      </div>
+      <div class="no-coord-actions">
+        <button class="no-coord-btn primary" onclick="editNoCoordAddress('${client.id}')">Editar endereço</button>
+        <button class="no-coord-btn" onclick="updateNoCoordLatLon('${client.id}')">Atualizar lat/lon</button>
+        <button class="no-coord-btn" onclick="reprocessNoCoordGeocoding('${client.id}')">Reprocessar geocoding</button>
+      </div>
+    </div>`;
+}
+
+function findNoCoordinateCard(clientId) {
+  return Array.from(document.querySelectorAll('[data-no-coord-card-id]'))
+    .find((card) => card.dataset.noCoordCardId === String(clientId)) || null;
+}
+
+function toggleNoCoordinateDetails(clientId) {
+  const previousId = expandedNoCoordinateClientId;
+  const previousCard = previousId ? findNoCoordinateCard(previousId) : null;
+  if (previousCard) {
+    previousCard.classList.remove('is-expanded');
+    previousCard.querySelector('.no-coord-row-toggle')?.setAttribute('aria-expanded', 'false');
+    previousCard.querySelector('.no-coord-details')?.remove();
+  }
+
+  if (previousId === clientId) {
+    expandedNoCoordinateClientId = null;
+    return;
+  }
+
+  const client = getNoCoordinateClients().find((item) => item.id === clientId);
+  const card = findNoCoordinateCard(clientId);
+  if (!client || !card) return;
+  expandedNoCoordinateClientId = clientId;
+  card.classList.add('is-expanded');
+  card.querySelector('.no-coord-row-toggle')?.setAttribute('aria-expanded', 'true');
+  card.insertAdjacentHTML('beforeend', getNoCoordinateDetailsHtml(client));
+}
+
 function renderNoCoordinatePanel() {
   const list = document.getElementById('no-coord-list');
   const countLabel = document.getElementById('no-coord-count-label');
-  if (!list || !countLabel) {
+  const shownLabel = document.getElementById('no-coord-shown-label');
+  const footer = document.getElementById('no-coord-footer');
+  if (!list || !countLabel || !shownLabel || !footer) {
     return;
   }
 
   const pending = getNoCoordinateClients();
   const selectedCount = state._geocodingSelectedIds.size;
-  countLabel.textContent = `${pending.length} pendentes${selectedCount > 0 ? ` (${selectedCount} selecionados)` : ''}`;
+  const pendingIds = new Set(pending.map((client) => client.id));
+  if (expandedNoCoordinateClientId && !pendingIds.has(expandedNoCoordinateClientId)) {
+    expandedNoCoordinateClientId = null;
+  }
+  countLabel.textContent = pending.length;
+  shownLabel.textContent = `${pending.length} cliente${pending.length === 1 ? '' : 's'} exibido${pending.length === 1 ? '' : 's'}`;
 
   if (!pending.length) {
-    list.innerHTML = '<div class="no-coord-empty">Nenhum cliente sem coordenada no recorte atual.</div>';
+    list.innerHTML = `
+      <div class="no-coord-empty">
+        <span class="no-coord-empty-icon" aria-hidden="true">✓</span>
+        <strong>Sem pendências geográficas</strong>
+        <span>Todos os clientes exibidos possuem localização válida.</span>
+      </div>`;
+    footer.innerHTML = '';
     return;
   }
 
-  // Header com botão "Selecionar todos" e "Reprocessar selecionados"
+  const selectable = pending.slice(0, 20);
+  const allSelectableSelected = selectable.length > 0 && selectable.every((client) => state._geocodingSelectedIds.has(client.id));
   const headerHtml = `
-    <div class="no-coord-header" style="padding: 8px; border-bottom: 1px solid #e0e0e0; display: flex; gap: 8px; align-items: center;">
-      <label style="display: flex; align-items: center; gap: 4px; flex: 1;">
-        <input type="checkbox" id="no-coord-select-all" onchange="toggleNoCoordSelectAll()" />
-        Selecionar tudo (máx 20)
+    <div class="no-coord-batch">
+      <label class="no-coord-select-label">
+        <input type="checkbox" id="no-coord-select-all" onchange="toggleNoCoordSelectAll()" ${allSelectableSelected ? 'checked' : ''} />
+        <span>Selecionar lote (máx. 20)</span>
+        <strong class="no-coord-selected-label">${selectedCount > 0 ? `${selectedCount} selecionado${selectedCount === 1 ? '' : 's'}` : `${pending.length} exibido${pending.length === 1 ? '' : 's'}`}</strong>
       </label>
-      <button class="no-coord-btn" id="no-coord-batch-btn" onclick="reprocessNoCoordGecodingBatch()" style="padding: 4px 8px; font-size: 12px; ${selectedCount === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
-        Reprocessar (${selectedCount})
+      <button class="no-coord-btn" id="no-coord-batch-btn" onclick="reprocessNoCoordGecodingBatch()" ${selectedCount === 0 ? 'disabled' : ''}>
+        Reprocessar
       </button>
+      <button class="no-coord-btn" id="no-coord-export-btn" onclick="exportNoCoordinateCSV()">Exportar CSV</button>
     </div>
   `;
 
@@ -16457,32 +16869,65 @@ function renderNoCoordinatePanel() {
     const driverLabel = getDriverShortCode(client.driverId) || '-';
     const statusLabel = 'SEM_COORDENADA';
     const isSelected = state._geocodingSelectedIds.has(client.id);
+    const isExpanded = expandedNoCoordinateClientId === client.id;
+    const clientCode = client.code || client.codigo || client.externalId || client.id || '';
     return `
-      <div class="no-coord-card" style="position: relative;">
-        <input 
-          type="checkbox" 
-          class="no-coord-checkbox" 
-          data-client-id="${client.id}"
-          ${isSelected ? 'checked' : ''}
-          onchange="toggleNoCoordClientSelection('${client.id}')"
-          style="position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; cursor: pointer;"
-        />
-        <div class="no-coord-title" style="padding-right: 28px;">${tradeName}</div>
-        <div class="no-coord-meta">Cidade: ${city}</div>
-        <div class="no-coord-meta">Bairro: ${neighborhood}</div>
-        <div class="no-coord-meta">Endereço: ${address}</div>
-        <div class="no-coord-meta">Motorista: ${driverLabel}</div>
-        <div class="no-coord-meta">Status: ${statusLabel}</div>
-        <div class="no-coord-actions">
-          <button class="no-coord-btn" onclick="editNoCoordAddress('${client.id}')">Editar endereço</button>
-          <button class="no-coord-btn" onclick="updateNoCoordLatLon('${client.id}')">Atualizar lat/lon</button>
-          <button class="no-coord-btn" onclick="reprocessNoCoordGeocoding('${client.id}')">Reprocessar geocoding</button>
+      <article class="no-coord-card${isExpanded ? ' is-expanded' : ''}" data-no-coord-card-id="${client.id}">
+        <div class="no-coord-row">
+          <input type="checkbox" class="no-coord-checkbox" data-client-id="${client.id}" ${isSelected ? 'checked' : ''}
+            onchange="toggleNoCoordClientSelection('${client.id}')" aria-label="Selecionar ${tradeName} para reprocessamento em lote" />
+          <button class="no-coord-row-toggle" type="button" onclick="toggleNoCoordinateDetails('${client.id}')" aria-expanded="${isExpanded}">
+            <span class="no-coord-title-line">
+              <span class="no-coord-title">${tradeName}</span>
+              ${clientCode ? `<span class="no-coord-code">#${clientCode}</span>` : ''}
+            </span>
+            <span class="no-coord-subline no-coord-meta">
+              <span>${city} · ${neighborhood}</span>
+              <span>· ${driverLabel}</span>
+            </span>
+          </button>
+          <span class="no-coord-row-state">
+            <span class="no-coord-status">SEM COORD.</span>
+            <span class="no-coord-chevron" aria-hidden="true">›</span>
+          </span>
         </div>
-      </div>
+        ${isExpanded ? getNoCoordinateDetailsHtml(client) : ''}
+      </article>
     `;
   }).join('');
 
-  list.innerHTML = headerHtml + cardsHtml;
+  list.innerHTML = cardsHtml;
+  footer.innerHTML = headerHtml;
+}
+
+function exportNoCoordinateCSV() {
+  const pending = getNoCoordinateClients();
+  const selected = pending.filter((client) => state._geocodingSelectedIds.has(client.id));
+  const exportClients = selected.length ? selected : pending;
+  if (!exportClients.length) {
+    updatePlannerHint('Nenhuma pendência geográfica no recorte atual para exportar.');
+    return;
+  }
+
+  const exportedAt = new Date().toISOString();
+  const rows = exportClients.map((client) => ({
+    'DDD': client.ddd ?? state.selectedDDD,
+    'Codigo interno': client.id ?? '',
+    'Codigo externo': client.externalId ?? client.clientGroupId ?? '',
+    'Nome': client.nomeFantasia || client.tradeName || client.name || '',
+    'Cidade': client.city || '',
+    'Bairro': client.neighborhood || '',
+    'Endereco': client.address || '',
+    'Motorista': getDriverById(client.driverId)?.name || getDriverShortCode(client.driverId) || '',
+    'Territorio': getDriverTerritoryLabel(client.driverId) || '',
+    'Status': 'SEM_COORDENADA',
+    'Latitude': client.lat ?? '',
+    'Longitude': client.lon ?? '',
+    'Exportado em': exportedAt
+  }));
+  const date = exportedAt.slice(0, 10);
+  exportarCSV(rows, `ROUTflex_Pendencias_Geograficas_DDD${state.selectedDDD}_${date}.csv`);
+  updatePlannerHint(`${rows.length} pendência${rows.length === 1 ? '' : 's'} geográfica${rows.length === 1 ? '' : 's'} exportada${rows.length === 1 ? '' : 's'} em CSV.`);
 }
 
 function editNoCoordAddress(clientId) {
@@ -18477,9 +18922,11 @@ function calculateRoutes(options = {}) {
 
 let _applyFiltersScheduled = false;
 let _pendingNeedsFitBounds = false;
+let _applyFiltersEpoch = 0;
 
 function applyFilters(options = {}) {
   options = normalizeApplyFiltersOptions(options);
+  captureActivePlanningSessionViewContext();
   if (!options.skipFitBounds) {
     _pendingNeedsFitBounds = true;
   }
@@ -18487,7 +18934,9 @@ function applyFilters(options = {}) {
     return;
   }
   _applyFiltersScheduled = true;
+  const scheduledEpoch = _applyFiltersEpoch;
   Promise.resolve().then(function() {
+    if (scheduledEpoch !== _applyFiltersEpoch) return;
     _applyFiltersScheduled = false;
     const needsFit = _pendingNeedsFitBounds;
     _pendingNeedsFitBounds = false;
@@ -18503,6 +18952,10 @@ function applyFilters(options = {}) {
     calculateRoutes({ ...options, skipFitBounds: !needsFit });
   });
 }
+
+window.addEventListener('pagehide', () => {
+  captureActivePlanningSessionViewContext();
+});
 
 map.on('moveend', scheduleViewportMapRefresh);
 map.on('zoomend', scheduleViewportMapRefresh);
@@ -19190,6 +19643,7 @@ function togglePanel(panelId, stateKey) {
 
 async function activatePlanningSessionScope(ddd, sessionId = null) {
   const dddText = String(ddd);
+  captureActivePlanningSessionViewContext();
   captureActivePlanningSessionSnapshot();
   closeLassoConfirmModal();
   clearLassoSelection({ skipRender: true });
@@ -19235,28 +19689,20 @@ async function activatePlanningSessionScope(ddd, sessionId = null) {
     || state.activePlanningSessionByDDD[dddText]
     || getRealSessionIdForDDD(dddText);
 
-  switchPlanningSession(targetSessionId, { skipCapture: true });
+  const restoredViewContext = switchPlanningSession(targetSessionId, { skipCapture: true });
   renderPlanningSessionSelector();
   state.manualAdjustedDriverIds.clear();
-  state.selectedDriverId = 'all';
-  state.selectedDriverIds.clear();
-  state.focusDriverId = null;
   closeClientPopup();
   closeDriverManagerModal();
   closeDriverModal();
 
-  // Default to territorial mode on session load
-  if (state.viewMode !== 'territorial') {
+  // Sem contexto salvo, preservar o comportamento padrão anterior da troca de sessão.
+  if (!restoredViewContext) {
+    state.selectedDriverId = 'all';
+    state.selectedDriverIds.clear();
+    state.focusDriverId = null;
     state.viewMode = 'territorial';
-    document.getElementById('app-shell').dataset.viewMode = 'territorial';
-    document.querySelectorAll('#mode-switcher .mode-btn').forEach((btn) => {
-      btn.classList.toggle('is-active', btn.dataset.mode === 'territorial');
-    });
-    syncTerritoryViewUI();
-    const titleEl = document.getElementById('toolbar-title');
-    const subtitleEl = document.getElementById('toolbar-subtitle');
-    titleEl.textContent = 'Modo Territorial';
-    subtitleEl.textContent = 'Ajuste de carteira: redistribua clientes entre motoristas usando laço ou arrastar.';
+    syncPlanningSessionViewContextUI();
   }
 
   applyFilters({ skipFitBounds: true });
@@ -19749,6 +20195,7 @@ document.getElementById('territory-pdv-display-select').onchange = (event) => {
     updatePlannerHint('Filtro de curva removido ao alterar a visualização.');
     return; // evita segunda renderização (fast path abaixo)
   }
+  captureActivePlanningSessionViewContext();
   
   // Fast path: only update marker icons, skip full calculateRoutes+renderMap pipeline
   if (_markerRegistry.size > 0) {
@@ -19878,6 +20325,8 @@ document.getElementById('clear-selection-btn').onclick = clearSelection;
 document.getElementById('open-crm-btn').onclick = openCrmDashboard;
 document.getElementById('toggle-left').onclick = () => togglePanel('left-panel', 'panelLeftOpen');
 document.getElementById('toggle-right').onclick = () => togglePanel('right-panel', 'panelRightOpen');
+document.getElementById('no-coord-section-toggle').onclick = () => toggleNoCoordinatePanel();
+syncNoCoordinatePanelUI();
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && state._clientMarkerPointerDragSession) {
@@ -20065,10 +20514,9 @@ async function initializeApp() {
   }
 
   if (!_bootActivatedScenario) {
-    // Production path: first render is always clean (mode=REAL, clients=production).
-    renderMap(state.clients, []);
-    calculateRoutes();
-    captureActivePlanningSessionSnapshot();
+    // Produção: restaurar todo o contexto antes do único cálculo/render do boot.
+    restorePlanningSessionViewContext(state.activePlanningSessionId);
+    applyFilters({ skipFitBounds: true });
   }
 
   if (_autosaveTimer) {
@@ -20078,12 +20526,7 @@ async function initializeApp() {
   _autosaveDirtyDDDs.clear();
   markPlanAsSaved();
 
-  // Scenario boot: switchPlanningSession already queued applyFilters → calculateRoutes
-  // via Promise.resolve(). A second synchronous calculateRoutes here would stack on top
-  // and cause overlapped/doubled route rendering. Skip when scenario was re-activated.
-  if (!_bootActivatedScenario) {
-    calculateRoutes({ skipFitBounds: true });
-  }
+  // Tanto produção quanto cenário já enfileiraram exatamente um applyFilters.
   await loadAdvancedHistory();
 }
 
