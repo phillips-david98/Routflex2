@@ -72,4 +72,6 @@ __pycache__/
 *.pyc
 
 # Virtual environment
-.venv/
+.venv/.tmp-edge-final-test/
+.tmp-edge-p0/
+.tmp-edge-*/

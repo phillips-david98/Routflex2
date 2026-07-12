@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bot, ChevronDown, Send, Sparkles, X } from 'lucide-react';
+import { Bot, ChevronDown, Send } from 'lucide-react';
 
 const STORAGE_KEY = 'routflex_ops_assist_open';
 
@@ -35,8 +35,8 @@ export default function RoutflexAssist() {
       <style>{`
         .ops-assist {
           position: fixed;
-          right: 22px;
-          bottom: 22px;
+          right: 28px;
+          bottom: 28px;
           z-index: 900;
           display: flex;
           flex-direction: column;
@@ -286,57 +286,334 @@ export default function RoutflexAssist() {
 
         .ops-assist-launcher {
           position: relative;
-          width: 50px;
-          height: 50px;
+          width: 68px;
+          height: 68px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 1px solid rgba(255, 255, 255, .14);
-          border-radius: 16px;
-          background: linear-gradient(145deg, #162A50, #1E3A6E);
-          color: #DDF7FB;
-          box-shadow:
-            0 12px 28px rgba(15, 27, 53, .26),
-            inset 0 1px 0 rgba(255, 255, 255, .1);
-          transition: transform .2s ease, box-shadow .2s ease, border-radius .2s ease;
+          flex: 0 0 68px;
+          padding: 0;
+          overflow: visible;
+          border: 0;
+          border-radius: 50%;
+          background: transparent;
+          color: #dffaff;
+          cursor: pointer;
+          isolation: isolate;
+          contain: layout;
+          filter: drop-shadow(0 0 8px rgba(17, 132, 255, .24));
+          outline: none;
+          transition: transform .22s ease, filter .22s ease;
+        }
+
+        .ops-assist-launcher::before,
+        .ops-assist-launcher::after {
+          content: '';
+          position: absolute;
+          z-index: 0;
+          pointer-events: none;
         }
 
         .ops-assist-launcher::before {
-          content: '';
-          position: absolute;
-          inset: -4px;
-          z-index: -1;
-          border: 1px solid rgba(0, 180, 216, .18);
-          border-radius: 20px;
-          opacity: .7;
-          animation: ops-assist-breathe 3.6s ease-in-out infinite;
+          inset: -5px;
+          border-radius: 58% 42% 54% 46% / 45% 56% 44% 55%;
+          background:
+            radial-gradient(ellipse at 62% 34%, rgba(36, 224, 255, .32), transparent 46%),
+            radial-gradient(ellipse at 34% 72%, rgba(14, 99, 255, .26), transparent 50%);
+          filter: blur(6px);
+          opacity: .68;
+          animation: routflex-orb-breathe 7.4s ease-in-out infinite;
+        }
+
+        .ops-assist-launcher::after {
+          inset: 5px;
+          border-radius: 46% 54% 42% 58% / 55% 45% 58% 42%;
+          background: radial-gradient(ellipse at 46% 48%, rgba(17, 194, 255, .3), transparent 62%);
+          filter: blur(4px);
+          opacity: .5;
+          animation: routflex-orb-depth 8.8s ease-in-out -2.6s infinite;
         }
 
         .ops-assist-launcher:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 16px 34px rgba(15, 27, 53, .3);
+          transform: translateY(-2px) scale(1.018);
+          filter: drop-shadow(0 0 11px rgba(25, 176, 255, .36)) brightness(1.1) saturate(1.08);
+        }
+
+        .ops-assist-launcher:focus-visible {
+          outline: 2px solid rgba(82, 208, 255, .72);
+          outline-offset: 3px;
         }
 
         .ops-assist.is-open .ops-assist-launcher {
-          border-radius: 50%;
+          filter: drop-shadow(0 0 11px rgba(25, 176, 255, .36)) brightness(1.1) saturate(1.08);
         }
 
-        .ops-assist-launcher .ops-assist-spark {
+        .ops-assist-launcher:active {
+          transform: translateY(0) scale(.96);
+        }
+
+        .routflex-orb-fluid {
           position: absolute;
-          top: 8px;
-          right: 8px;
-          color: #5DD6E8;
+          inset: 6px;
+          z-index: 1;
+          overflow: hidden;
+          border-radius: 48% 52% 43% 57% / 54% 44% 56% 46%;
+          background:
+            radial-gradient(ellipse at 42% 34%, rgba(16, 73, 139, .62), transparent 48%),
+            radial-gradient(ellipse at 54% 53%, #020b20 0 42%, rgba(2, 11, 32, .9) 57%, rgba(2, 17, 48, .35) 75%, transparent 100%);
+          will-change: transform;
+          animation: routflex-orb-shell 8.2s ease-in-out infinite;
         }
 
-        @keyframes ops-assist-breathe {
-          0%, 100% { opacity: .35; transform: scale(.96); }
-          50% { opacity: .8; transform: scale(1.04); }
+        .routflex-orb-fluid::before,
+        .routflex-orb-fluid::after {
+          content: '';
+          position: absolute;
+          will-change: transform, opacity;
+        }
+
+        .routflex-orb-fluid::before {
+          width: 66px;
+          height: 52px;
+          top: -14px;
+          left: -19px;
+          border-radius: 38% 62% 48% 52% / 56% 38% 62% 44%;
+          background: radial-gradient(ellipse at 64% 68%, rgba(59, 232, 255, .92), rgba(0, 154, 255, .68) 34%, rgba(10, 63, 202, .18) 64%, transparent 72%);
+          filter: blur(3.5px);
+          opacity: .82;
+          animation: routflex-orb-flow-a 7.4s ease-in-out infinite;
+        }
+
+        .routflex-orb-fluid::after {
+          width: 58px;
+          height: 68px;
+          right: -17px;
+          bottom: -24px;
+          border-radius: 57% 43% 38% 62% / 42% 58% 44% 56%;
+          background: radial-gradient(ellipse at 38% 28%, rgba(32, 218, 255, .8), rgba(0, 102, 255, .64) 37%, rgba(24, 49, 159, .16) 65%, transparent 74%);
+          filter: blur(4px);
+          opacity: .76;
+          animation: routflex-orb-flow-b 9.1s ease-in-out -3s infinite;
+        }
+
+        .routflex-orb-energy {
+          position: absolute;
+          inset: 7px;
+          z-index: 2;
+          overflow: hidden;
+          border-radius: 47% 53% 56% 44% / 43% 58% 42% 57%;
+          pointer-events: none;
+        }
+
+        .routflex-orb-energy::before,
+        .routflex-orb-energy::after {
+          content: '';
+          position: absolute;
+        }
+
+        .routflex-orb-energy::before {
+          width: 38px;
+          height: 46px;
+          left: 8px;
+          top: 5px;
+          border-radius: 52% 48% 63% 37% / 38% 58% 42% 62%;
+          background: radial-gradient(ellipse at 55% 44%, rgba(177, 249, 255, .82), rgba(18, 198, 255, .36) 30%, transparent 67%);
+          filter: blur(2px);
+          mix-blend-mode: screen;
+          opacity: .58;
+        }
+
+        .routflex-orb-energy::after {
+          width: 31px;
+          height: 35px;
+          right: 5px;
+          bottom: 7px;
+          border-radius: 39% 61% 46% 54% / 62% 37% 63% 38%;
+          background: radial-gradient(ellipse at 42% 38%, rgba(91, 238, 255, .72), rgba(23, 92, 255, .24) 48%, transparent 72%);
+          filter: blur(2.5px);
+          mix-blend-mode: screen;
+          opacity: .48;
+        }
+
+        .routflex-orb-routes {
+          position: absolute;
+          inset: -8px;
+          width: calc(100% + 16px);
+          height: calc(100% + 16px);
+          overflow: visible;
+          pointer-events: none;
+          transition: opacity .22s ease;
+        }
+
+        .routflex-orb-routes-back {
+          z-index: 0;
+          opacity: .58;
+        }
+
+        .routflex-orb-routes-front {
+          z-index: 2;
+          opacity: .42;
+        }
+
+        .routflex-orb-route,
+        .routflex-orb-route-particle {
+          fill: none;
+          vector-effect: non-scaling-stroke;
+        }
+
+        .routflex-orb-route {
+          stroke-width: .72;
+        }
+
+        .routflex-orb-route-a {
+          stroke: rgba(69, 226, 255, .62);
+          stroke-dasharray: 28 8 15 12 22 15;
+        }
+
+        .routflex-orb-route-b {
+          stroke: rgba(30, 147, 255, .5);
+          stroke-dasharray: 18 11 30 8 20 13;
+        }
+
+        .routflex-orb-route-front-a {
+          stroke: rgba(126, 242, 255, .72);
+          stroke-width: .9;
+          stroke-dasharray: 13 87;
+          stroke-dashoffset: -48;
+        }
+
+        .routflex-orb-route-front-b {
+          stroke: rgba(42, 169, 255, .58);
+          stroke-width: .82;
+          stroke-dasharray: 9 91;
+          stroke-dashoffset: -8;
+        }
+
+        .routflex-orb-route-particle {
+          stroke-linecap: round;
+        }
+
+        .routflex-orb-route-particle-a {
+          stroke: #d9fcff;
+          stroke-width: 3;
+          stroke-dasharray: 1.1 98.9;
+          animation: routflex-orb-route-travel 9.6s linear infinite;
+        }
+
+        .routflex-orb-route-particle-b {
+          stroke: #61eaff;
+          stroke-width: 2.5;
+          stroke-dasharray: 1 49 1 49;
+          animation: routflex-orb-route-travel-reverse 12.4s linear -4.2s infinite;
+        }
+
+        .routflex-orb-mark {
+          position: relative;
+          z-index: 3;
+          width: 40px;
+          height: 48px;
+          overflow: visible;
+          pointer-events: none;
+          filter: drop-shadow(0 0 4px rgba(75, 230, 255, .78));
+        }
+
+        .routflex-orb-mark path {
+          fill: none;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+
+        .routflex-orb-mark-glow {
+          stroke: #22cfff;
+          stroke-width: 10;
+          opacity: .3;
+          filter: blur(2.4px);
+        }
+
+        .routflex-orb-mark-core {
+          stroke: url(#routflex-r-gradient);
+          stroke-width: 5.2;
+          opacity: .94;
+          transition: stroke-width .2s ease, opacity .2s ease;
+        }
+
+        .routflex-orb-mark-flow {
+          stroke: rgba(241, 255, 255, .95);
+          stroke-width: 2.1;
+          stroke-dasharray: 13 87;
+          stroke-dashoffset: 0;
+          opacity: .86;
+          animation: routflex-orb-mark-travel 5.2s ease-in-out infinite;
+        }
+
+        .ops-assist-launcher:hover .routflex-orb-mark-core,
+        .ops-assist.is-open .routflex-orb-mark-core {
+          stroke-width: 5.7;
+          opacity: 1;
+        }
+
+        .ops-assist-launcher:hover .routflex-orb-routes-back,
+        .ops-assist.is-open .routflex-orb-routes-back {
+          opacity: .72;
+        }
+
+        .ops-assist-launcher:hover .routflex-orb-routes-front,
+        .ops-assist.is-open .routflex-orb-routes-front {
+          opacity: .56;
+        }
+
+        @keyframes routflex-orb-breathe {
+          0%, 100% { transform: translate3d(-1px, 1px, 0) scale(.94, 1.02); opacity: .45; }
+          48% { transform: translate3d(2px, -2px, 0) scale(1.05, .96); opacity: .72; }
+        }
+
+        @keyframes routflex-orb-depth {
+          0%, 100% { transform: translate3d(2px, -1px, 0) scale(.92, 1.04); opacity: .32; }
+          52% { transform: translate3d(-2px, 2px, 0) scale(1.06, .94); opacity: .58; }
+        }
+
+        @keyframes routflex-orb-shell {
+          0%, 100% { transform: translate3d(0, 1px, 0) scale(.97, 1.02); }
+          36% { transform: translate3d(1px, -1px, 0) scale(1.025, .97); }
+          72% { transform: translate3d(-1px, 0, 0) scale(.985, 1.015); }
+        }
+
+        @keyframes routflex-orb-flow-a {
+          0%, 100% { transform: translate3d(-6px, -2px, 0) rotate(-8deg) scale(.9, 1.02); opacity: .66; }
+          45% { transform: translate3d(13px, 8px, 0) rotate(7deg) scale(1.12, .92); opacity: .9; }
+          72% { transform: translate3d(5px, 13px, 0) rotate(2deg) scale(.98, 1.08); opacity: .76; }
+        }
+
+        @keyframes routflex-orb-flow-b {
+          0%, 100% { transform: translate3d(4px, 5px, 0) rotate(5deg) scale(1.04, .9); opacity: .62; }
+          38% { transform: translate3d(-10px, -8px, 0) rotate(-7deg) scale(.9, 1.12); opacity: .86; }
+          70% { transform: translate3d(-4px, -14px, 0) rotate(3deg) scale(1.08, .96); opacity: .72; }
+        }
+
+        @keyframes routflex-orb-mark-travel {
+          0% { stroke-dashoffset: 0; opacity: .5; }
+          48% { opacity: .96; }
+          100% { stroke-dashoffset: -100; opacity: .5; }
+        }
+
+        @keyframes routflex-orb-route-travel {
+          to { stroke-dashoffset: -100; }
+        }
+
+        @keyframes routflex-orb-route-travel-reverse {
+          to { stroke-dashoffset: 100; }
         }
 
         @media (prefers-reduced-motion: reduce) {
           .ops-assist-panel,
           .ops-assist-launcher,
-          .ops-assist-launcher::before {
+          .ops-assist-launcher::before,
+          .ops-assist-launcher::after,
+          .routflex-orb-fluid,
+          .routflex-orb-fluid::before,
+          .routflex-orb-fluid::after,
+          .routflex-orb-mark-flow,
+          .routflex-orb-route-particle {
             animation: none;
             transition: none;
           }
@@ -344,8 +621,8 @@ export default function RoutflexAssist() {
 
         @media (max-width: 680px) {
           .ops-assist {
-            right: 12px;
-            bottom: 12px;
+            right: 16px;
+            bottom: 16px;
           }
 
           .ops-assist-panel {
@@ -354,8 +631,14 @@ export default function RoutflexAssist() {
           }
 
           .ops-assist-launcher {
-            width: 48px;
-            height: 48px;
+            width: 58px;
+            height: 58px;
+            flex-basis: 58px;
+          }
+
+          .routflex-orb-mark {
+            width: 34px;
+            height: 42px;
           }
         }
       `}</style>
@@ -405,8 +688,31 @@ export default function RoutflexAssist() {
         aria-label={open ? 'Fechar ROUTflex Assist' : 'Abrir ROUTflex Assist'}
         aria-expanded={open}
       >
-        {open ? <X size={20} /> : <Bot size={21} />}
-        {!open && <Sparkles className="ops-assist-spark" size={10} />}
+        <svg className="routflex-orb-routes routflex-orb-routes-back" viewBox="0 0 84 84" aria-hidden="true" focusable="false">
+          <path className="routflex-orb-route routflex-orb-route-a" pathLength="100" d="M6 42 C7 17 66 10 79 36 C88 55 40 76 12 59 C1 52 0 46 6 42 Z" />
+          <path className="routflex-orb-route-particle routflex-orb-route-particle-a" pathLength="100" d="M6 42 C7 17 66 10 79 36 C88 55 40 76 12 59 C1 52 0 46 6 42 Z" />
+          <path className="routflex-orb-route routflex-orb-route-b" pathLength="100" d="M18 12 C45 1 76 23 72 50 C68 77 25 80 11 54 C1 36 5 20 18 12 Z" />
+          <path className="routflex-orb-route-particle routflex-orb-route-particle-b" pathLength="100" d="M18 12 C45 1 76 23 72 50 C68 77 25 80 11 54 C1 36 5 20 18 12 Z" />
+        </svg>
+        <span className="routflex-orb-fluid" aria-hidden="true" />
+        <span className="routflex-orb-energy" aria-hidden="true" />
+        <svg className="routflex-orb-routes routflex-orb-routes-front" viewBox="0 0 84 84" aria-hidden="true" focusable="false">
+          <path className="routflex-orb-route routflex-orb-route-front-a" pathLength="100" d="M6 42 C7 17 66 10 79 36 C88 55 40 76 12 59 C1 52 0 46 6 42 Z" />
+          <path className="routflex-orb-route routflex-orb-route-front-b" pathLength="100" d="M18 12 C45 1 76 23 72 50 C68 77 25 80 11 54 C1 36 5 20 18 12 Z" />
+        </svg>
+        <svg className="routflex-orb-mark" viewBox="0 0 52 58" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="routflex-r-gradient" x1="12" y1="8" x2="40" y2="50" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stopColor="#efffff" />
+              <stop offset=".38" stopColor="#53e9ff" />
+              <stop offset=".72" stopColor="#159cff" />
+              <stop offset="1" stopColor="#b6f8ff" />
+            </linearGradient>
+          </defs>
+          <path className="routflex-orb-mark-glow" d="M16 49 C16 38 15.8 23 18 9 M18 10 C29 5 39 9 39 18 C39 26 31 29 19 27 M23 28 C30 32 36 40 41 49" />
+          <path className="routflex-orb-mark-core" d="M16 49 C16 38 15.8 23 18 9 M18 10 C29 5 39 9 39 18 C39 26 31 29 19 27 M23 28 C30 32 36 40 41 49" />
+          <path className="routflex-orb-mark-flow" pathLength="100" d="M16 49 C16 38 15.8 23 18 9 M18 10 C29 5 39 9 39 18 C39 26 31 29 19 27 M23 28 C30 32 36 40 41 49" />
+        </svg>
       </button>
     </div>
   );

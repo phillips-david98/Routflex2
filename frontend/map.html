@@ -3483,99 +3483,217 @@ body.login-active .app-shell {
 }
 
 .instruments-toggle {
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
-  border: 1px solid rgba(94, 191, 255, 0.4);
-  background: rgba(10, 26, 44, 0.9);
-  color: #d8efff;
-  font-size: 1.02rem;
-  font-weight: 800;
+  position: relative;
+  z-index: 2;
+  width: 30px;
+  height: 42px;
+  margin: 0;
+  border-radius: 46% 54% 52% 48% / 38% 44% 56% 62%;
+  border: 1px solid rgba(122, 194, 237, 0.2);
+  background:
+    radial-gradient(circle at 35% 28%, rgba(197, 235, 255, 0.16), transparent 34%),
+    linear-gradient(145deg, rgba(35, 80, 112, 0.34), rgba(7, 24, 40, 0.24));
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  backdrop-filter: blur(10px) saturate(130%);
+  color: rgba(222, 244, 255, 0.72);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.08rem;
+  font-weight: 500;
   line-height: 1;
   cursor: pointer;
-  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+  opacity: 0.78;
+  box-shadow: 0 7px 18px rgba(0, 8, 20, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  transition: box-shadow 0.22s ease, transform 0.22s ease, border-color 0.22s ease, color 0.22s ease, background 0.22s ease, opacity 0.22s ease;
 }
 
 .instruments-toggle:hover {
-  border-color: rgba(125, 214, 255, 0.72);
-  box-shadow: 0 0 0 1px rgba(125, 214, 255, 0.22), 0 0 18px rgba(82, 208, 255, 0.38);
-  transform: translateY(-1px);
+  border-color: rgba(122, 207, 255, 0.42);
+  background:
+    radial-gradient(circle at 35% 28%, rgba(221, 245, 255, 0.24), transparent 34%),
+    linear-gradient(145deg, rgba(45, 110, 154, 0.48), rgba(8, 31, 52, 0.38));
+  color: #ffffff;
+  opacity: 1;
+  box-shadow: 0 9px 22px rgba(0, 8, 20, 0.24), 0 0 14px rgba(60, 169, 236, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transform: translateX(-1px) scale(1.04);
+}
+
+.instruments-toggle:focus-visible {
+  outline: 2px solid rgba(112, 213, 255, 0.92);
+  outline-offset: 3px;
 }
 
 .instruments-panel {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   width: 0;
   padding: 0;
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
-  border-radius: 14px;
+  border-radius: 18px;
   border: 1px solid transparent;
-  background: rgba(4, 13, 24, 0.92);
-  backdrop-filter: blur(14px);
-  transition: width 0.2s ease, padding 0.2s ease, opacity 0.16s ease, border-color 0.2s ease;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(61, 139, 201, 0.11), transparent 36%),
+    linear-gradient(155deg, rgba(9, 27, 45, 0.91), rgba(4, 17, 30, 0.94) 72%);
+  -webkit-backdrop-filter: blur(20px) saturate(122%);
+  backdrop-filter: blur(20px) saturate(122%);
+  box-shadow: 0 22px 48px rgba(0, 7, 18, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  transition: width 0.24s ease, padding 0.24s ease, opacity 0.18s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+}
+
+.instruments-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 0 30px rgba(38, 139, 230, 0.05);
 }
 
 .instruments-panel.is-open {
-  width: 252px;
-  padding: 8px;
+  width: 232px;
+  padding: 10px;
   opacity: 1;
   pointer-events: auto;
-  border-color: rgba(129, 183, 231, 0.2);
+  border-color: rgba(112, 169, 210, 0.28);
+  box-shadow: 0 24px 54px rgba(0, 7, 18, 0.42), 0 0 18px rgba(41, 128, 195, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.instrument-group {
+  position: relative;
+  min-width: 210px;
+}
+
+.instrument-group + .instrument-group {
+  margin-top: 7px;
+}
+
+.instrument-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 6px 5px;
+  color: rgba(113, 186, 235, 0.82);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.56rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.instrument-group-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(91, 163, 213, 0.3), rgba(91, 163, 213, 0.04));
+}
+
+.instrument-group-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3px;
+}
+
+.instrument-group:last-child .instrument-group-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.instrument-group:last-child .instrument-btn {
+  grid-column: auto;
+}
+
+.instrument-group:last-child .instrument-btn:nth-last-child(-n + 2) {
+  grid-column: auto;
 }
 
 .instrument-btn {
-  min-height: 48px;
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  min-height: 36px;
   border-radius: 10px;
-  border: 1px solid rgba(96, 154, 206, 0.28);
-  background: rgba(20, 40, 64, 0.8);
-  color: #dcefff;
+  border: 1px solid rgba(107, 158, 198, 0.16);
+  background:
+    linear-gradient(110deg, rgba(27, 53, 77, 0.45), rgba(10, 29, 47, 0.32));
+  color: #eaf6ff;
   cursor: pointer;
   display: grid;
-  justify-items: center;
-  align-content: center;
-  gap: 4px;
-  padding: 6px 4px;
-  transition: border-color 0.16s ease, background 0.16s ease;
+  grid-template-columns: auto minmax(0, 1fr);
+  justify-items: start;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 9px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.instrument-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, transparent 28%, rgba(127, 215, 255, 0.08) 48%, transparent 68%);
+  transform: translateX(-110%);
+  transition: transform 0.45s ease;
 }
 
 .instrument-btn:hover {
-  border-color: rgba(129, 210, 255, 0.52);
-  background: rgba(25, 52, 84, 0.92);
+  border-color: rgba(111, 187, 235, 0.38);
+  background: linear-gradient(110deg, rgba(37, 80, 115, 0.68), rgba(12, 39, 63, 0.54));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), 0 7px 16px rgba(0, 8, 20, 0.18), 0 0 12px rgba(45, 155, 240, 0.07);
+  transform: translateX(2px);
+}
+
+.instrument-btn:hover::after {
+  transform: translateX(110%);
+}
+
+.instrument-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.instrument-btn:focus-visible {
+  outline: 2px solid rgba(110, 211, 255, 0.9);
+  outline-offset: 2px;
 }
 
 .instrument-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.42;
   cursor: not-allowed;
   border-color: rgba(96, 154, 206, 0.18);
 }
 .instrument-btn:disabled:hover {
   border-color: rgba(96, 154, 206, 0.18);
-  background: rgba(20, 40, 64, 0.8);
+  background: linear-gradient(110deg, rgba(27, 53, 77, 0.45), rgba(10, 29, 47, 0.32));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  transform: none;
 }
 
 .instrument-btn.is-active {
-  border-color: rgba(125, 214, 255, 0.82);
-  background: rgba(36, 72, 116, 0.96);
-  box-shadow: 0 0 0 1px rgba(125, 214, 255, 0.22), 0 0 20px rgba(82, 208, 255, 0.34);
+  border-color: rgba(111, 210, 255, 0.9);
+  background: linear-gradient(110deg, rgba(33, 88, 130, 0.86), rgba(10, 44, 72, 0.78));
+  box-shadow: 0 0 0 1px rgba(125, 214, 255, 0.1), 0 0 14px rgba(55, 167, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* PAR: discrete indicator that territorial mode is active — NOT an active tool state */
 .instrument-btn.is-mode-territorial {
   border-color: rgba(82, 208, 255, 0.36);
-  background: rgba(20, 40, 64, 0.88);
+  background: linear-gradient(145deg, rgba(25, 61, 94, 0.9), rgba(8, 29, 49, 0.94));
 }
 .instrument-btn.is-mode-territorial .instrument-glyph {
-  background: rgba(82, 208, 255, 0.18);
+  background: radial-gradient(circle at 38% 28%, rgba(75, 217, 255, 0.34), rgba(10, 48, 83, 0.92) 70%);
   border-color: rgba(82, 208, 255, 0.45);
 }
 
 /* INS: active state for Insight mode tool */
 .instrument-btn.is-insight-active {
   border-color: rgba(100, 220, 100, 0.82);
-  background: rgba(18, 64, 22, 0.96);
+  background: linear-gradient(145deg, rgba(25, 83, 48, 0.96), rgba(8, 39, 35, 0.98));
   box-shadow: 0 0 0 1px rgba(80, 200, 80, 0.22), 0 0 18px rgba(60, 180, 60, 0.30);
 }
 .leaflet-container.insight-mode,
@@ -4537,24 +4655,54 @@ body.login-active .app-shell {
 .ins-save-btn:hover { background: rgba(82, 208, 255, 0.30); }
 
 .instrument-glyph {
+  position: relative;
   width: 26px;
-  height: 16px;
-  border-radius: 7px;
-  border: 1px solid rgba(129, 183, 231, 0.36);
-  background: rgba(82, 208, 255, 0.14);
-  color: #bfe9ff;
-  font-size: 0.6rem;
-  font-weight: 700;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(85, 167, 230, 0.24);
+  background: radial-gradient(circle at 36% 28%, rgba(57, 141, 204, 0.26), rgba(9, 39, 65, 0.76) 70%);
+  color: #63c7ff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  letter-spacing: 0.02em;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.07), 0 3px 8px rgba(0, 10, 27, 0.24);
+  transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.instrument-glyph svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(65, 184, 255, 0.24));
+}
+
+.instrument-btn:nth-child(2) .instrument-glyph,
+.instrument-btn:nth-child(4) .instrument-glyph {
+  color: #42ded2;
+}
+
+.instrument-btn:hover .instrument-glyph,
+.instrument-btn.is-active .instrument-glyph {
+  color: #91ddff;
+  border-color: rgba(101, 199, 255, 0.48);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 4px 10px rgba(0, 10, 27, 0.3), 0 0 11px rgba(48, 164, 246, 0.12);
+  transform: scale(1.04);
 }
 
 .instrument-label {
-  font-size: 0.67rem;
-  color: #c8ddf0;
-  line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  color: #e4eff9;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* NAV ON: full navigation cursors */
@@ -5838,7 +5986,21 @@ body.manual-planning-mode .manual-planning-panel {
   }
 
   .instruments-panel.is-open {
-    width: min(252px, calc(100vw - 72px));
+    width: min(232px, calc(100vw - 68px));
+    padding: 9px;
+  }
+
+  .instrument-group {
+    min-width: calc(min(232px, 100vw - 68px) - 20px);
+  }
+
+  .instrument-btn {
+    min-height: 35px;
+  }
+
+  .instrument-glyph {
+    width: 25px;
+    height: 25px;
   }
 
   .focus-card {
@@ -5889,51 +6051,98 @@ body.login-active .routex-ai-panel { display:none !important; }
 
 .routex-ai-fab {
   position:fixed; bottom:28px; right:28px; z-index:1050;
-  display:inline-flex; align-items:center; gap:10px;
-  padding:8px 18px 8px 8px;
-  border:1px solid rgba(82,208,255,.52); border-radius:100px;
-  background:rgba(3,10,22,.96);
-  cursor:pointer; backdrop-filter:blur(20px);
-  animation:ai-pulse 3.2s ease-in-out infinite;
-  transition:border-color .22s,transform .18s; outline:none;
+  width:68px; height:68px; display:flex; align-items:center; justify-content:center;
+  flex:0 0 68px; padding:0; overflow:visible;
+  border:0; border-radius:50%; background:transparent;
+  color:#dffaff; cursor:pointer; isolation:isolate; contain:layout;
+  filter:drop-shadow(0 0 8px rgba(17,132,255,.24));
+  outline:none; transition:transform .22s ease,filter .22s ease;
 }
-.routex-ai-fab:hover { border-color:rgba(82,208,255,.9); transform:translateY(-2px); }
-.routex-ai-fab:focus-visible { outline:2px solid rgba(82,208,255,.6); outline-offset:2px; }
+.routex-ai-fab::before,.routex-ai-fab::after { content:''; position:absolute; z-index:0; pointer-events:none; }
+.routex-ai-fab::before {
+  inset:-5px; border-radius:58% 42% 54% 46% / 45% 56% 44% 55%;
+  background:radial-gradient(ellipse at 62% 34%,rgba(36,224,255,.32),transparent 46%),radial-gradient(ellipse at 34% 72%,rgba(14,99,255,.26),transparent 50%);
+  filter:blur(6px); opacity:.68; animation:routflex-orb-breathe 7.4s ease-in-out infinite;
+}
+.routex-ai-fab::after {
+  inset:5px; border-radius:46% 54% 42% 58% / 55% 45% 58% 42%;
+  background:radial-gradient(ellipse at 46% 48%,rgba(17,194,255,.3),transparent 62%);
+  filter:blur(4px); opacity:.5; animation:routflex-orb-depth 8.8s ease-in-out -2.6s infinite;
+}
+.routex-ai-fab:hover {
+  transform:translateY(-2px) scale(1.018);
+  filter:drop-shadow(0 0 11px rgba(25,176,255,.36)) brightness(1.1) saturate(1.08);
+}
+.routex-ai-fab:focus-visible { outline:2px solid rgba(82,208,255,.72); outline-offset:3px; }
 .routex-ai-fab.is-open {
-  animation:none; border-color:rgba(82,208,255,.95);
-  box-shadow:0 0 48px rgba(82,208,255,.5),inset 0 0 22px rgba(82,208,255,.1);
+  filter:drop-shadow(0 0 11px rgba(25,176,255,.36)) brightness(1.1) saturate(1.08);
 }
-.ai-fab-orb {
-  position:relative; width:36px; height:36px; border-radius:50%;
-  background:rgba(82,208,255,.08); border:1px solid rgba(82,208,255,.36);
-  display:flex; align-items:center; justify-content:center;
-  flex-shrink:0; overflow:hidden;
+.routex-ai-fab:active { transform:translateY(0) scale(.96); }
+.routflex-orb-fluid {
+  position:absolute; inset:6px; z-index:1; overflow:hidden;
+  border-radius:48% 52% 43% 57% / 54% 44% 56% 46%;
+  background:radial-gradient(ellipse at 42% 34%,rgba(16,73,139,.62),transparent 48%),radial-gradient(ellipse at 54% 53%,#020b20 0 42%,rgba(2,11,32,.9) 57%,rgba(2,17,48,.35) 75%,transparent 100%);
+  will-change:transform; animation:routflex-orb-shell 8.2s ease-in-out infinite;
 }
-.ai-fab-orb-scan {
-  position:absolute; left:0; top:108%; width:100%; height:1.5px;
-  background:rgba(82,208,255,.75);
-  animation:ai-scan-v 2.4s ease-in-out infinite;
+.routflex-orb-fluid::before,.routflex-orb-fluid::after {
+  content:''; position:absolute; will-change:transform,opacity;
 }
-.ai-fab-orb > svg { width:18px; height:18px; color:#52d0ff; position:relative; z-index:1; }
-.ai-fab-orb::before,.ai-fab-orb::after {
-  content:''; position:absolute; top:50%; transform:translateY(-50%);
-  width:5px; height:1px; background:rgba(82,208,255,.5);
+.routflex-orb-fluid::before {
+  width:66px; height:52px; top:-14px; left:-19px; border-radius:38% 62% 48% 52% / 56% 38% 62% 44%;
+  background:radial-gradient(ellipse at 64% 68%,rgba(59,232,255,.92),rgba(0,154,255,.68) 34%,rgba(10,63,202,.18) 64%,transparent 72%);
+  filter:blur(3.5px); opacity:.82; animation:routflex-orb-flow-a 7.4s ease-in-out infinite;
 }
-.ai-fab-orb::before { right:calc(100% + 5px); }
-.ai-fab-orb::after  { left:calc(100% + 5px); }
-.ai-fab-label { display:flex; flex-direction:column; gap:1px; line-height:1; }
-.ai-fab-label strong {
-  font-family:'Space Grotesk',sans-serif; font-size:.86rem; font-weight:700;
-  letter-spacing:.13em; color:#d8f4ff; text-transform:uppercase;
+.routflex-orb-fluid::after {
+  width:58px; height:68px; right:-17px; bottom:-24px; border-radius:57% 43% 38% 62% / 42% 58% 44% 56%;
+  background:radial-gradient(ellipse at 38% 28%,rgba(32,218,255,.8),rgba(0,102,255,.64) 37%,rgba(24,49,159,.16) 65%,transparent 74%);
+  filter:blur(4px); opacity:.76; animation:routflex-orb-flow-b 9.1s ease-in-out -3s infinite;
 }
-.ai-fab-label small {
-  font-size:.59rem; color:rgba(82,208,255,.5);
-  letter-spacing:.1em; text-transform:uppercase;
+.routflex-orb-energy {
+  position:absolute; inset:7px; z-index:2; overflow:hidden;
+  border-radius:47% 53% 56% 44% / 43% 58% 42% 57%; pointer-events:none;
 }
-.ai-fab-online {
-  width:7px; height:7px; border-radius:50%; background:#28c58b;
-  flex-shrink:0; margin-left:2px; animation:ai-dot 2s ease-in-out infinite;
+.routflex-orb-energy::before,.routflex-orb-energy::after { content:''; position:absolute; }
+.routflex-orb-energy::before {
+  width:38px; height:46px; left:8px; top:5px; border-radius:52% 48% 63% 37% / 38% 58% 42% 62%;
+  background:radial-gradient(ellipse at 55% 44%,rgba(177,249,255,.82),rgba(18,198,255,.36) 30%,transparent 67%);
+  filter:blur(2px); mix-blend-mode:screen; opacity:.58;
 }
+.routflex-orb-energy::after {
+  width:31px; height:35px; right:5px; bottom:7px; border-radius:39% 61% 46% 54% / 62% 37% 63% 38%;
+  background:radial-gradient(ellipse at 42% 38%,rgba(91,238,255,.72),rgba(23,92,255,.24) 48%,transparent 72%);
+  filter:blur(2.5px); mix-blend-mode:screen; opacity:.48;
+}
+.routflex-orb-routes { position:absolute; inset:-8px; width:calc(100% + 16px); height:calc(100% + 16px); overflow:visible; pointer-events:none; transition:opacity .22s ease; }
+.routflex-orb-routes-back { z-index:0; opacity:.58; }
+.routflex-orb-routes-front { z-index:2; opacity:.42; }
+.routflex-orb-route,.routflex-orb-route-particle { fill:none; vector-effect:non-scaling-stroke; }
+.routflex-orb-route { stroke-width:.72; }
+.routflex-orb-route-a { stroke:rgba(69,226,255,.62); stroke-dasharray:28 8 15 12 22 15; }
+.routflex-orb-route-b { stroke:rgba(30,147,255,.5); stroke-dasharray:18 11 30 8 20 13; }
+.routflex-orb-route-front-a { stroke:rgba(126,242,255,.72); stroke-width:.9; stroke-dasharray:13 87; stroke-dashoffset:-48; }
+.routflex-orb-route-front-b { stroke:rgba(42,169,255,.58); stroke-width:.82; stroke-dasharray:9 91; stroke-dashoffset:-8; }
+.routflex-orb-route-particle { stroke-linecap:round; }
+.routflex-orb-route-particle-a { stroke:#d9fcff; stroke-width:3; stroke-dasharray:1.1 98.9; animation:routflex-orb-route-travel 9.6s linear infinite; }
+.routflex-orb-route-particle-b { stroke:#61eaff; stroke-width:2.5; stroke-dasharray:1 49 1 49; animation:routflex-orb-route-travel-reverse 12.4s linear -4.2s infinite; }
+.routflex-orb-mark {
+  position:relative; z-index:3; width:40px; height:48px; overflow:visible; pointer-events:none;
+  filter:drop-shadow(0 0 4px rgba(75,230,255,.78));
+}
+.routflex-orb-mark path { fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.routflex-orb-mark-glow { stroke:#22cfff; stroke-width:10; opacity:.3; filter:blur(2.4px); }
+.routflex-orb-mark-core { stroke:url(#routflex-r-gradient); stroke-width:5.2; opacity:.94; transition:stroke-width .2s ease,opacity .2s ease; }
+.routflex-orb-mark-flow { stroke:rgba(241,255,255,.95); stroke-width:2.1; stroke-dasharray:13 87; stroke-dashoffset:0; opacity:.86; animation:routflex-orb-mark-travel 5.2s ease-in-out infinite; }
+.routex-ai-fab:hover .routflex-orb-mark-core,.routex-ai-fab.is-open .routflex-orb-mark-core { stroke-width:5.7; opacity:1; }
+.routex-ai-fab:hover .routflex-orb-routes-back,.routex-ai-fab.is-open .routflex-orb-routes-back { opacity:.72; }
+.routex-ai-fab:hover .routflex-orb-routes-front,.routex-ai-fab.is-open .routflex-orb-routes-front { opacity:.56; }
+@keyframes routflex-orb-breathe { 0%,100%{transform:translate3d(-1px,1px,0) scale(.94,1.02);opacity:.45} 48%{transform:translate3d(2px,-2px,0) scale(1.05,.96);opacity:.72} }
+@keyframes routflex-orb-depth { 0%,100%{transform:translate3d(2px,-1px,0) scale(.92,1.04);opacity:.32} 52%{transform:translate3d(-2px,2px,0) scale(1.06,.94);opacity:.58} }
+@keyframes routflex-orb-shell { 0%,100%{transform:translate3d(0,1px,0) scale(.97,1.02)} 36%{transform:translate3d(1px,-1px,0) scale(1.025,.97)} 72%{transform:translate3d(-1px,0,0) scale(.985,1.015)} }
+@keyframes routflex-orb-flow-a { 0%,100%{transform:translate3d(-6px,-2px,0) rotate(-8deg) scale(.9,1.02);opacity:.66} 45%{transform:translate3d(13px,8px,0) rotate(7deg) scale(1.12,.92);opacity:.9} 72%{transform:translate3d(5px,13px,0) rotate(2deg) scale(.98,1.08);opacity:.76} }
+@keyframes routflex-orb-flow-b { 0%,100%{transform:translate3d(4px,5px,0) rotate(5deg) scale(1.04,.9);opacity:.62} 38%{transform:translate3d(-10px,-8px,0) rotate(-7deg) scale(.9,1.12);opacity:.86} 70%{transform:translate3d(-4px,-14px,0) rotate(3deg) scale(1.08,.96);opacity:.72} }
+@keyframes routflex-orb-mark-travel { 0%{stroke-dashoffset:0;opacity:.5} 48%{opacity:.96} 100%{stroke-dashoffset:-100;opacity:.5} }
+@keyframes routflex-orb-route-travel { to{stroke-dashoffset:-100} }
+@keyframes routflex-orb-route-travel-reverse { to{stroke-dashoffset:100} }
 /* Push Leaflet zoom control above the AI button */
 .leaflet-bottom.leaflet-right { right:10px; bottom:110px; }
 
@@ -6065,9 +6274,12 @@ body.login-active .routex-ai-panel { display:none !important; }
 .ai-send:hover { background:rgba(82,208,255,.2); border-color:rgba(82,208,255,.6); transform:scale(1.06); }
 .ai-send:disabled { opacity:.45; cursor:not-allowed; transform:none; }
 @media (max-width:680px) {
-  .routex-ai-fab { bottom:16px; right:16px; padding:7px 14px 7px 7px; }
+  .routex-ai-fab { bottom:16px; right:16px; width:58px; height:58px; flex-basis:58px; }
   .routex-ai-panel { bottom:88px; right:16px; }
-  .ai-fab-label small { display:none; }
+  .routflex-orb-mark { width:34px; height:42px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .routex-ai-fab,.routex-ai-fab::before,.routex-ai-fab::after,.routflex-orb-fluid,.routflex-orb-fluid::before,.routflex-orb-fluid::after,.routflex-orb-mark-flow,.routflex-orb-route-particle { animation:none; transition:none; }
 }
 
 </style>
@@ -6609,50 +6821,65 @@ body.login-active .routex-ai-panel { display:none !important; }
         <div class="instruments-hub">
           <button class="instruments-toggle" id="toggle-instruments-btn" type="button" aria-expanded="false" aria-controls="instruments-panel" aria-label="Abrir painel de instrumentos">&gt;</button>
           <div class="instruments-panel" id="instruments-panel" aria-hidden="true">
-            <button class="instrument-btn" id="toggle-nav-btn" type="button" title="Navegar">
-              <span class="instrument-glyph">NAV</span>
-              <span class="instrument-label">Navegar</span>
-            </button>
-            <button class="instrument-btn" id="toggle-lasso-btn" type="button" title="Laço">
-              <span class="instrument-glyph">LAS</span>
-              <span class="instrument-label">Laço</span>
-            </button>
-            <button class="instrument-btn" id="toggle-maintenance-btn" type="button" title="Manutencao">
-              <span class="instrument-glyph">MNT</span>
-              <span class="instrument-label">Manut.</span>
-            </button>
-            <button class="instrument-btn" type="button" title="Configuracao">
-              <span class="instrument-glyph">CFG</span>
-              <span class="instrument-label">Config.</span>
-            </button>
-            <button class="instrument-btn" id="toggle-ruler-btn" type="button" title="Régua">
-              <span class="instrument-glyph">RGL</span>
-              <span class="instrument-label">Régua</span>
-            </button>
-            <button class="instrument-btn" type="button" title="Metricas">
-              <span class="instrument-glyph">MET</span>
-              <span class="instrument-label">Metricas</span>
-            </button>
-            <button class="instrument-btn" id="open-params-btn" type="button" title="Parametros">
-              <span class="instrument-glyph">PAR</span>
-              <span class="instrument-label">Parametro</span>
-            </button>
-            <button class="instrument-btn" id="toggle-barrier-btn" type="button" title="Barreiras">
-              <span class="instrument-glyph">BAR</span>
-              <span class="instrument-label">Barreira</span>
-            </button>
-            <button class="instrument-btn" id="toggle-insight-btn" type="button" title="Modo Insight — análise comercial">
-              <span class="instrument-glyph">INS</span>
-              <span class="instrument-label">Insight</span>
-            </button>
-            <button class="instrument-btn" id="toggle-swap-btn" type="button" title="Trocar sequência no mapa (2 cliques)">
-              <span class="instrument-glyph">SEQ</span>
-              <span class="instrument-label">Troca</span>
-            </button>
-            <button class="instrument-btn" id="toggle-road-route-btn" type="button" title="Rota real rodoviária da rota selecionada (ALT+P) — apenas no modo Operacional">
-              <span class="instrument-glyph">RTA</span>
-              <span class="instrument-label">Rota real</span>
-            </button>
+            <section class="instrument-group" aria-labelledby="instrument-group-navigation">
+              <h3 class="instrument-group-title" id="instrument-group-navigation">Navegação</h3>
+              <div class="instrument-group-grid">
+                <button class="instrument-btn" id="toggle-nav-btn" type="button" title="Navegar">
+                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 4 16 6-7 3-3 7-6-16Z"/><path d="m13 13 5 5"/></svg></span>
+                  <span class="instrument-label">Navegar</span>
+                </button>
+                <button class="instrument-btn" id="toggle-lasso-btn" type="button" title="Laço">
+                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.5 7.2c1.1-2 3.3-3.3 5.7-3.2 3.8.1 6.8 3.1 6.8 6.8 0 3.9-3.4 7.2-7.6 7.2H9"/><circle cx="5" cy="7.5" r="1.5"/><circle cx="6" cy="18" r="2"/></svg></span>
+                  <span class="instrument-label">Laço</span>
+                </button>
+                <button class="instrument-btn" id="toggle-maintenance-btn" type="button" title="Manutencao">
+                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.5 6.5a4.2 4.2 0 0 0-5.7 5.7L3.4 17.6a2.1 2.1 0 1 0 3 3l5.4-5.4a4.2 4.2 0 0 0 5.7-5.7l-2.7 2.7-3-3 2.7-2.7Z"/></svg></span>
+                  <span class="instrument-label">Manut.</span>
+                </button>
+              </div>
+            </section>
+            <section class="instrument-group" aria-labelledby="instrument-group-analysis">
+              <h3 class="instrument-group-title" id="instrument-group-analysis">Análise e medição</h3>
+              <div class="instrument-group-grid">
+                <button class="instrument-btn" type="button" title="Configuracao">
+                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></span>
+                  <span class="instrument-label">Config.</span>
+                </button>
+                <button class="instrument-btn" id="toggle-ruler-btn" type="button" title="Régua">
+                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 16 12-12 4 4L8 20H4v-4Z"/><path d="m13 7 2 2M10 10l2 2m-5 1 2 2"/></svg></span>
+                  <span class="instrument-label">Régua</span>
+                </button>
+                <button class="instrument-btn" type="button" title="Metricas">
+                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V10h4v10M10 20V5h4v15m2 0v-8h4v8M3 20h18"/></svg></span>
+                  <span class="instrument-label">Métricas</span>
+                </button>
+              </div>
+            </section>
+            <section class="instrument-group" aria-labelledby="instrument-group-control">
+              <h3 class="instrument-group-title" id="instrument-group-control">Controle e inteligência</h3>
+              <div class="instrument-group-grid">
+                <button class="instrument-btn" id="open-params-btn" type="button" title="Parametros">
+                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h7m4 0h5M4 12h3m4 0h9M4 18h9m4 0h3"/><circle cx="13" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="18" r="2"/></svg></span>
+                  <span class="instrument-label">Parâmetro</span>
+                </button>
+                <button class="instrument-btn" id="toggle-barrier-btn" type="button" title="Barreiras">
+                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 10h14v7H5zM8 10V7m8 3V7M7 17v3m10-3v3M7 12l3 3m1-3 3 3m1-3 2 2"/></svg></span>
+                  <span class="instrument-label">Barreira</span>
+                </button>
+                <button class="instrument-btn" id="toggle-insight-btn" type="button" title="Modo Insight — análise comercial">
+                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18h6m-5 3h4m-7.2-8.2A7 7 0 1 1 17 12.6c-1.2 1-1.7 1.9-1.8 3.4H8.8c-.1-1.4-.7-2.3-2-3.2Z"/><path d="M12 4v2"/></svg></span>
+                  <span class="instrument-label">Insight</span>
+                </button>
+                <button class="instrument-btn" id="toggle-swap-btn" type="button" title="Trocar sequência no mapa (2 cliques)">
+                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7h-9l3-3m-3 3 3 3M4 17h9l-3 3m3-3-3-3"/></svg></span>
+                  <span class="instrument-label">Troca</span>
+                </button>
+                <button class="instrument-btn" id="toggle-road-route-btn" type="button" title="Rota real rodoviária da rota selecionada (ALT+P) — apenas no modo Operacional">
+                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 21 10 3m6 18L14 3M12 6v3m0 3v3m0 3v3"/></svg></span>
+                  <span class="instrument-label">Rota real</span>
+                </button>
+              </div>
+            </section>
           </div>
         </div>
       </div>
@@ -7150,24 +7377,31 @@ body.login-active .routex-ai-panel { display:none !important; }
 <!-- ══ ROUTEX AI ══════════════════════════════════════════════ -->
 <button class="routex-ai-fab" id="routex-ai-fab" type="button"
   aria-label="Abrir ROUTEX AI" aria-expanded="false" aria-controls="routex-ai-panel">
-  <div class="ai-fab-orb">
-    <div class="ai-fab-orb-scan"></div>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-         stroke-linecap="round" stroke-linejoin="round">
-      <rect x="6" y="9" width="12" height="10" rx="2"/>
-      <circle cx="9.5"  cy="13.5" r="1" fill="currentColor" stroke="none"/>
-      <circle cx="14.5" cy="13.5" r="1" fill="currentColor" stroke="none"/>
-      <path d="M10 17.5h4"/>
-      <path d="M12 9V6.5"/>
-      <circle cx="12" cy="5.5" r="1" fill="currentColor" stroke="none"/>
-      <path d="M6 13.5H4M18 13.5h2"/>
-    </svg>
-  </div>
-  <div class="ai-fab-label">
-    <strong>ROUTEX AI</strong>
-    <small>Assistente operacional</small>
-  </div>
-  <span class="ai-fab-online"></span>
+  <svg class="routflex-orb-routes routflex-orb-routes-back" viewBox="0 0 84 84" aria-hidden="true" focusable="false">
+    <path class="routflex-orb-route routflex-orb-route-a" pathLength="100" d="M6 42 C7 17 66 10 79 36 C88 55 40 76 12 59 C1 52 0 46 6 42 Z"/>
+    <path class="routflex-orb-route-particle routflex-orb-route-particle-a" pathLength="100" d="M6 42 C7 17 66 10 79 36 C88 55 40 76 12 59 C1 52 0 46 6 42 Z"/>
+    <path class="routflex-orb-route routflex-orb-route-b" pathLength="100" d="M18 12 C45 1 76 23 72 50 C68 77 25 80 11 54 C1 36 5 20 18 12 Z"/>
+    <path class="routflex-orb-route-particle routflex-orb-route-particle-b" pathLength="100" d="M18 12 C45 1 76 23 72 50 C68 77 25 80 11 54 C1 36 5 20 18 12 Z"/>
+  </svg>
+  <span class="routflex-orb-fluid" aria-hidden="true"></span>
+  <span class="routflex-orb-energy" aria-hidden="true"></span>
+  <svg class="routflex-orb-routes routflex-orb-routes-front" viewBox="0 0 84 84" aria-hidden="true" focusable="false">
+    <path class="routflex-orb-route routflex-orb-route-front-a" pathLength="100" d="M6 42 C7 17 66 10 79 36 C88 55 40 76 12 59 C1 52 0 46 6 42 Z"/>
+    <path class="routflex-orb-route routflex-orb-route-front-b" pathLength="100" d="M18 12 C45 1 76 23 72 50 C68 77 25 80 11 54 C1 36 5 20 18 12 Z"/>
+  </svg>
+  <svg class="routflex-orb-mark" viewBox="0 0 52 58" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="routflex-r-gradient" x1="12" y1="8" x2="40" y2="50" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#efffff"/>
+        <stop offset=".38" stop-color="#53e9ff"/>
+        <stop offset=".72" stop-color="#159cff"/>
+        <stop offset="1" stop-color="#b6f8ff"/>
+      </linearGradient>
+    </defs>
+    <path class="routflex-orb-mark-glow" d="M16 49 C16 38 15.8 23 18 9 M18 10 C29 5 39 9 39 18 C39 26 31 29 19 27 M23 28 C30 32 36 40 41 49"/>
+    <path class="routflex-orb-mark-core" d="M16 49 C16 38 15.8 23 18 9 M18 10 C29 5 39 9 39 18 C39 26 31 29 19 27 M23 28 C30 32 36 40 41 49"/>
+    <path class="routflex-orb-mark-flow" pathLength="100" d="M16 49 C16 38 15.8 23 18 9 M18 10 C29 5 39 9 39 18 C39 26 31 29 19 27 M23 28 C30 32 36 40 41 49"/>
+  </svg>
 </button>
 
 <aside class="routex-ai-panel" id="routex-ai-panel" aria-hidden="true">
