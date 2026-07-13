@@ -3472,6 +3472,17 @@ body.login-active .app-shell {
   line-height: 1.35;
 }
 
+.planner-hint.is-sequence-km-summary {
+  padding: 8px 10px;
+  border: 1px solid rgba(56, 199, 255, 0.34);
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(15, 58, 82, 0.76), rgba(8, 31, 50, 0.68));
+  color: #e2f8ff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 #38c7ff, 0 0 16px rgba(56, 199, 255, 0.08);
+}
+
 .instruments-hub {
   position: absolute;
   left: 18px;
@@ -3678,6 +3689,48 @@ body.login-active .app-shell {
   border-color: rgba(111, 210, 255, 0.9);
   background: linear-gradient(110deg, rgba(33, 88, 130, 0.86), rgba(10, 44, 72, 0.78));
   box-shadow: 0 0 0 1px rgba(125, 214, 255, 0.1), 0 0 14px rgba(55, 167, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.ruler-mode-menu {
+  display: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 2px 1px 3px;
+}
+
+.ruler-mode-menu.is-open {
+  display: grid;
+}
+
+.ruler-mode-option {
+  min-width: 0;
+  min-height: 30px;
+  padding: 5px 6px;
+  border: 1px solid rgba(104, 169, 211, 0.2);
+  border-radius: 8px;
+  background: rgba(10, 32, 52, 0.62);
+  color: #a9c5da;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.59rem;
+  font-weight: 600;
+  line-height: 1.15;
+  cursor: pointer;
+  transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.ruler-mode-option:hover,
+.ruler-mode-option:focus-visible {
+  color: #eefaff;
+  border-color: rgba(101, 199, 246, 0.46);
+  background: rgba(24, 66, 96, 0.78);
+  outline: none;
+}
+
+.ruler-mode-option.is-active {
+  color: #dff8ff;
+  border-color: rgba(77, 205, 232, 0.58);
+  background: rgba(21, 89, 111, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 10px rgba(53, 197, 226, 0.08);
 }
 
 /* PAR: discrete indicator that territorial mode is active — NOT an active tool state */
@@ -4725,6 +4778,20 @@ body.login-active .app-shell {
 @keyframes roadRouteMarch {
   to { stroke-dashoffset: -24; }
 }
+
+/* KM da sequência: halo + rota principal, acima das ruas e abaixo dos marcadores. */
+.sequence-km-halo,
+.sequence-km-main {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sequence-km-main {
+  filter: drop-shadow(0 0 4px rgba(56, 199, 255, 0.58));
+  animation: sequenceKmMarch 1.1s linear infinite;
+}
+@keyframes sequenceKmMarch {
+  to { stroke-dashoffset: -38; }
+}
 /* ── FASE 2: controle de sequência manual ─────────── */
 .seq-control-line .seq-control {
   display: inline-flex;
@@ -4837,6 +4904,19 @@ body.login-active .app-shell {
   pointer-events: none;
   white-space: nowrap;
   animation: toastIn 0.2s ease;
+}
+
+.sequence-km-toast {
+  bottom: 94px;
+  max-width: calc(100% - 32px);
+  border-color: rgba(56, 199, 255, 0.62);
+  background: linear-gradient(110deg, rgba(5, 24, 39, 0.97), rgba(10, 55, 76, 0.96));
+  color: #e4f9ff;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+  box-shadow: 0 10px 26px rgba(0, 8, 18, 0.34), 0 0 18px rgba(56, 199, 255, 0.16), inset 3px 0 0 #38c7ff;
 }
 
 .lasso-selection-guide {
@@ -6787,7 +6867,7 @@ body.login-active .routex-ai-panel { display:none !important; }
                 <span>Visão tabular para decisão rápida</span>
               </div>
               <div class="manual-day-detail-table-wrap" id="manual-day-detail-grid"></div>
-              <div class="manual-day-detail-note">Distância considera rota completa: saída da base, visitas e retorno para a base do motorista.</div>
+              <div class="manual-day-detail-note">KM estimado em linha reta: considera base, sequência de visitas e retorno. Para percurso rodoviário, use Rota real.</div>
             </section>
 
             <section class="section">
@@ -6845,10 +6925,14 @@ body.login-active .routex-ai-panel { display:none !important; }
                   <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></span>
                   <span class="instrument-label">Config.</span>
                 </button>
-                <button class="instrument-btn" id="toggle-ruler-btn" type="button" title="Régua">
+                <button class="instrument-btn" id="toggle-ruler-btn" type="button" title="Régua" aria-haspopup="menu" aria-controls="ruler-mode-menu" aria-expanded="false">
                   <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 16 12-12 4 4L8 20H4v-4Z"/><path d="m13 7 2 2M10 10l2 2m-5 1 2 2"/></svg></span>
                   <span class="instrument-label">Régua</span>
                 </button>
+                <div class="ruler-mode-menu" id="ruler-mode-menu" role="menu" aria-hidden="true">
+                  <button class="ruler-mode-option" id="ruler-straight-mode-btn" type="button" role="menuitem" aria-pressed="false">Linha reta</button>
+                  <button class="ruler-mode-option" id="ruler-sequence-km-mode-btn" type="button" role="menuitem" aria-pressed="false">KM da sequência</button>
+                </div>
                 <button class="instrument-btn" type="button" title="Metricas">
                   <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V10h4v10M10 20V5h4v15m2 0v-8h4v8M3 20h18"/></svg></span>
                   <span class="instrument-label">Métricas</span>
@@ -12021,7 +12105,10 @@ function renderDayButtons() {
 }
 
 function updatePlannerHint(message) {
-  document.getElementById('planner-hint').textContent = message || 'Arraste um PDV para semana e dia. A localizacao do cliente permanece fixa.';
+  const hint = document.getElementById('planner-hint');
+  const text = message || 'Arraste um PDV para semana e dia. A localizacao do cliente permanece fixa.';
+  hint.textContent = text;
+  hint.classList.toggle('is-sequence-km-summary', text.indexOf('KM sequência:') === 0);
 }
 
 function syncPlannerDropState() {
@@ -12207,7 +12294,7 @@ function setRouteClientsAccessStatus(routeClients, routeId, diagnostic) {
 // sequência): mudança de sequência/dia/semana/motorista gera nova chave e força
 // recálculo automático; a chave antiga é descartada por LRU.
 var _OSRM_ROUTE_BASE = 'https://router.project-osrm.org/route/v1/driving/';
-var _roadKmCache = new Map();          // key → { km:Number|null, source:'road'|'fallback', ts }
+var _roadKmCache = new Map();          // key → { km:Number|null, durationMin:Number|null, source:'road'|'fallback', ts }
 var _roadKmQueue = [];                 // [{ key, snapshot }]
 var _roadKmInFlight = new Set();
 var _roadKmProcessing = false;
@@ -12265,6 +12352,34 @@ function _getCachedRoadKm(route) {
   return null; // sem valor real → mantém Haversine (transitório/fallback)
 }
 
+// Tempo de deslocamento rodoviário (min) cacheado do OSRM (routes[0].duration),
+// SEM tempo de atendimento e SEM velocidade fixa; null quando ainda não há valor
+// real. Espelha _getCachedRoadKm e reaproveita a MESMA chave/cache (sem chamada
+// OSRM extra). Cache legado sem durationMin → tratado como indisponível.
+function _getCachedRoadDurationMin(route) {
+  var key = _buildRoadKmKey(route);
+  if (!key) return null;
+  var entry = _roadKmCache.get(key);
+  if (entry && entry.source === 'road' && entry.durationMin != null) return entry.durationMin;
+  return null;
+}
+
+// Soma o tempo de deslocamento OSRM (sem atendimento) das rotas que JÁ possuem
+// duração rodoviária cacheada. Retorna { minutes, resolved, eligible } para o
+// painel indicar cache parcial sem mentir sobre o total. Não dispara OSRM.
+function _aggregateRoadDriveTime(routes) {
+  var minutes = 0, resolved = 0, eligible = 0;
+  if (Array.isArray(routes)) {
+    routes.forEach(function(route) {
+      if (!_buildRoadKmKey(route)) return; // sem trecho rodoviário calculável
+      eligible += 1;
+      var dur = _getCachedRoadDurationMin(route);
+      if (dur != null) { minutes += dur; resolved += 1; }
+    });
+  }
+  return { minutes: minutes, resolved: resolved, eligible: eligible };
+}
+
 function _trimRoadKmCache() {
   if (_roadKmCache.size <= _ROAD_KM_CACHE_LIMIT) return;
   var excess = _roadKmCache.size - _ROAD_KM_CACHE_LIMIT;
@@ -12287,7 +12402,13 @@ async function _fetchRoadKm(snapshot) {
   if (!resp.ok) throw new Error('HTTP ' + resp.status);
   var data = await resp.json();
   if (!data.routes || !data.routes.length) throw new Error('sem rota OSRM');
-  return Number(data.routes[0].distance) / 1000;
+  var r0 = data.routes[0];
+  var km = Number(r0.distance) / 1000;
+  // duration OSRM (segundos) = tempo de deslocamento viário, SEM atendimento.
+  var durationMin = (r0.duration != null && isFinite(Number(r0.duration)))
+    ? Math.round(Number(r0.duration) / 60)
+    : null;
+  return { km: km, durationMin: durationMin };
 }
 
 // Processa a fila sequencialmente, com throttle, sem travar a interface.
@@ -12296,15 +12417,21 @@ function _processRoadKmQueue() {
   _roadKmProcessing = true;
   var job = _roadKmQueue.shift();
   _roadKmInFlight.add(job.key);
-  _fetchRoadKm(job.snapshot).then(function(km) {
+  _fetchRoadKm(job.snapshot).then(function(result) {
+    // Compatibilidade: aceita tanto o novo objeto {km,durationMin} quanto
+    // um Number legado (km puro), sem quebrar chamadas antigas.
+    var km = (result && typeof result === 'object') ? result.km : result;
+    var durationMin = (result && typeof result === 'object' && result.durationMin != null && isFinite(result.durationMin))
+      ? result.durationMin
+      : null;
     if (km != null && isFinite(km) && km >= 0) {
-      _roadKmCache.set(job.key, { km: km, source: 'road', ts: Date.now() });
+      _roadKmCache.set(job.key, { km: km, durationMin: durationMin, source: 'road', ts: Date.now() });
       _roadKmResolvedSinceRefresh = true;
     } else {
-      _roadKmCache.set(job.key, { km: null, source: 'fallback', ts: Date.now() });
+      _roadKmCache.set(job.key, { km: null, durationMin: null, source: 'fallback', ts: Date.now() });
     }
   }).catch(function(err) {
-    _roadKmCache.set(job.key, { km: null, source: 'fallback', ts: Date.now() });
+    _roadKmCache.set(job.key, { km: null, durationMin: null, source: 'fallback', ts: Date.now() });
     if (typeof console !== 'undefined' && console.warn) {
       console.warn('[KM-OSRM] falha ao calcular rota (fallback Haversine): ' + (err && err.message ? err.message : err));
     }
@@ -13240,6 +13367,294 @@ function deactivateNavTool() {
 }
 
 /* ── Ruler tool (RGL) ────────────────────────────────────────── */
+/* KM da sequência: cálculo rodoviário cliente→cliente, isolado da Rota real. */
+let sequenceKmModeActive = false;
+let sequenceKmLayer = null;
+let _sequenceKmActiveSignature = null;
+let _sequenceKmPendingSignature = null;
+let _sequenceKmFailedSignature = null;
+let _sequenceKmRequestToken = 0;
+let _sequenceKmAbortController = null;
+
+function _removeSequenceKmLayer() {
+  if (sequenceKmLayer) {
+    map.removeLayer(sequenceKmLayer);
+    sequenceKmLayer = null;
+  }
+}
+
+function clearSequenceKmSummary() {
+  const summary = document.getElementById('sequence-km-toast');
+  if (summary) summary.remove();
+  const plannerHint = document.getElementById('planner-hint');
+  if (plannerHint) plannerHint.classList.remove('is-sequence-km-summary');
+}
+
+function showSequenceKmSummary(message) {
+  let summary = document.getElementById('sequence-km-toast');
+  if (!summary) {
+    summary = document.createElement('div');
+    summary.id = 'sequence-km-toast';
+    summary.className = 'road-route-toast sequence-km-toast';
+    document.getElementById('map').appendChild(summary);
+  }
+  summary.textContent = message;
+  updatePlannerHint(message);
+}
+
+function clearSequenceKmRoute(options = {}) {
+  _sequenceKmRequestToken += 1;
+  if (_sequenceKmAbortController) {
+    try { _sequenceKmAbortController.abort(); } catch (_) {}
+    _sequenceKmAbortController = null;
+  }
+  _removeSequenceKmLayer();
+  clearSequenceKmSummary();
+  _sequenceKmActiveSignature = null;
+  _sequenceKmPendingSignature = null;
+  if (!options.preserveFailure) _sequenceKmFailedSignature = null;
+}
+
+function _buildSequenceKmSignature(route, stops) {
+  if (!route || !Array.isArray(stops)) return null;
+  return [
+    route.routeId,
+    route.driver && route.driver.id,
+    route.week,
+    route.day,
+    stops.map(function(client) {
+      return [client.id, client.sequence || 0, Number(client.lat).toFixed(6), Number(client.lon).toFixed(6)].join(':');
+    }).join('|')
+  ].join('~');
+}
+
+// Reutiliza o resolvedor de contexto da Rota real e a ordenação rodoviária,
+// mas monta exclusivamente pontos de clientes — nunca inclui a base.
+function getCurrentRouteSequenceStops(routeOverride) {
+  const route = routeOverride && Array.isArray(routeOverride.clients)
+    ? routeOverride
+    : getActiveOperationalRouteForRoadDrawing();
+  if (!route) return { route: null, stops: [], ignoredNoCoord: 0, waypoints: [], signature: null };
+
+  const allClients = Array.isArray(route.clients) ? route.clients : [];
+  const stops = _roadKmOrderedValidClients(route);
+  const waypoints = stops.map(function(client) {
+    return [Number(client.lon), Number(client.lat)];
+  });
+  return {
+    route,
+    stops,
+    ignoredNoCoord: allClients.length - stops.length,
+    waypoints,
+    signature: _buildSequenceKmSignature(route, stops)
+  };
+}
+
+function renderSequenceKmRoute(context, geometry, cached) {
+  if (!sequenceKmModeActive || !context || !geometry) return;
+  _removeSequenceKmLayer();
+  const haloPolyline = L.polyline(geometry.coords, {
+    color: '#071827',
+    weight: 10,
+    opacity: 0.82,
+    interactive: false,
+    pane: 'overlayPane',
+    className: 'sequence-km-halo'
+  });
+  const mainPolyline = L.polyline(geometry.coords, {
+    color: '#38c7ff',
+    weight: 6,
+    opacity: 0.98,
+    dashArray: '18,5',
+    interactive: false,
+    pane: 'overlayPane',
+    className: 'sequence-km-main'
+  });
+  sequenceKmLayer = L.layerGroup([haloPolyline, mainPolyline]).addTo(map);
+
+  _sequenceKmActiveSignature = context.signature;
+  _sequenceKmPendingSignature = null;
+  _sequenceKmFailedSignature = null;
+  syncRulerModeMenuState();
+
+  const km = Number(geometry.distanceKm || 0).toFixed(1);
+  const minutes = Math.round(Number(geometry.durationMin) || 0);
+  const segments = Math.max(0, context.stops.length - 1);
+  const ignoredLabel = context.ignoredNoCoord > 0
+    ? ` | ${context.ignoredNoCoord} sem coordenada ignorado(s)`
+    : '';
+  showSequenceKmSummary(`KM sequência: ${km} km reais | ${minutes} min | ${segments} trecho${segments === 1 ? '' : 's'}${ignoredLabel}`);
+}
+
+async function calculateSequenceKm(contextOverride) {
+  const context = contextOverride || getCurrentRouteSequenceStops();
+  if (!sequenceKmModeActive || !context.route) return;
+
+  const waypoints = context.waypoints;
+  if (waypoints.length < 2) {
+    clearSequenceKmRoute({ preserveFailure: true });
+    updatePlannerHint('KM da sequência requer pelo menos 2 clientes.');
+    return;
+  }
+  if (waypoints.length > _ROAD_KM_MAX_WAYPOINTS) {
+    clearSequenceKmRoute({ preserveFailure: true });
+    updatePlannerHint(`KM da sequência aceita até ${_ROAD_KM_MAX_WAYPOINTS} clientes por cálculo.`);
+    return;
+  }
+
+  const coordsStr = waypoints.map(function(point) {
+    return point[0].toFixed(6) + ',' + point[1].toFixed(6);
+  }).join(';');
+  const geomKey = [context.route.ddd, context.route.driver && context.route.driver.id, 'SEQ', coordsStr].join('~');
+  const cachedGeometry = _roadGeomCache.get(geomKey);
+  if (cachedGeometry) {
+    renderSequenceKmRoute(context, cachedGeometry, true);
+    return;
+  }
+
+  const requestToken = ++_sequenceKmRequestToken;
+  _sequenceKmPendingSignature = context.signature;
+  _sequenceKmAbortController = typeof AbortController === 'function' ? new AbortController() : null;
+  updatePlannerHint('Calculando KM da sequência nas estradas…');
+
+  try {
+    const url = _OSRM_ROUTE_BASE + coordsStr + '?overview=full&geometries=geojson';
+    const requestOptions = _sequenceKmAbortController ? { signal: _sequenceKmAbortController.signal } : undefined;
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const data = await response.json();
+    if (!data.routes || !data.routes.length) throw new Error('sem rota OSRM');
+
+    const osrmRoute = data.routes[0];
+    const geometryCoords = osrmRoute.geometry && osrmRoute.geometry.coordinates;
+    if (!Array.isArray(geometryCoords) || !geometryCoords.length) throw new Error('OSRM sem geometria');
+    if (!sequenceKmModeActive || requestToken !== _sequenceKmRequestToken || context.signature !== _sequenceKmPendingSignature) return;
+
+    const geometry = {
+      coords: geometryCoords.map(function(point) { return [point[1], point[0]]; }),
+      distanceKm: Number(osrmRoute.distance) / 1000,
+      durationMin: Number(osrmRoute.duration) / 60
+    };
+    _roadGeomCache.set(geomKey, geometry);
+    _trimRoadGeomCache();
+    renderSequenceKmRoute(context, geometry, false);
+  } catch (error) {
+    if (error && error.name === 'AbortError') return;
+    if (!sequenceKmModeActive || requestToken !== _sequenceKmRequestToken) return;
+    _removeSequenceKmLayer();
+    _sequenceKmPendingSignature = null;
+    _sequenceKmActiveSignature = null;
+    _sequenceKmFailedSignature = context.signature;
+    updatePlannerHint('Não foi possível calcular o KM da sequência agora.');
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('[KM-SEQUÊNCIA] cálculo rodoviário indisponível:', error);
+    }
+  } finally {
+    if (requestToken === _sequenceKmRequestToken) _sequenceKmAbortController = null;
+  }
+}
+
+function refreshSequenceKmIfActive(routeOverride) {
+  if (!sequenceKmModeActive) return;
+  if (state.viewMode !== 'operational') {
+    sequenceKmModeActive = false;
+    clearSequenceKmRoute();
+    syncRulerModeMenuState();
+    updatePlannerHint('KM da sequência disponível apenas no modo Operacional.');
+    return;
+  }
+
+  const context = getCurrentRouteSequenceStops(routeOverride);
+  if (!context.route) {
+    clearSequenceKmRoute({ preserveFailure: true });
+    updatePlannerHint('Selecione uma rota para calcular o KM da sequência.');
+    return;
+  }
+  if (context.waypoints.length < 2) {
+    clearSequenceKmRoute({ preserveFailure: true });
+    updatePlannerHint('KM da sequência requer pelo menos 2 clientes.');
+    return;
+  }
+  if (context.signature === _sequenceKmActiveSignature && sequenceKmLayer) return;
+  if (context.signature === _sequenceKmPendingSignature) return;
+  if (context.signature === _sequenceKmFailedSignature) return;
+
+  clearSequenceKmRoute({ preserveFailure: true });
+  calculateSequenceKm(context);
+}
+
+function syncRulerModeMenuState() {
+  const rulerButton = document.getElementById('toggle-ruler-btn');
+  const straightButton = document.getElementById('ruler-straight-mode-btn');
+  const sequenceButton = document.getElementById('ruler-sequence-km-mode-btn');
+  if (rulerButton) rulerButton.classList.toggle('is-active', state.rulerModeActive || sequenceKmModeActive);
+  if (straightButton) {
+    straightButton.classList.toggle('is-active', state.rulerModeActive);
+    straightButton.setAttribute('aria-pressed', String(state.rulerModeActive));
+  }
+  if (sequenceButton) {
+    sequenceButton.classList.toggle('is-active', sequenceKmModeActive);
+    sequenceButton.setAttribute('aria-pressed', String(sequenceKmModeActive));
+  }
+}
+
+function closeRulerModeMenu() {
+  const menu = document.getElementById('ruler-mode-menu');
+  const rulerButton = document.getElementById('toggle-ruler-btn');
+  if (!menu || !menu.classList.contains('is-open')) return false;
+  menu.classList.remove('is-open');
+  menu.setAttribute('aria-hidden', 'true');
+  if (rulerButton) rulerButton.setAttribute('aria-expanded', 'false');
+  return true;
+}
+
+function toggleRulerModeMenu(event) {
+  if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+  const menu = document.getElementById('ruler-mode-menu');
+  const rulerButton = document.getElementById('toggle-ruler-btn');
+  if (!menu || !rulerButton) return;
+  const open = !menu.classList.contains('is-open');
+  menu.classList.toggle('is-open', open);
+  menu.setAttribute('aria-hidden', String(!open));
+  rulerButton.setAttribute('aria-expanded', String(open));
+  syncRulerModeMenuState();
+}
+
+function toggleSequenceKmMode(force) {
+  const activate = force !== undefined ? Boolean(force) : !sequenceKmModeActive;
+  closeRulerModeMenu();
+  if (!activate) {
+    sequenceKmModeActive = false;
+    clearSequenceKmRoute();
+    syncRulerModeMenuState();
+    updatePlannerHint('KM da sequência desativado.');
+    return;
+  }
+  if (state.viewMode !== 'operational') {
+    updatePlannerHint('KM da sequência disponível apenas no modo Operacional.');
+    return;
+  }
+  if (state.rulerModeActive) toggleRulerMode(false);
+  sequenceKmModeActive = true;
+  _sequenceKmFailedSignature = null;
+  syncRulerModeMenuState();
+  refreshSequenceKmIfActive();
+}
+
+function selectRulerToolMode(mode) {
+  closeRulerModeMenu();
+  if (mode === 'straight') {
+    if (sequenceKmModeActive) toggleSequenceKmMode(false);
+    toggleRulerMode(!state.rulerModeActive);
+    syncRulerModeMenuState();
+    return;
+  }
+  if (mode === 'sequence') {
+    if (state.rulerModeActive) toggleRulerMode(false);
+    toggleSequenceKmMode(!sequenceKmModeActive);
+  }
+}
+
 let _rulerShadowLine = null;
 let _rulerLine = null;
 let _rulerTooltip = null;
@@ -16329,7 +16744,7 @@ function renderManualDayDetail(manualScope, focusedDriverId) {
             <th>DIA</th>
             ${thWeeks}
             <th>TOTAL</th>
-            <th>KM</th>
+            <th>KM estim.</th>
           </tr>
         </thead>
         <tbody>${bodyRows}</tbody>
@@ -16367,7 +16782,7 @@ function renderManualDayDetail(manualScope, focusedDriverId) {
         <tr>
           <th>DIA</th>
           <th>PDVs</th>
-          <th>KM</th>
+          <th>KM estim.</th>
         </tr>
       </thead>
       <tbody>
@@ -16398,16 +16813,41 @@ function renderManualPlanningPanel(filteredClients, routeGroups, selectedRoute) 
   const totalTime = manualScope.totalTime;
   const driverCount = manualScope.drivers.length;
 
+  // Tempo desloc. = duração OSRM (sem atendimento) das rotas em ajuste, vinda do
+  // cache leve rodoviário. Não usa serviceTime nem velocidade fixa; só soma o que
+  // já está cacheado (sem chamada OSRM extra) e sinaliza cache parcial.
+  const driveTime = _aggregateRoadDriveTime(manualScope.scopedRoutes);
+  let driveTimeValue;
+  let driveTimeNote;
+  if (driveTime.eligible === 0) {
+    driveTimeValue = '—';
+    driveTimeNote = 'sem trecho rodoviário';
+  } else if (driveTime.resolved === 0) {
+    driveTimeValue = '—';
+    driveTimeNote = 'aguardando OSRM';
+  } else if (driveTime.resolved < driveTime.eligible) {
+    driveTimeValue = formatMinutesToLabel(driveTime.minutes);
+    driveTimeNote = `parcial OSRM (${driveTime.resolved}/${driveTime.eligible})`;
+  } else {
+    driveTimeValue = formatMinutesToLabel(driveTime.minutes);
+    driveTimeNote = 'OSRM sem atendimento';
+  }
+
   summary.innerHTML = `
     <div class="manual-kpi-card">
-      <span>Distancia prevista</span>
+      <span>Distância calculada</span>
       <strong>${totalDistance.toFixed(0)} km</strong>
-      <small>${driverCount} motorista(s) em ajuste</small>
+      <small>${driverCount} motorista(s) | rodov. (OSRM) ou estim.</small>
     </div>
     <div class="manual-kpi-card">
-      <span>Tempo previsto</span>
+      <span>Tempo operacional estim.</span>
       <strong>${Math.round(totalTime)} min</strong>
-      <small>${(totalTime / 60).toFixed(1)} h no recorte</small>
+      <small>${(totalTime / 60).toFixed(1)} h | vel. fixa + atendimento</small>
+    </div>
+    <div class="manual-kpi-card">
+      <span>Tempo desloc.</span>
+      <strong>${driveTimeValue}</strong>
+      <small>${driveTimeNote}</small>
     </div>
     <div class="manual-kpi-card">
       <span>Clientes na carteira</span>
@@ -18399,6 +18839,7 @@ function _ensureClientMarkerBaseEvents(marker) {
       if (!marker._rfxIsSpecial && route) {
         state.selectedRouteId = route.routeId;
         state.selectedStopId = client.id;
+        refreshSequenceKmIfActive(route);
       }
       openClientPopup(client, latlng);
       return;
@@ -19007,6 +19448,7 @@ function calculateRoutes(options = {}) {
       cancelAnimationFrame(_pendingSidebarRAF);
     }
 
+    refreshSequenceKmIfActive(renderContext.selectedRoute);
     _pendingMapRenderRAF = requestAnimationFrame(() => {
       _pendingMapRenderRAF = null;
       renderMap(renderContext.mapClients, renderContext.mapRouteGroups);
@@ -20226,7 +20668,12 @@ document.getElementById('toggle-map-menu-btn').onclick = toggleMapMenuVisibility
 document.getElementById('toggle-instruments-btn').onclick = toggleInstrumentsPanel;
 document.getElementById('toggle-nav-btn').onclick = toggleNavTool;
 document.getElementById('toggle-lasso-btn').onclick = toggleLassoMode;
-document.getElementById('toggle-ruler-btn').onclick = toggleRulerMode;
+document.getElementById('toggle-ruler-btn').onclick = toggleRulerModeMenu;
+document.getElementById('ruler-straight-mode-btn').onclick = () => selectRulerToolMode('straight');
+document.getElementById('ruler-sequence-km-mode-btn').onclick = () => selectRulerToolMode('sequence');
+document.addEventListener('click', function(event) {
+  if (!event.target.closest('#toggle-ruler-btn, #ruler-mode-menu')) closeRulerModeMenu();
+});
 document.getElementById('toggle-insight-btn').onclick = toggleInsightMode;
 document.getElementById('toggle-barrier-btn').onclick = toggleBarrierMode;
 document.getElementById('toggle-swap-btn').onclick = toggleSwapMode;
@@ -20578,6 +21025,17 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && state.rulerModeActive) {
     event.preventDefault();
     toggleRulerMode(false);
+    return;
+  }
+
+  if (event.key === 'Escape' && sequenceKmModeActive) {
+    event.preventDefault();
+    toggleSequenceKmMode(false);
+    return;
+  }
+
+  if (event.key === 'Escape' && closeRulerModeMenu()) {
+    event.preventDefault();
     return;
   }
 
