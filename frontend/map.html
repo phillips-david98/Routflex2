@@ -6119,17 +6119,1331 @@ body.manual-planning-mode .manual-planning-panel {
   }
 }
 
-/* ── ROUTEX AI ──────────────────────────────────────────── */
-@keyframes ai-pulse  { 0%,100%{box-shadow:0 0 18px rgba(82,208,255,.22),inset 0 0 12px rgba(82,208,255,.03);}50%{box-shadow:0 0 38px rgba(82,208,255,.44),inset 0 0 20px rgba(82,208,255,.08);} }
-@keyframes ai-dot    { 0%,100%{opacity:1;}50%{opacity:.25;} }
-@keyframes ai-scan-v { 0%{top:108%;}100%{top:-12%;} }
-@keyframes ai-msg-in { from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);} }
-@keyframes ai-bounce { 0%,60%,100%{transform:translateY(0);opacity:.45;}30%{transform:translateY(-4px);opacity:1;} }
+/* Unified map command bar: visual-only shell around the existing controls. */
+.map-command-bar {
+  position: relative;
+  z-index: 10;
+  isolation: isolate;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  min-height: 52px;
+  margin-inline: 48px;
+  padding: 6px 9px;
+  overflow: visible;
+  border-radius: 15px;
+  border: 1px solid rgba(125, 176, 213, 0.14);
+  background:
+    radial-gradient(circle at 8% 0, rgba(61, 139, 193, 0.075), transparent 32%),
+    linear-gradient(118deg, rgba(7, 21, 36, 0.92), rgba(4, 15, 27, 0.89));
+  -webkit-backdrop-filter: blur(13px) saturate(108%);
+  backdrop-filter: blur(13px) saturate(108%);
+  box-shadow: 0 10px 26px rgba(0, 8, 20, 0.23), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transform-origin: top right;
+  transition: opacity 0.18s ease-out 0.04s, transform 0.18s ease-out 0.04s, border-color 0.16s ease-out, visibility 0s linear;
+}
 
-body.login-active .routex-ai-fab,
+.map-command-bar::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(126, 211, 244, 0.27), transparent);
+}
+
+.map-command-bar .toolbar-title {
+  flex: 1 1 168px;
+  min-width: 0;
+  max-width: 260px;
+  padding: 0 4px;
+}
+
+.map-command-bar .toolbar-title h2 {
+  overflow: hidden;
+  color: #f0f7ff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-command-bar .toolbar-title p {
+  overflow: hidden;
+  margin-top: 2px;
+  color: #7f9cb7;
+  font-size: 0.61rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-command-bar .toolbar-actions {
+  flex: 0 1 auto;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 0;
+}
+
+.command-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.command-divider {
+  align-self: center;
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  opacity: 0.72;
+  background: linear-gradient(180deg, transparent, rgba(134, 177, 207, 0.22), transparent);
+}
+
+.map-command-bar .command-btn,
+.menu-reveal-btn.command-btn {
+  --command-accent: #65cfff;
+  --command-accent-rgb: 101, 207, 255;
+  position: relative;
+  flex: 0 0 38px;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  overflow: visible;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #9dc3d8;
+  box-shadow: none;
+  cursor: pointer;
+  transition: color 0.15s ease-out, border-color 0.15s ease-out, background-color 0.15s ease-out, box-shadow 0.15s ease-out, transform 0.13s ease-out;
+}
+
+.map-command-bar .command-btn:hover,
+.menu-reveal-btn.command-btn:hover {
+  color: #f4fbff;
+  border-color: rgba(var(--command-accent-rgb), 0.18);
+  background-color: rgba(var(--command-accent-rgb), 0.085);
+  box-shadow: 0 4px 10px rgba(0, 8, 20, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  transform: translateY(-1px);
+}
+
+.map-command-bar .command-btn:active,
+.menu-reveal-btn.command-btn:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.09s;
+}
+
+.map-command-bar .command-btn:focus-visible,
+.menu-reveal-btn.command-btn:focus-visible {
+  outline: 1px solid rgba(var(--command-accent-rgb), 0.88);
+  outline-offset: 2px;
+  background-color: rgba(var(--command-accent-rgb), 0.075);
+}
+
+.map-command-bar .command-btn.is-active,
+.map-command-bar .instruments-toggle.is-open {
+  color: #f5fcff;
+  border-color: rgba(var(--command-accent-rgb), 0.27);
+  background-color: rgba(var(--command-accent-rgb), 0.11);
+  box-shadow: 0 0 10px rgba(var(--command-accent-rgb), 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.map-command-bar .command-btn::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 10px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--command-accent);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) scaleX(0.45);
+  transition: opacity 0.14s ease-out, transform 0.16s ease-out;
+}
+
+.map-command-bar .command-btn.is-active::after,
+.map-command-bar .instruments-toggle.is-open::after {
+  opacity: 0.8;
+  transform: translateX(-50%) scaleX(1);
+}
+
+.command-btn.is-planning { --command-accent: #58d2ff; --command-accent-rgb: 88, 210, 255; }
+.command-btn.is-center { --command-accent: #69dda8; --command-accent-rgb: 105, 221, 168; }
+.command-btn.is-clear { --command-accent: #ffbc73; --command-accent-rgb: 255, 188, 115; }
+.command-btn.is-visibility { --command-accent: #91aeca; --command-accent-rgb: 145, 174, 202; }
+.command-btn.is-tools { --command-accent: #8cbcff; --command-accent-rgb: 140, 188, 255; }
+
+.command-glyph {
+  width: 19px;
+  height: 19px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.command-glyph svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: none;
+  transition: filter 0.15s ease-out, transform 0.15s ease-out;
+}
+
+.map-command-bar .command-btn:hover .command-glyph,
+.map-command-bar .command-btn.is-active .command-glyph,
+.map-command-bar .instruments-toggle.is-open .command-glyph {
+  filter: brightness(1.08);
+  transform: scale(1.035);
+}
+
+.map-command-bar .command-cluster .is-planning .command-glyph {
+  width: 20px;
+  height: 20px;
+}
+
+.command-label,
+.map-command-bar .instrument-label {
+  position: absolute;
+  z-index: 80;
+  left: 50%;
+  top: calc(100% + 8px);
+  width: max-content;
+  max-width: 168px;
+  padding: 6px 9px;
+  overflow: visible;
+  border: 1px solid rgba(121, 169, 204, 0.2);
+  border-radius: 8px;
+  background: rgba(3, 13, 24, 0.95);
+  color: #eaf6ff;
+  box-shadow: 0 7px 17px rgba(0, 5, 14, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-overflow: clip;
+  white-space: nowrap;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -3px);
+  transition: opacity 0.11s ease-in, transform 0.11s ease-in, visibility 0s linear 0.11s;
+}
+
+.command-label::before,
+.map-command-bar .instrument-label::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 7px;
+  height: 7px;
+  border-left: 1px solid rgba(117, 176, 221, 0.24);
+  border-top: 1px solid rgba(117, 176, 221, 0.24);
+  background: rgba(3, 13, 24, 0.96);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.command-btn:hover > .command-label,
+.map-command-bar .instrument-btn:hover > .instrument-label {
+  visibility: visible;
+  opacity: 1;
+  transform: translate(-50%, 0);
+  transition: opacity 0.17s ease-out 0.12s, transform 0.17s ease-out 0.12s, visibility 0s linear 0.12s;
+}
+
+.command-btn:focus-visible > .command-label,
+.map-command-bar .instrument-btn:focus-visible > .instrument-label {
+  visibility: visible;
+  opacity: 1;
+  transform: translate(-50%, 0);
+  transition: opacity 0.16s ease-out, transform 0.16s ease-out, visibility 0s linear;
+}
+
+.map-command-bar .instruments-hub {
+  position: static;
+  left: auto;
+  bottom: auto;
+  z-index: auto;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.map-command-bar .instruments-toggle {
+  z-index: auto;
+  margin: 0;
+  opacity: 1;
+  font-size: inherit;
+  font-weight: inherit;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.map-command-bar .instruments-toggle:hover {
+  border-color: rgba(var(--command-accent-rgb), 0.18);
+  background-color: rgba(var(--command-accent-rgb), 0.085);
+  color: #f4fbff;
+  opacity: 1;
+  box-shadow: 0 4px 10px rgba(0, 8, 20, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  transform: translateY(-1px);
+}
+
+.map-command-bar .instruments-panel {
+  position: relative;
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0;
+  width: auto;
+  max-width: 0;
+  max-height: 38px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-4px) scaleX(0.985);
+  transform-origin: left center;
+  will-change: transform, opacity;
+  transition: max-width 0.18s cubic-bezier(0.2, 0.75, 0.25, 1), opacity 0.11s ease-in, transform 0.13s ease-in, visibility 0s linear 0.18s;
+}
+
+.map-command-bar .instruments-panel::before {
+  display: none;
+}
+
+.map-command-bar .instruments-panel.is-open {
+  width: auto;
+  max-width: 520px;
+  max-height: 38px;
+  padding: 0 0 0 3px;
+  overflow: visible;
+  border: 0;
+  box-shadow: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(0) scaleX(1);
+  transition: max-width 0.18s cubic-bezier(0.2, 0.75, 0.25, 1), opacity 0.16s ease-out 0.035s, transform 0.17s ease-out 0.025s, visibility 0s linear;
+}
+
+.map-command-bar .instrument-group {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+}
+
+.map-command-bar .instrument-group + .instrument-group {
+  margin: 0 0 0 10px;
+  padding-left: 11px;
+  border-left: 1px solid rgba(126, 177, 217, 0.14);
+}
+
+.map-command-bar .instrument-group-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.map-command-bar .instrument-group-title::after {
+  display: none;
+}
+
+.map-command-bar .instrument-group-grid,
+.map-command-bar .instrument-group:last-child .instrument-group-grid {
+  position: relative;
+  display: flex;
+  grid-template-columns: none;
+  align-items: center;
+  gap: 3px;
+}
+
+.map-command-bar .instrument-group:last-child .instrument-btn,
+.map-command-bar .instrument-group:last-child .instrument-btn:nth-last-child(-n + 2) {
+  grid-column: auto;
+}
+
+.map-command-bar .instrument-btn {
+  --tool-accent: #69cbff;
+  --tool-accent-rgb: 105, 203, 255;
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  overflow: visible;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #86b3cc;
+  box-shadow: none;
+  transform: none;
+  transition: color 0.15s ease-out, border-color 0.15s ease-out, background-color 0.15s ease-out, box-shadow 0.15s ease-out, transform 0.13s ease-out, opacity 0.13s ease-out;
+}
+
+.map-command-bar .instrument-btn::after {
+  content: '';
+  position: absolute;
+  inset: auto auto 2px 50%;
+  display: block;
+  width: 10px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--tool-accent);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) scaleX(0.45);
+  transition: opacity 0.14s ease-out, transform 0.16s ease-out;
+}
+
+.map-command-bar .instrument-btn:hover {
+  color: #f5fcff;
+  border-color: rgba(var(--tool-accent-rgb), 0.17);
+  background-color: rgba(var(--tool-accent-rgb), 0.075);
+  box-shadow: 0 4px 10px rgba(0, 8, 20, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transform: translateY(-1px);
+}
+
+.map-command-bar .instrument-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.09s;
+}
+
+.map-command-bar .instrument-btn:focus-visible {
+  outline: 1px solid rgba(var(--tool-accent-rgb), 0.86);
+  outline-offset: 2px;
+  background-color: rgba(var(--tool-accent-rgb), 0.07);
+}
+
+.map-command-bar .instrument-btn:disabled,
+.map-command-bar .instrument-btn:disabled:hover {
+  opacity: 0.36;
+  border-color: transparent;
+  background: transparent;
+  color: #607d90;
+  box-shadow: none;
+  cursor: not-allowed;
+  filter: saturate(0.2);
+  transform: none;
+}
+
+.map-command-bar .instrument-btn.is-active,
+.map-command-bar .instrument-btn.is-insight-active,
+.map-command-bar .instrument-btn.is-mode-territorial {
+  color: #f6fdff;
+  border-color: rgba(var(--tool-accent-rgb), 0.25);
+  background-color: rgba(var(--tool-accent-rgb), 0.105);
+  box-shadow: 0 0 10px rgba(var(--tool-accent-rgb), 0.085), inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  filter: none;
+}
+
+.map-command-bar .instrument-btn.is-active::after,
+.map-command-bar .instrument-btn.is-insight-active::after,
+.map-command-bar .instrument-btn.is-mode-territorial::after {
+  opacity: 0.78;
+  transform: translateX(-50%) scaleX(1);
+}
+
+.map-command-bar .instrument-glyph {
+  width: 19px;
+  height: 19px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+  transition: color 0.15s ease-out, transform 0.15s ease-out, filter 0.15s ease-out;
+}
+
+.map-command-bar .instrument-glyph svg {
+  width: 18px;
+  height: 18px;
+  filter: none;
+}
+
+.map-command-bar .instrument-btn:nth-child(2) .instrument-glyph,
+.map-command-bar .instrument-btn:nth-child(4) .instrument-glyph,
+.map-command-bar .instrument-btn:hover .instrument-glyph,
+.map-command-bar .instrument-btn.is-active .instrument-glyph {
+  color: inherit;
+  border: 0;
+  box-shadow: none;
+}
+
+.map-command-bar .instrument-btn:hover .instrument-glyph,
+.map-command-bar .instrument-btn.is-active .instrument-glyph,
+.map-command-bar .instrument-btn.is-insight-active .instrument-glyph {
+  transform: scale(1.04);
+  filter: brightness(1.08);
+}
+
+.map-command-bar .instrument-btn.tool-maintenance.is-active,
+.map-command-bar .instrument-btn.tool-barrier.is-active {
+  --tool-accent: #e5b56f;
+  --tool-accent-rgb: 229, 181, 111;
+}
+
+.map-command-bar .instrument-btn.tool-insight.is-insight-active {
+  --tool-accent: #72d4a4;
+  --tool-accent-rgb: 114, 212, 164;
+}
+
+.tool-nav { --tool-accent: #68c8ff; --tool-accent-rgb: 104, 200, 255; }
+.tool-lasso { --tool-accent: #b493ff; --tool-accent-rgb: 180, 147, 255; }
+.tool-maintenance { --tool-accent: #ffc172; --tool-accent-rgb: 255, 193, 114; }
+.tool-config { --tool-accent: #91abc4; --tool-accent-rgb: 145, 171, 196; }
+.tool-ruler { --tool-accent: #58ddd5; --tool-accent-rgb: 88, 221, 213; }
+.tool-metrics { --tool-accent: #72d8aa; --tool-accent-rgb: 114, 216, 170; }
+.tool-params { --tool-accent: #73aaff; --tool-accent-rgb: 115, 170, 255; }
+.tool-barrier { --tool-accent: #ff9b68; --tool-accent-rgb: 255, 155, 104; }
+.tool-insight { --tool-accent: #7ddd83; --tool-accent-rgb: 125, 221, 131; }
+.tool-swap { --tool-accent: #d495ff; --tool-accent-rgb: 212, 149, 255; }
+.tool-road { --tool-accent: #54cff8; --tool-accent-rgb: 84, 207, 248; }
+
+.map-command-bar .ruler-mode-menu {
+  position: absolute;
+  display: grid;
+  z-index: 90;
+  left: 50%;
+  top: calc(100% + 10px);
+  width: 210px;
+  padding: 6px;
+  border: 1px solid rgba(95, 181, 213, 0.28);
+  border-radius: 11px;
+  background: rgba(4, 18, 31, 0.97);
+  box-shadow: 0 10px 22px rgba(0, 6, 16, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, -4px) scale(0.985);
+  transform-origin: top center;
+  transition: opacity 0.11s ease-in, transform 0.12s ease-in, visibility 0s linear 0.12s;
+}
+
+.map-command-bar .ruler-mode-menu.is-open {
+  display: grid;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 0) scale(1);
+  transition: opacity 0.16s ease-out, transform 0.16s ease-out, visibility 0s linear;
+}
+
+.map-command-bar .ruler-mode-option {
+  min-height: 32px;
+  border-radius: 8px;
+  font-size: 0.62rem;
+}
+
+.map-command-bar .instrument-group:last-child .instrument-btn:last-child .instrument-label,
+.map-command-bar .toolbar-actions > .command-btn:last-child .command-label {
+  left: auto;
+  right: 0;
+  transform: translateY(-4px);
+}
+
+.map-command-bar .command-cluster .command-btn:first-child .command-label {
+  left: 0;
+  transform: translateY(-3px);
+}
+
+.map-command-bar .command-cluster .command-btn:first-child .command-label::before {
+  left: 13px;
+  transform: rotate(45deg);
+}
+
+.map-command-bar .command-cluster .command-btn:first-child:hover .command-label,
+.map-command-bar .command-cluster .command-btn:first-child:focus-visible .command-label {
+  transform: translateY(0);
+}
+
+.map-command-bar .instrument-group:last-child .instrument-btn:last-child .instrument-label::before,
+.map-command-bar .toolbar-actions > .command-btn:last-child .command-label::before {
+  left: auto;
+  right: 12px;
+  transform: rotate(45deg);
+}
+
+.map-command-bar .instrument-group:last-child .instrument-btn:last-child:hover .instrument-label,
+.map-command-bar .instrument-group:last-child .instrument-btn:last-child:focus-visible .instrument-label,
+.map-command-bar .toolbar-actions > .command-btn:last-child:hover .command-label,
+.map-command-bar .toolbar-actions > .command-btn:last-child:focus-visible .command-label {
+  transform: translateY(0);
+}
+
+.menu-reveal-btn.command-btn {
+  position: absolute;
+  right: 68px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 12px;
+  border-color: rgba(123, 172, 207, 0.18);
+  background: rgba(5, 20, 35, 0.88);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0, 7, 18, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-4px) scale(0.96);
+  transform-origin: top right;
+  transition: opacity 0.11s ease-in, transform 0.13s ease-in, visibility 0s linear 0.14s, color 0.15s ease-out, border-color 0.15s ease-out, background-color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.map-panel.map-menu-collapsed .toolbar.map-command-bar {
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-5px) scale(0.99);
+  transition: opacity 0.13s ease-in, transform 0.15s ease-in, visibility 0s linear 0.15s;
+}
+
+.map-panel.map-menu-collapsed .menu-reveal-btn.command-btn {
+  display: inline-flex;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition: opacity 0.16s ease-out 0.08s, transform 0.17s ease-out 0.08s, visibility 0s linear 0.08s, color 0.15s ease-out, border-color 0.15s ease-out, background-color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.map-panel.map-menu-collapsed .menu-reveal-btn.command-btn:hover {
+  transform: translateY(-1px) scale(1);
+}
+
+.map-panel.map-menu-collapsed .menu-reveal-btn.command-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+@media (min-width: 961px) {
+  .map-command-bar .toolbar-actions {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto;
+    align-items: center;
+  }
+
+  .map-command-bar .instruments-hub {
+    display: grid;
+    grid-template-columns: auto 38px;
+    align-items: center;
+  }
+
+  .map-command-bar .instruments-toggle {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .map-command-bar .instruments-panel {
+    grid-column: 1;
+    grid-row: 1;
+    width: 0;
+    max-width: none;
+    transform: translateX(4px) scaleX(0.985);
+    transform-origin: right center;
+    transition: width 0.17s cubic-bezier(0.2, 0.75, 0.25, 1), opacity 0.11s ease-in, transform 0.12s ease-in, visibility 0s linear 0.17s;
+  }
+
+  .map-command-bar .instruments-panel.is-open {
+    width: 467px;
+    max-width: none;
+    transform: translateX(0) scaleX(1);
+    transition: width 0.17s cubic-bezier(0.2, 0.75, 0.25, 1), opacity 0.15s ease-out 0.025s, transform 0.16s ease-out 0.02s, visibility 0s linear;
+  }
+}
+
+@media (max-width: 1280px) {
+  .menu-reveal-btn.command-btn {
+    right: 356px;
+  }
+}
+
+@media (min-width: 961px) and (max-width: 1400px) {
+  .map-command-bar {
+    justify-content: flex-end;
+  }
+
+  .map-command-bar .toolbar-title {
+    display: none;
+  }
+}
+
+@media (min-width: 1100px) and (max-width: 1819px) {
+  .map-command-bar {
+    justify-content: space-between;
+    margin-right: 316px;
+  }
+
+  .map-command-bar .toolbar-title {
+    display: block;
+    max-width: 228px;
+  }
+
+  .map-command-bar .toolbar-title p {
+    display: none;
+  }
+
+  .map-command-bar .instruments-hub {
+    position: static;
+    grid-template-columns: 38px;
+  }
+
+  .map-command-bar .instruments-toggle {
+    grid-column: 1;
+  }
+
+  .map-command-bar .instruments-panel {
+    position: absolute;
+    z-index: 42;
+    top: calc(100% - 1px);
+    right: 9px;
+    width: 0;
+    max-width: none;
+    max-height: 42px;
+    padding: 3px 0;
+    border: 1px solid transparent;
+    border-radius: 0 0 13px 13px;
+    background: rgba(5, 18, 31, 0.9);
+    box-shadow: 0 8px 20px rgba(0, 7, 18, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transform: translateY(-4px) scale(0.99);
+    transform-origin: top right;
+    transition: width 0.17s cubic-bezier(0.2, 0.75, 0.25, 1), opacity 0.11s ease-in, transform 0.12s ease-in, border-color 0.11s ease-in, visibility 0s linear 0.17s;
+  }
+
+  .map-command-bar .instruments-panel.is-open {
+    width: min(520px, calc(100% - 18px));
+    max-width: none;
+    max-height: 42px;
+    padding: 3px 6px;
+    border-color: rgba(123, 172, 207, 0.12);
+    transform: translateY(0) scale(1);
+    transition: width 0.17s cubic-bezier(0.2, 0.75, 0.25, 1), opacity 0.15s ease-out 0.025s, transform 0.16s ease-out 0.02s, border-color 0.15s ease-out, visibility 0s linear;
+  }
+
+  .map-overlay .status-legend,
+  .map-overlay .focus-strip {
+    transition: transform 0.13s ease-in;
+  }
+
+  .map-overlay:has(.instruments-panel.is-open) .status-legend,
+  .map-overlay:has(.instruments-panel.is-open) .focus-strip {
+    transform: translateY(45px);
+    transition: transform 0.17s ease-out;
+  }
+}
+
+@media (max-width: 960px) {
+  .map-command-bar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .map-command-bar .toolbar-title {
+    max-width: 220px;
+  }
+
+  .map-command-bar .toolbar-title p {
+    display: none;
+  }
+
+  .map-command-bar .toolbar-actions {
+    flex: 1 1 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .map-command-bar .instruments-hub {
+    flex-wrap: wrap;
+  }
+
+  .map-command-bar .instruments-panel.is-open {
+    max-width: calc(100vw - 154px);
+  }
+}
+
+@media (max-width: 680px) {
+  .map-command-bar {
+    margin-inline: 46px;
+    padding: 7px 8px;
+  }
+
+  .map-command-bar .toolbar-title {
+    display: none;
+  }
+
+  .map-command-bar .toolbar-actions {
+    width: 100%;
+  }
+
+  .map-command-bar .instruments-hub {
+    flex: 1 1 auto;
+  }
+
+  .map-command-bar .instruments-panel.is-open {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    max-width: calc(100vw - 112px);
+    max-height: 132px;
+    padding-top: 5px;
+  }
+
+  .map-command-bar .instrument-group + .instrument-group {
+    margin-left: 6px;
+    padding-left: 7px;
+  }
+
+  .menu-reveal-btn.command-btn {
+    left: 68px;
+    right: auto;
+  }
+}
+
+body.manual-planning-mode .map-command-bar {
+  margin-inline: 0;
+}
+
+body.manual-planning-mode .menu-reveal-btn.command-btn {
+  right: 390px;
+}
+
+@media (max-width: 960px) {
+  body.manual-planning-mode .menu-reveal-btn.command-btn {
+    right: 68px;
+  }
+}
+
+/* Premium command surface: visual-only refinement, scoped to the map command bar. */
+.map-command-bar {
+  --premium-command-accent: #67d7ff;
+  --premium-command-accent-rgb: 103, 215, 255;
+  min-height: 52px;
+  padding: 6px 9px 6px 14px;
+  border-color: rgba(139, 178, 205, 0.14);
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), transparent 46%),
+    linear-gradient(116deg, rgba(11, 29, 41, 0.975), rgba(7, 21, 31, 0.982) 54%, rgba(5, 17, 26, 0.988));
+  -webkit-backdrop-filter: blur(6px) saturate(106%);
+  backdrop-filter: blur(6px) saturate(106%);
+  box-shadow:
+    0 10px 24px rgba(0, 7, 17, 0.22),
+    0 2px 5px rgba(0, 5, 13, 0.24),
+    inset 0 1px 0 rgba(226, 245, 255, 0.045),
+    inset 0 -1px 0 rgba(0, 5, 11, 0.42);
+}
+
+.map-command-bar::before {
+  z-index: 0;
+  left: 16px;
+  right: 16px;
+  background: linear-gradient(90deg, transparent, rgba(186, 226, 246, 0.16) 24%, rgba(103, 215, 255, 0.13) 72%, transparent);
+  opacity: 0.78;
+}
+
+.map-command-bar .toolbar-title {
+  position: relative;
+  z-index: 1;
+}
+
+.map-command-bar .toolbar-actions {
+  z-index: 1;
+}
+
+.map-command-bar .toolbar-title {
+  padding: 0 6px 0 15px;
+}
+
+.map-command-bar .toolbar-title::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border: 1px solid rgba(var(--premium-command-accent-rgb), 0.62);
+  border-radius: 50%;
+  background: rgba(var(--premium-command-accent-rgb), 0.72);
+  box-shadow: 0 0 7px rgba(var(--premium-command-accent-rgb), 0.22);
+  pointer-events: none;
+}
+
+.map-command-bar .toolbar-title h2 {
+  color: #f0f6fa;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: 0.012em;
+  text-shadow: 0 1px 2px rgba(0, 5, 12, 0.34);
+}
+
+.map-command-bar .toolbar-title p {
+  margin-top: 3px;
+  color: #8199aa;
+  font-size: 0.59rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.008em;
+}
+
+.map-command-bar .toolbar-actions {
+  gap: 4px;
+}
+
+.map-command-bar .command-cluster,
+.map-command-bar .instrument-group-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.map-command-bar .command-divider {
+  height: 22px;
+  margin-inline: 4px;
+  opacity: 0.18;
+  background: linear-gradient(180deg, transparent, rgba(139, 178, 204, 0.16) 28%, rgba(139, 178, 204, 0.16) 72%, transparent);
+}
+
+.map-command-bar .instrument-group + .instrument-group {
+  margin-left: 6px;
+  padding-left: 7px;
+  border-left-color: rgba(139, 178, 204, 0.07);
+}
+
+.map-command-bar .command-btn,
+.map-command-bar .instrument-btn {
+  --command-accent: var(--premium-command-accent);
+  --command-accent-rgb: var(--premium-command-accent-rgb);
+  --tool-accent: var(--premium-command-accent);
+  --tool-accent-rgb: var(--premium-command-accent-rgb);
+  isolation: isolate;
+  border-color: transparent;
+  background: transparent;
+  color: #849fb1;
+  box-shadow: none;
+  transition: color 0.2s cubic-bezier(0.22, 0.8, 0.25, 1), background-color 0.15s ease-out, transform 0.16s ease-out, opacity 0.16s ease-out;
+}
+
+.map-command-bar .instrument-btn {
+  flex-basis: 37px;
+  width: 37px;
+  min-width: 37px;
+  height: 37px;
+  min-height: 37px;
+}
+
+.map-command-bar .instrument-btn.tool-maintenance.is-active,
+.map-command-bar .instrument-btn.tool-barrier.is-active,
+.map-command-bar .instrument-btn.tool-insight.is-insight-active {
+  --command-accent: var(--premium-command-accent);
+  --command-accent-rgb: var(--premium-command-accent-rgb);
+  --tool-accent: var(--premium-command-accent);
+  --tool-accent-rgb: var(--premium-command-accent-rgb);
+}
+
+.map-command-bar .command-btn::before,
+.map-command-bar .instrument-btn::before {
+  display: none;
+}
+
+.map-command-bar .command-btn::after,
+.map-command-bar .instrument-btn::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: 2px;
+  display: block;
+  width: 15px;
+  height: 1px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(var(--premium-command-accent-rgb), 0.82) 28%, rgba(var(--premium-command-accent-rgb), 0.82) 72%, transparent);
+  box-shadow: 0 1px 5px rgba(var(--premium-command-accent-rgb), 0.12);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) scaleX(0.55);
+  transform-origin: center;
+  transition: opacity 0.2s cubic-bezier(0.22, 0.8, 0.25, 1), transform 0.2s cubic-bezier(0.22, 0.8, 0.25, 1);
+}
+
+.map-command-bar .command-glyph,
+.map-command-bar .instrument-glyph {
+  position: relative;
+  z-index: 2;
+  transition: color 0.2s cubic-bezier(0.22, 0.8, 0.25, 1), transform 0.22s cubic-bezier(0.22, 0.8, 0.25, 1), filter 0.2s ease-out;
+}
+
+.map-command-bar .command-btn:hover,
+.map-command-bar .instrument-btn:hover,
+.map-command-bar .instruments-toggle:hover {
+  border-color: transparent;
+  background: transparent;
+  color: #dcecf4;
+  box-shadow: none;
+  transform: none;
+}
+
+.map-command-bar .command-btn:active,
+.map-command-bar .instrument-btn:active:not(:disabled),
+.map-command-bar .instruments-toggle:active {
+  transform: none;
+  transition-duration: 0.08s;
+}
+
+.map-command-bar .command-btn:hover::after,
+.map-command-bar .instrument-btn:hover::after {
+  opacity: 0.42;
+  transform: translateX(-50%) scaleX(1);
+}
+
+.map-command-bar .command-btn:focus-visible,
+.map-command-bar .instrument-btn:focus-visible,
+.map-command-bar .instruments-toggle:focus-visible {
+  outline: 1px solid rgba(var(--premium-command-accent-rgb), 0.62);
+  outline-offset: 2px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.map-command-bar .command-btn.is-active,
+.map-command-bar .instrument-btn.is-active,
+.map-command-bar .instrument-btn.is-insight-active {
+  z-index: 2;
+  border-color: transparent;
+  background: transparent;
+  color: #bcefff;
+  box-shadow: none;
+  filter: none;
+}
+
+.map-command-bar .command-btn.is-active::after,
+.map-command-bar .instruments-toggle.is-open::after,
+.map-command-bar .instrument-btn.is-active::after,
+.map-command-bar .instrument-btn.is-insight-active::after {
+  opacity: 0.78;
+  transform: translateX(-50%) scaleX(1.12);
+}
+
+.map-command-bar .instruments-toggle.is-open {
+  border-color: transparent;
+  background: transparent;
+  color: #c5e9f7;
+  box-shadow: none;
+}
+
+.map-command-bar .instrument-btn.is-mode-territorial {
+  border-color: transparent;
+  background: transparent;
+  color: #849fb1;
+  box-shadow: none;
+}
+
+.map-command-bar .instrument-btn.is-mode-territorial .instrument-glyph {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.map-command-bar .instrument-btn.is-mode-territorial::after {
+  opacity: 0;
+  transform: translateX(-50%) scaleX(0.55);
+}
+
+.map-command-bar .instrument-btn.is-mode-territorial:hover::after {
+  opacity: 0.42;
+  transform: translateX(-50%) scaleX(1);
+}
+
+.map-command-bar .command-btn:hover .command-glyph,
+.map-command-bar .instrument-btn:hover .instrument-glyph {
+  color: inherit;
+  filter: brightness(1.06) drop-shadow(0 1px 3px rgba(var(--premium-command-accent-rgb), 0.09));
+  transform: translateY(-1px) scale(1.018);
+}
+
+.map-command-bar .command-btn.is-active .command-glyph,
+.map-command-bar .instrument-btn.is-active .instrument-glyph,
+.map-command-bar .instrument-btn.is-insight-active .instrument-glyph {
+  color: inherit;
+  filter: brightness(1.08) drop-shadow(0 1px 4px rgba(var(--premium-command-accent-rgb), 0.22));
+  transform: translateY(-2px) scale(1.025);
+}
+
+.map-command-bar .instruments-toggle.is-open .command-glyph {
+  filter: brightness(1.06);
+  transform: translateY(-1px) scale(1.015);
+}
+
+.map-command-bar .command-btn:active .command-glyph,
+.map-command-bar .instrument-btn:active:not(:disabled) .instrument-glyph,
+.map-command-bar .instruments-toggle:active .command-glyph {
+  transform: translateY(-1px) scale(0.97);
+  transition-duration: 0.08s;
+}
+
+.map-command-bar .command-glyph {
+  width: 20px;
+  height: 20px;
+}
+
+.map-command-bar .instrument-glyph {
+  width: 21px;
+  height: 21px;
+}
+
+.map-command-bar .instrument-glyph svg {
+  width: 20px;
+  height: 20px;
+}
+
+.map-command-bar .instrument-btn.tool-params .instrument-glyph svg {
+  width: 19px;
+  height: 19px;
+  transform: translateY(0.25px);
+}
+
+.map-command-bar .instrument-btn:disabled,
+.map-command-bar .instrument-btn:disabled:hover {
+  border-color: transparent;
+  background: transparent;
+  color: #607684;
+  box-shadow: none;
+  opacity: 0.32;
+  filter: saturate(0.15);
+  transform: none;
+}
+
+.map-command-bar .instrument-btn:disabled:hover .instrument-glyph {
+  color: inherit;
+  filter: none;
+  transform: none;
+}
+
+.map-command-bar .instrument-btn:disabled::before,
+.map-command-bar .instrument-btn:disabled::after {
+  opacity: 0;
+}
+
+.map-command-bar .command-label,
+.map-command-bar .instrument-label {
+  left: 50%;
+  right: auto;
+  margin-inline: 0;
+  padding: 6px 9px;
+  border-color: rgba(139, 178, 204, 0.17);
+  border-radius: 8px;
+  background: rgba(5, 16, 24, 0.975);
+  color: #e6f1f7;
+  box-shadow: 0 6px 16px rgba(0, 5, 12, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.012em;
+  filter: none !important;
+  text-shadow: none;
+  transform: translateX(-50%) !important;
+  transition: opacity 0.14s ease-in, visibility 0s linear 0.14s;
+}
+
+.map-command-bar .command-cluster .command-btn:first-child .command-label,
+.map-command-bar .instrument-group:last-child .instrument-btn:last-child .instrument-label,
+.map-command-bar .toolbar-actions > .command-btn:last-child .command-label {
+  transform: none !important;
+}
+
+.map-command-bar .command-label::before,
+.map-command-bar .instrument-label::before {
+  border-left-color: rgba(139, 178, 204, 0.18);
+  border-top-color: rgba(139, 178, 204, 0.18);
+  background: rgba(5, 16, 24, 0.98);
+}
+
+.map-command-bar .command-btn:hover > .command-label,
+.map-command-bar .instrument-btn:hover > .instrument-label {
+  transition: opacity 0.17s ease-out 0.16s, visibility 0s linear 0.16s;
+}
+
+.map-command-bar .command-btn:focus-visible > .command-label,
+.map-command-bar .instrument-btn:focus-visible > .instrument-label {
+  transition: opacity 0.16s ease-out, visibility 0s linear;
+}
+
+.map-command-bar .ruler-mode-menu {
+  border-color: rgba(var(--premium-command-accent-rgb), 0.2);
+  background: rgba(5, 17, 26, 0.985);
+  box-shadow: 0 12px 26px rgba(0, 5, 13, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.menu-reveal-btn.command-btn {
+  --command-accent: #67d7ff;
+  --command-accent-rgb: 103, 215, 255;
+  border-color: rgba(139, 178, 205, 0.16);
+  background: rgba(6, 19, 29, 0.97);
+  color: #8ca9bb;
+  box-shadow: 0 8px 20px rgba(0, 6, 15, 0.25), inset 0 1px 0 rgba(232, 247, 255, 0.045);
+}
+
+.menu-reveal-btn.command-btn:hover {
+  border-color: rgba(var(--command-accent-rgb), 0.2);
+  background: rgba(8, 25, 37, 0.98);
+  color: #eaf8ff;
+  box-shadow: 0 8px 20px rgba(0, 6, 15, 0.28), 0 0 12px rgba(var(--command-accent-rgb), 0.07);
+}
+
+@media (min-width: 1281px) and (max-width: 1819px) {
+  .map-command-bar {
+    gap: 6px 8px;
+    margin-right: 48px;
+  }
+
+  .map-command-bar .toolbar-title {
+    display: block;
+    flex: 1 1 170px;
+    max-width: clamp(188px, 14vw, 260px);
+    opacity: 1;
+  }
+
+  .map-command-bar .toolbar-title p {
+    display: block;
+  }
+
+  body.manual-planning-mode .map-command-bar .toolbar-title {
+    max-width: 260px;
+  }
+
+  .map-command-bar .instruments-panel .instrument-btn {
+    flex-basis: 36px;
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+  }
+
+  .map-command-bar .instruments-panel .instrument-group-grid {
+    gap: 2px;
+  }
+
+  .map-command-bar .instruments-panel .instrument-group + .instrument-group {
+    margin-left: 6px;
+    padding-left: 7px;
+  }
+
+  body.manual-planning-mode .map-overlay:has(.instruments-panel.is-open) .status-legend,
+  body.manual-planning-mode .map-overlay:has(.instruments-panel.is-open) .focus-strip {
+    transform: none;
+  }
+}
+
+@media (min-width: 1650px) and (max-width: 1819px) {
+  .map-overlay:has(.instruments-panel.is-open) .status-legend,
+  .map-overlay:has(.instruments-panel.is-open) .focus-strip {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-command-bar,
+  .map-command-bar *,
+  .menu-reveal-btn.command-btn,
+  .menu-reveal-btn.command-btn * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── ROUTEX ─────────────────────────────────────────────── */
+@keyframes ai-msg-in { from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);} }
+@keyframes routex-plasma-back {
+  0% { transform:rotate(0deg) scale(.985,1.02); opacity:.42; }
+  32% { transform:rotate(116deg) scale(1.025,.975); opacity:.68; }
+  68% { transform:rotate(244deg) scale(.97,1.035); opacity:.52; }
+  100% { transform:rotate(360deg) scale(.985,1.02); opacity:.42; }
+}
+@keyframes routex-plasma-front {
+  0% { transform:rotate(360deg) scale(1.018,.982); opacity:.48; }
+  38% { transform:rotate(224deg) scale(.978,1.028); opacity:.74; }
+  74% { transform:rotate(94deg) scale(1.032,.974); opacity:.56; }
+  100% { transform:rotate(0deg) scale(1.018,.982); opacity:.48; }
+}
+@keyframes routex-mass-shift {
+  0%,100% { transform:translate3d(0,1px,0) scale(.97,1.02) rotate(-1deg); }
+  36% { transform:translate3d(1px,-1px,0) scale(1.025,.97) rotate(1.5deg); }
+  72% { transform:translate3d(-1px,0,0) scale(.985,1.015) rotate(-.5deg); }
+}
+@keyframes routex-mass-flow-a {
+  0%,100% { transform:translate3d(-6px,-2px,0) rotate(-8deg) scale(.9,1.02); opacity:.66; }
+  45% { transform:translate3d(13px,8px,0) rotate(7deg) scale(1.12,.92); opacity:.9; }
+  72% { transform:translate3d(5px,13px,0) rotate(2deg) scale(.98,1.08); opacity:.76; }
+}
+@keyframes routex-mass-flow-b {
+  0%,100% { transform:translate3d(4px,5px,0) rotate(5deg) scale(1.04,.9); opacity:.62; }
+  38% { transform:translate3d(-10px,-8px,0) rotate(-7deg) scale(.9,1.12); opacity:.86; }
+  70% { transform:translate3d(-4px,-14px,0) rotate(3deg) scale(1.08,.96); opacity:.72; }
+}
+@keyframes routex-nucleus-drift {
+  0%,100% { transform:translate3d(-1px,1px,0) rotate(-4deg) scale(.92,1.04); opacity:.58; }
+  48% { transform:translate3d(1px,-1px,0) rotate(5deg) scale(1.06,.94); opacity:.82; }
+  76% { transform:translate3d(0,1px,0) rotate(1deg) scale(.98,1.03); opacity:.68; }
+}
+@keyframes routex-launcher-activate {
+  0% { transform:translateY(-1px) scale(1); }
+  34% { transform:translateY(0) scale(.972); }
+  72% { transform:translateY(-1px) scale(1.012); }
+  100% { transform:translateY(-1px) scale(1); }
+}
+
+body.login-active .routex-launcher,
 body.login-active .routex-ai-panel { display:none !important; }
 
-.routex-ai-fab {
+.routex-launcher {
   position:fixed; bottom:28px; right:28px; z-index:1050;
   width:68px; height:68px; display:flex; align-items:center; justify-content:center;
   flex:0 0 68px; padding:0; overflow:visible;
@@ -6138,140 +7452,141 @@ body.login-active .routex-ai-panel { display:none !important; }
   filter:drop-shadow(0 0 8px rgba(17,132,255,.24));
   outline:none; transition:transform .22s ease,filter .22s ease;
 }
-.routex-ai-fab::before,.routex-ai-fab::after { content:''; position:absolute; z-index:0; pointer-events:none; }
-.routex-ai-fab::before {
+.routex-launcher::before,.routex-launcher::after { content:''; position:absolute; z-index:0; pointer-events:none; }
+.routex-launcher::before {
   inset:-5px; border-radius:58% 42% 54% 46% / 45% 56% 44% 55%;
   background:radial-gradient(ellipse at 62% 34%,rgba(36,224,255,.32),transparent 46%),radial-gradient(ellipse at 34% 72%,rgba(14,99,255,.26),transparent 50%);
-  filter:blur(6px); opacity:.68; animation:routflex-orb-breathe 7.4s ease-in-out infinite;
+  filter:blur(6px); opacity:.62; animation:routex-mass-shift 6.4s ease-in-out infinite;
 }
-.routex-ai-fab::after {
+.routex-launcher::after {
   inset:5px; border-radius:46% 54% 42% 58% / 55% 45% 58% 42%;
   background:radial-gradient(ellipse at 46% 48%,rgba(17,194,255,.3),transparent 62%);
-  filter:blur(4px); opacity:.5; animation:routflex-orb-depth 8.8s ease-in-out -2.6s infinite;
+  filter:blur(4px); opacity:.46; animation:routex-nucleus-drift 4.4s ease-in-out -1.4s infinite;
 }
-.routex-ai-fab:hover {
-  transform:translateY(-2px) scale(1.018);
+.routex-launcher:hover {
+  transform:translateY(-2px) scale(1.026);
   filter:drop-shadow(0 0 11px rgba(25,176,255,.36)) brightness(1.1) saturate(1.08);
 }
-.routex-ai-fab:focus-visible { outline:2px solid rgba(82,208,255,.72); outline-offset:3px; }
-.routex-ai-fab.is-open {
+.routex-launcher:focus-visible { outline:2px solid rgba(82,208,255,.72); outline-offset:3px; }
+.routex-launcher.is-open,
+.routex-launcher.routex-processing {
   filter:drop-shadow(0 0 11px rgba(25,176,255,.36)) brightness(1.1) saturate(1.08);
 }
-.routex-ai-fab:active { transform:translateY(0) scale(.96); }
-.routflex-orb-fluid {
+.routex-launcher:active { transform:translateY(0) scale(.97); }
+.routex-launcher.routex-activating { animation:routex-launcher-activate .46s cubic-bezier(.2,.78,.2,1); }
+.routex-orb-plasma {
+  position:absolute; inset:-8px; width:calc(100% + 16px); height:calc(100% + 16px);
+  overflow:visible; pointer-events:none; transform-origin:50% 50%;
+  transition:opacity .22s ease,filter .22s ease;
+}
+.routex-orb-plasma path {
+  fill:none; vector-effect:non-scaling-stroke; stroke-linecap:butt; stroke-linejoin:round;
+}
+.routex-orb-plasma-back { z-index:0; animation:routex-plasma-back 11.2s linear infinite; }
+.routex-orb-plasma-back path { stroke:rgba(40,151,255,.5); stroke-width:1.25; stroke-dasharray:48 12 23 17; stroke-dashoffset:7; }
+.routex-orb-plasma-front { z-index:4; animation:routex-plasma-front 11.2s linear -5.6s infinite; }
+.routex-orb-plasma-front path { stroke:rgba(113,238,255,.72); stroke-width:.95; stroke-dasharray:27 15 39 19; stroke-dashoffset:-11; }
+.routex-orb-mass {
   position:absolute; inset:6px; z-index:1; overflow:hidden;
   border-radius:48% 52% 43% 57% / 54% 44% 56% 46%;
   background:radial-gradient(ellipse at 42% 34%,rgba(16,73,139,.62),transparent 48%),radial-gradient(ellipse at 54% 53%,#020b20 0 42%,rgba(2,11,32,.9) 57%,rgba(2,17,48,.35) 75%,transparent 100%);
-  will-change:transform; animation:routflex-orb-shell 8.2s ease-in-out infinite;
+  will-change:transform; animation:routex-mass-shift 6.4s ease-in-out infinite;
 }
-.routflex-orb-fluid::before,.routflex-orb-fluid::after {
+.routex-orb-mass::before,.routex-orb-mass::after {
   content:''; position:absolute; will-change:transform,opacity;
 }
-.routflex-orb-fluid::before {
+.routex-orb-mass::before {
   width:66px; height:52px; top:-14px; left:-19px; border-radius:38% 62% 48% 52% / 56% 38% 62% 44%;
   background:radial-gradient(ellipse at 64% 68%,rgba(59,232,255,.92),rgba(0,154,255,.68) 34%,rgba(10,63,202,.18) 64%,transparent 72%);
-  filter:blur(3.5px); opacity:.82; animation:routflex-orb-flow-a 7.4s ease-in-out infinite;
+  filter:blur(3.5px); opacity:.82; animation:routex-mass-flow-a 6.4s ease-in-out infinite;
 }
-.routflex-orb-fluid::after {
+.routex-orb-mass::after {
   width:58px; height:68px; right:-17px; bottom:-24px; border-radius:57% 43% 38% 62% / 42% 58% 44% 56%;
   background:radial-gradient(ellipse at 38% 28%,rgba(32,218,255,.8),rgba(0,102,255,.64) 37%,rgba(24,49,159,.16) 65%,transparent 74%);
-  filter:blur(4px); opacity:.76; animation:routflex-orb-flow-b 9.1s ease-in-out -3s infinite;
+  filter:blur(4px); opacity:.76; animation:routex-mass-flow-b 6.4s ease-in-out -2.1s infinite;
 }
-.routflex-orb-energy {
+.routex-orb-energy {
   position:absolute; inset:7px; z-index:2; overflow:hidden;
   border-radius:47% 53% 56% 44% / 43% 58% 42% 57%; pointer-events:none;
 }
-.routflex-orb-energy::before,.routflex-orb-energy::after { content:''; position:absolute; }
-.routflex-orb-energy::before {
+.routex-orb-energy::before,.routex-orb-energy::after { content:''; position:absolute; }
+.routex-orb-energy::before {
   width:38px; height:46px; left:8px; top:5px; border-radius:52% 48% 63% 37% / 38% 58% 42% 62%;
   background:radial-gradient(ellipse at 55% 44%,rgba(177,249,255,.82),rgba(18,198,255,.36) 30%,transparent 67%);
   filter:blur(2px); mix-blend-mode:screen; opacity:.58;
 }
-.routflex-orb-energy::after {
+.routex-orb-energy::after {
   width:31px; height:35px; right:5px; bottom:7px; border-radius:39% 61% 46% 54% / 62% 37% 63% 38%;
   background:radial-gradient(ellipse at 42% 38%,rgba(91,238,255,.72),rgba(23,92,255,.24) 48%,transparent 72%);
   filter:blur(2.5px); mix-blend-mode:screen; opacity:.48;
 }
-.routflex-orb-routes { position:absolute; inset:-8px; width:calc(100% + 16px); height:calc(100% + 16px); overflow:visible; pointer-events:none; transition:opacity .22s ease; }
-.routflex-orb-routes-back { z-index:0; opacity:.58; }
-.routflex-orb-routes-front { z-index:2; opacity:.42; }
-.routflex-orb-route,.routflex-orb-route-particle { fill:none; vector-effect:non-scaling-stroke; }
-.routflex-orb-route { stroke-width:.72; }
-.routflex-orb-route-a { stroke:rgba(69,226,255,.62); stroke-dasharray:28 8 15 12 22 15; }
-.routflex-orb-route-b { stroke:rgba(30,147,255,.5); stroke-dasharray:18 11 30 8 20 13; }
-.routflex-orb-route-front-a { stroke:rgba(126,242,255,.72); stroke-width:.9; stroke-dasharray:13 87; stroke-dashoffset:-48; }
-.routflex-orb-route-front-b { stroke:rgba(42,169,255,.58); stroke-width:.82; stroke-dasharray:9 91; stroke-dashoffset:-8; }
-.routflex-orb-route-particle { stroke-linecap:round; }
-.routflex-orb-route-particle-a { stroke:#d9fcff; stroke-width:3; stroke-dasharray:1.1 98.9; animation:routflex-orb-route-travel 9.6s linear infinite; }
-.routflex-orb-route-particle-b { stroke:#61eaff; stroke-width:2.5; stroke-dasharray:1 49 1 49; animation:routflex-orb-route-travel-reverse 12.4s linear -4.2s infinite; }
-.routflex-orb-mark {
-  position:relative; z-index:3; width:40px; height:48px; overflow:visible; pointer-events:none;
-  filter:drop-shadow(0 0 4px rgba(75,230,255,.78));
+.routex-orb-nucleus {
+  position:absolute; inset:20px; z-index:3; pointer-events:none;
+  border-radius:58% 42% 61% 39% / 43% 58% 42% 57%;
+  background:radial-gradient(ellipse at 40% 34%,rgba(232,255,255,.72),rgba(74,223,255,.3) 34%,rgba(24,111,255,.12) 64%,transparent 76%);
+  mix-blend-mode:screen; filter:blur(.35px);
+  animation:routex-nucleus-drift 4.4s ease-in-out infinite;
 }
-.routflex-orb-mark path { fill:none; stroke-linecap:round; stroke-linejoin:round; }
-.routflex-orb-mark-glow { stroke:#22cfff; stroke-width:10; opacity:.3; filter:blur(2.4px); }
-.routflex-orb-mark-core { stroke:url(#routflex-r-gradient); stroke-width:5.2; opacity:.94; transition:stroke-width .2s ease,opacity .2s ease; }
-.routflex-orb-mark-flow { stroke:rgba(241,255,255,.95); stroke-width:2.1; stroke-dasharray:13 87; stroke-dashoffset:0; opacity:.86; animation:routflex-orb-mark-travel 5.2s ease-in-out infinite; }
-.routex-ai-fab:hover .routflex-orb-mark-core,.routex-ai-fab.is-open .routflex-orb-mark-core { stroke-width:5.7; opacity:1; }
-.routex-ai-fab:hover .routflex-orb-routes-back,.routex-ai-fab.is-open .routflex-orb-routes-back { opacity:.72; }
-.routex-ai-fab:hover .routflex-orb-routes-front,.routex-ai-fab.is-open .routflex-orb-routes-front { opacity:.56; }
-@keyframes routflex-orb-breathe { 0%,100%{transform:translate3d(-1px,1px,0) scale(.94,1.02);opacity:.45} 48%{transform:translate3d(2px,-2px,0) scale(1.05,.96);opacity:.72} }
-@keyframes routflex-orb-depth { 0%,100%{transform:translate3d(2px,-1px,0) scale(.92,1.04);opacity:.32} 52%{transform:translate3d(-2px,2px,0) scale(1.06,.94);opacity:.58} }
-@keyframes routflex-orb-shell { 0%,100%{transform:translate3d(0,1px,0) scale(.97,1.02)} 36%{transform:translate3d(1px,-1px,0) scale(1.025,.97)} 72%{transform:translate3d(-1px,0,0) scale(.985,1.015)} }
-@keyframes routflex-orb-flow-a { 0%,100%{transform:translate3d(-6px,-2px,0) rotate(-8deg) scale(.9,1.02);opacity:.66} 45%{transform:translate3d(13px,8px,0) rotate(7deg) scale(1.12,.92);opacity:.9} 72%{transform:translate3d(5px,13px,0) rotate(2deg) scale(.98,1.08);opacity:.76} }
-@keyframes routflex-orb-flow-b { 0%,100%{transform:translate3d(4px,5px,0) rotate(5deg) scale(1.04,.9);opacity:.62} 38%{transform:translate3d(-10px,-8px,0) rotate(-7deg) scale(.9,1.12);opacity:.86} 70%{transform:translate3d(-4px,-14px,0) rotate(3deg) scale(1.08,.96);opacity:.72} }
-@keyframes routflex-orb-mark-travel { 0%{stroke-dashoffset:0;opacity:.5} 48%{opacity:.96} 100%{stroke-dashoffset:-100;opacity:.5} }
-@keyframes routflex-orb-route-travel { to{stroke-dashoffset:-100} }
-@keyframes routflex-orb-route-travel-reverse { to{stroke-dashoffset:100} }
+.routex-orb-nucleus::before,.routex-orb-nucleus::after { content:''; position:absolute; border-radius:inherit; }
+.routex-orb-nucleus::before {
+  inset:-5px 2px 3px -3px; transform:rotate(24deg);
+  background:radial-gradient(ellipse at 62% 46%,rgba(69,232,255,.38),rgba(23,117,255,.12) 56%,transparent 72%);
+  opacity:.7;
+}
+.routex-orb-nucleus::after {
+  inset:3px -4px -3px 4px; transform:rotate(-31deg);
+  background:radial-gradient(ellipse at 38% 54%,rgba(224,254,255,.36),rgba(48,152,255,.1) 52%,transparent 73%);
+  opacity:.62;
+}
+.routex-launcher:hover .routex-orb-plasma-back,.routex-launcher.is-open .routex-orb-plasma-back { opacity:.72; }
+.routex-launcher:hover .routex-orb-plasma-front,.routex-launcher.is-open .routex-orb-plasma-front { opacity:.8; }
+.routex-launcher.routex-activating .routex-orb-plasma { animation-duration:8.4s; }
+.routex-launcher.routex-activating .routex-orb-mass,
+.routex-launcher.routex-activating .routex-orb-mass::before,
+.routex-launcher.routex-activating .routex-orb-mass::after { animation-duration:4.9s; }
+.routex-launcher.routex-activating .routex-orb-nucleus { animation-duration:3.5s; }
+.routex-launcher.routex-processing .routex-orb-plasma { animation-duration:7.8s; filter:brightness(1.14) saturate(1.12); }
+.routex-launcher.routex-processing .routex-orb-mass,
+.routex-launcher.routex-processing .routex-orb-mass::before,
+.routex-launcher.routex-processing .routex-orb-mass::after { animation-duration:5.2s; }
+.routex-launcher.routex-processing .routex-orb-nucleus { animation-duration:3.5s; opacity:.92; }
 /* Push Leaflet zoom control above the AI button */
 .leaflet-bottom.leaflet-right { right:10px; bottom:110px; }
 
 /* ── AI Panel ────────────────────────────────────────────── */
 .routex-ai-panel {
-  position:fixed; bottom:100px; right:28px; z-index:1051;
+  position:fixed; bottom:108px; right:28px; z-index:1051;
   width:min(396px,calc(100vw - 44px));
-  max-height:calc(100vh - 144px);
+  max-height:min(660px,calc(100dvh - 136px));
   display:flex; flex-direction:column;
+  font-family:'Inter',system-ui,sans-serif;
   border-radius:22px; border:1px solid rgba(82,208,255,.2);
   background:rgba(4,12,24,.98); backdrop-filter:blur(24px);
   box-shadow:0 32px 80px rgba(0,0,0,.58),0 0 50px rgba(82,208,255,.11);
   overflow:hidden;
-  transform:translateY(14px) scale(.97); opacity:0; pointer-events:none;
-  transition:transform .28s cubic-bezier(.34,1.56,.64,1),opacity .22s ease;
+  transform:translateY(14px) scale(.97); opacity:0; visibility:hidden; pointer-events:none;
+  transform-origin:bottom right;
+  transition:transform .28s cubic-bezier(.34,1.56,.64,1),opacity .22s ease,visibility .22s;
 }
-.routex-ai-panel.is-open { transform:translateY(0) scale(1); opacity:1; pointer-events:auto; }
+.routex-ai-panel.is-open { transform:translateY(0) scale(1); opacity:1; visibility:visible; pointer-events:auto; }
 .ai-panel-header {
   display:flex; align-items:center; justify-content:space-between;
-  padding:13px 15px;
+  padding:18px 20px;
   background:linear-gradient(135deg,rgba(82,208,255,.06),rgba(30,168,219,.03));
   border-bottom:1px solid rgba(82,208,255,.1); flex-shrink:0;
 }
-.ai-panel-header-left { display:flex; align-items:center; gap:10px; }
-.ai-panel-avatar {
-  width:38px; height:38px; border-radius:50%;
-  border:1px solid rgba(82,208,255,.4); background:rgba(82,208,255,.07);
-  display:flex; align-items:center; justify-content:center;
-  position:relative; overflow:hidden; flex-shrink:0;
-}
-.ai-panel-avatar::after {
-  content:''; position:absolute; left:0; top:108%; width:100%; height:1.5px;
-  background:rgba(82,208,255,.65); animation:ai-scan-v 2s ease-in-out infinite;
-}
-.ai-panel-avatar > svg { width:18px; height:18px; color:#52d0ff; position:relative; z-index:1; }
+.ai-panel-header-left { min-width:0; }
+.ai-panel-info { min-width:0; }
 .ai-panel-info strong {
-  display:block; font-family:'Space Grotesk',sans-serif;
-  font-size:.9rem; font-weight:700; letter-spacing:.09em; color:#edf6ff;
+  display:block;
+  font-size:15px; font-weight:800; letter-spacing:.12em; color:#edf6ff;
 }
 .ai-panel-info em {
-  display:flex; align-items:center; gap:5px; font-style:normal;
-  font-size:.63rem; color:rgba(82,208,255,.55); letter-spacing:.07em; text-transform:uppercase;
-}
-.ai-panel-info em::before {
-  content:''; width:5px; height:5px; border-radius:50%;
-  background:#28c58b; animation:ai-dot 2s ease-in-out infinite;
+  display:block; margin-top:2px; font-style:normal;
+  font-size:11px; color:rgba(82,208,255,.55); letter-spacing:.04em;
 }
 .ai-panel-close {
-  width:28px; height:28px; border-radius:50%;
+  width:34px; height:34px; flex:0 0 34px; border-radius:11px;
   border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04);
   color:#5a88ab; font-size:1.1rem;
   display:flex; align-items:center; justify-content:center;
@@ -6282,6 +7597,11 @@ body.login-active .routex-ai-panel { display:none !important; }
   flex:1; min-height:200px; max-height:330px;
   overflow-y:auto; padding:14px 13px;
   display:flex; flex-direction:column; gap:11px; scroll-behavior:smooth;
+  background:
+    linear-gradient(rgba(82,208,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(82,208,255,.018) 1px,transparent 1px),
+    rgba(2,8,18,.22);
+  background-size:28px 28px;
 }
 .ai-messages::-webkit-scrollbar { width:5px; }
 .ai-messages::-webkit-scrollbar-thumb { background:rgba(82,208,255,.25); border-radius:999px; }
@@ -6299,23 +7619,17 @@ body.login-active .routex-ai-panel { display:none !important; }
 }
 .from-ai .ai-bubble strong { color:#52d0ff; }
 .from-ai .ai-bubble em     { color:#b5d8f5; font-style:normal; }
-.ai-typing-wrap { align-self:flex-start; animation:ai-msg-in .2s ease; }
-.ai-typing {
-  display:flex; align-items:center; gap:4px; padding:9px 14px;
-  border-radius:14px; border:1px solid rgba(129,183,231,.12);
-  background:rgba(255,255,255,.04); border-bottom-left-radius:5px;
+.routex-thinking {
+  align-self:flex-start; padding:8px 12px;
+  border-radius:13px; border:1px solid rgba(129,183,231,.12);
+  background:rgba(255,255,255,.04); color:rgba(181,216,245,.72);
+  font-size:.68rem; letter-spacing:.04em; animation:ai-msg-in .2s ease;
 }
-.ai-typing-dot {
-  width:5px; height:5px; border-radius:50%; background:rgba(82,208,255,.55);
-  animation:ai-bounce 1.1s ease-in-out infinite;
-}
-.ai-typing-dot:nth-child(2) { animation-delay:.18s; }
-.ai-typing-dot:nth-child(3) { animation-delay:.36s; }
 .ai-quick-row { display:flex; flex-wrap:wrap; gap:6px; padding:0 13px 10px; flex-shrink:0; }
 .ai-quick-btn {
-  padding:5px 12px; border-radius:20px;
+  padding:5px 10px; border-radius:20px;
   border:1px solid rgba(82,208,255,.2); background:rgba(82,208,255,.05);
-  color:rgba(82,208,255,.82); font:inherit; font-size:.72rem;
+  color:rgba(82,208,255,.82); font:inherit; font-size:.68rem; font-weight:600;
   cursor:pointer; transition:background .14s,border-color .14s,color .14s;
 }
 .ai-quick-btn:hover { background:rgba(82,208,255,.13); border-color:rgba(82,208,255,.48); color:#fff; }
@@ -6339,27 +7653,40 @@ body.login-active .routex-ai-panel { display:none !important; }
   background:rgba(2,8,18,.55); flex-shrink:0;
 }
 .ai-input {
-  flex:1; min-width:0; padding:9px 13px; border-radius:14px;
+  flex:1; min-width:0; height:42px; padding:0 13px; border-radius:12px;
   border:1px solid rgba(82,208,255,.18); background:rgba(255,255,255,.05);
-  color:#edf4ff; font:inherit; font-size:.81rem; transition:border-color .18s;
+  color:#edf4ff; font:inherit; font-size:.81rem; transition:border-color .18s,box-shadow .18s;
 }
 .ai-input::placeholder { color:rgba(143,167,196,.65); }
 .ai-input:focus { outline:none; border-color:rgba(82,208,255,.5); box-shadow:0 0 0 3px rgba(82,208,255,.09); }
+.ai-input:disabled { opacity:.62; }
 .ai-send {
-  flex-shrink:0; width:38px; height:38px; border-radius:11px;
+  flex-shrink:0; width:42px; height:42px; border-radius:12px;
   border:1px solid rgba(82,208,255,.32); background:rgba(82,208,255,.1);
   color:#52d0ff; display:flex; align-items:center; justify-content:center;
   cursor:pointer; transition:background .16s,border-color .16s,transform .14s;
 }
-.ai-send:hover { background:rgba(82,208,255,.2); border-color:rgba(82,208,255,.6); transform:scale(1.06); }
+.ai-send:hover { background:rgba(82,208,255,.2); border-color:rgba(82,208,255,.6); transform:scale(1.03); }
 .ai-send:disabled { opacity:.45; cursor:not-allowed; transform:none; }
 @media (max-width:680px) {
-  .routex-ai-fab { bottom:16px; right:16px; width:58px; height:58px; flex-basis:58px; }
-  .routex-ai-panel { bottom:88px; right:16px; }
-  .routflex-orb-mark { width:34px; height:42px; }
+  .routex-launcher { bottom:16px; right:16px; width:58px; height:58px; flex-basis:58px; }
+  .routex-ai-panel {
+    right:16px; bottom:86px;
+    width:min(396px,calc(100vw - 32px));
+    max-height:min(660px,calc(100dvh - 102px));
+  }
+  .routex-orb-nucleus { inset:17px; }
 }
 @media (prefers-reduced-motion:reduce) {
-  .routex-ai-fab,.routex-ai-fab::before,.routex-ai-fab::after,.routflex-orb-fluid,.routflex-orb-fluid::before,.routflex-orb-fluid::after,.routflex-orb-mark-flow,.routflex-orb-route-particle { animation:none; transition:none; }
+  .routex-ai-panel,
+  .routex-launcher,
+  .routex-launcher::before,
+  .routex-launcher::after,
+  .routex-orb-plasma,
+  .routex-orb-mass,
+  .routex-orb-mass::before,
+  .routex-orb-mass::after,
+  .routex-orb-nucleus { animation:none !important; transition:none !important; }
 }
 
 </style>
@@ -6789,16 +8116,110 @@ body.login-active .routex-ai-panel { display:none !important; }
           <button class="map-ctx-item" id="ctx-open-windows" type="button">&#128247; Abrir janelas (ALT+J)</button>
         </div>
         <div class="map-overlay">
-          <div class="toolbar">
+          <div class="toolbar map-command-bar" role="toolbar" aria-label="Comandos do mapa">
             <div class="toolbar-title">
               <h2 id="toolbar-title">Mapa de execucao</h2>
               <p id="toolbar-subtitle">Visualize cobertura, densidade e sequencia das visitas por rota.</p>
             </div>
             <div class="toolbar-actions">
-              <button class="route-action manual-mode-toggle" id="toggle-manual-mode-btn">Expandir planejamento</button>
-              <button class="route-action" id="toggle-map-menu-btn">Ocultar menu</button>
-              <button class="route-action primary" id="center-route-btn">Centralizar rota</button>
-              <button class="route-action" id="clear-selection-btn">Limpar foco</button>
+              <div class="command-cluster" role="group" aria-label="Planejamento e foco">
+                <button class="route-action command-btn is-planning manual-mode-toggle" id="toggle-manual-mode-btn" type="button" aria-label="Expandir planejamento" aria-pressed="false" data-tooltip="Expandir planejamento">
+                  <span class="command-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5m11 5h5v-5"/><path d="m4 9 5-5m6 0 5 5M4 15l5 5m6 0 5-5"/></svg></span>
+                  <span class="command-label">Expandir planejamento</span>
+                </button>
+                <button class="route-action command-btn is-center" id="center-route-btn" type="button" aria-label="Centralizar rota" data-tooltip="Centralizar rota">
+                  <span class="command-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg></span>
+                  <span class="command-label">Centralizar rota</span>
+                </button>
+                <button class="route-action command-btn is-clear" id="clear-selection-btn" type="button" aria-label="Limpar foco" data-tooltip="Limpar foco">
+                  <span class="command-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 16 7-9 7 7-5 5H8l-3-3Z"/><path d="m10 19 7-7M14 19h6"/></svg></span>
+                  <span class="command-label">Limpar foco</span>
+                </button>
+              </div>
+
+              <span class="command-divider" aria-hidden="true"></span>
+
+              <div class="instruments-hub">
+                <button class="instruments-toggle command-btn is-tools" id="toggle-instruments-btn" type="button" aria-expanded="false" aria-controls="instruments-panel" aria-label="Mostrar ferramentas" data-tooltip="Mostrar ferramentas">
+                  <span class="command-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h10m4 0h2M4 17h3m4 0h9M4 12h5m4 0h7"/><circle cx="16" cy="7" r="2"/><circle cx="9" cy="17" r="2"/><circle cx="11" cy="12" r="2"/></svg></span>
+                  <span class="command-label">Mostrar ferramentas</span>
+                </button>
+
+                <div class="instruments-panel" id="instruments-panel" aria-hidden="true" inert>
+                  <section class="instrument-group" aria-labelledby="instrument-group-navigation">
+                    <h3 class="instrument-group-title" id="instrument-group-navigation">Navegação</h3>
+                    <div class="instrument-group-grid">
+                      <button class="instrument-btn tool-nav" id="toggle-nav-btn" type="button" aria-label="Navegar" data-tooltip="Navegar">
+                        <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 4 16 6-7 3-3 7-6-16Z"/><path d="m13 13 5 5"/></svg></span>
+                        <span class="instrument-label">Navegar</span>
+                      </button>
+                      <button class="instrument-btn tool-lasso" id="toggle-lasso-btn" type="button" aria-label="Laço" data-tooltip="Laço">
+                        <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.5 7.2c1.1-2 3.3-3.3 5.7-3.2 3.8.1 6.8 3.1 6.8 6.8 0 3.9-3.4 7.2-7.6 7.2H9"/><circle cx="5" cy="7.5" r="1.5"/><circle cx="6" cy="18" r="2"/></svg></span>
+                        <span class="instrument-label">Laço</span>
+                      </button>
+                      <button class="instrument-btn tool-maintenance" id="toggle-maintenance-btn" type="button" aria-label="Manutenção" data-tooltip="Manutenção">
+                        <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.5 6.5a4.2 4.2 0 0 0-5.7 5.7L3.4 17.6a2.1 2.1 0 1 0 3 3l5.4-5.4a4.2 4.2 0 0 0 5.7-5.7l-2.7 2.7-3-3 2.7-2.7Z"/></svg></span>
+                        <span class="instrument-label">Manutenção</span>
+                      </button>
+                    </div>
+                  </section>
+
+                  <section class="instrument-group" aria-labelledby="instrument-group-analysis">
+                    <h3 class="instrument-group-title" id="instrument-group-analysis">Análise e medição</h3>
+                    <div class="instrument-group-grid">
+                      <button class="instrument-btn tool-config" type="button" aria-label="Configuração" data-tooltip="Configuração">
+                        <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></span>
+                        <span class="instrument-label">Configuração</span>
+                      </button>
+                      <button class="instrument-btn tool-ruler" id="toggle-ruler-btn" type="button" aria-label="Régua" data-tooltip="Régua" aria-haspopup="menu" aria-controls="ruler-mode-menu" aria-expanded="false">
+                        <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 16 12-12 4 4L8 20H4v-4Z"/><path d="m13 7 2 2M10 10l2 2m-5 1 2 2"/></svg></span>
+                        <span class="instrument-label">Régua</span>
+                      </button>
+                      <div class="ruler-mode-menu" id="ruler-mode-menu" role="menu" aria-hidden="true">
+                        <button class="ruler-mode-option" id="ruler-straight-mode-btn" type="button" role="menuitem" aria-pressed="false">Linha reta</button>
+                        <button class="ruler-mode-option" id="ruler-sequence-km-mode-btn" type="button" role="menuitem" aria-pressed="false">KM da sequência</button>
+                      </div>
+                      <button class="instrument-btn tool-metrics" type="button" aria-label="Métricas" data-tooltip="Métricas">
+                        <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V10h4v10M10 20V5h4v15m2 0v-8h4v8M3 20h18"/></svg></span>
+                        <span class="instrument-label">Métricas</span>
+                      </button>
+                    </div>
+                  </section>
+
+                  <section class="instrument-group" aria-labelledby="instrument-group-control">
+                    <h3 class="instrument-group-title" id="instrument-group-control">Controle e inteligência</h3>
+                    <div class="instrument-group-grid">
+                      <button class="instrument-btn tool-params" id="open-params-btn" type="button" aria-label="Parâmetros" data-tooltip="Parâmetros">
+                        <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h8m4 0h4M4 12h3m4 0h9M4 18h10m4 0h2M14 4v4M9 10v4M16 16v4"/></svg></span>
+                        <span class="instrument-label">Parâmetros</span>
+                      </button>
+                      <button class="instrument-btn tool-barrier" id="toggle-barrier-btn" type="button" aria-label="Barreiras" data-tooltip="Barreiras">
+                        <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 10h14v7H5zM8 10V7m8 3V7M7 17v3m10-3v3M7 12l3 3m1-3 3 3m1-3 2 2"/></svg></span>
+                        <span class="instrument-label">Barreiras</span>
+                      </button>
+                      <button class="instrument-btn tool-insight" id="toggle-insight-btn" type="button" aria-label="Modo Insight" data-tooltip="Modo Insight">
+                        <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18h6m-5 3h4m-7.2-8.2A7 7 0 1 1 17 12.6c-1.2 1-1.7 1.9-1.8 3.4H8.8c-.1-1.4-.7-2.3-2-3.2Z"/><path d="M12 4v2"/></svg></span>
+                        <span class="instrument-label">Modo Insight</span>
+                      </button>
+                      <button class="instrument-btn tool-swap" id="toggle-swap-btn" type="button" aria-label="Trocar sequência" data-tooltip="Trocar sequência">
+                        <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7h-9l3-3m-3 3 3 3M4 17h9l-3 3m3-3-3-3"/></svg></span>
+                        <span class="instrument-label">Trocar sequência</span>
+                      </button>
+                      <button class="instrument-btn tool-road" id="toggle-road-route-btn" type="button" aria-label="Rota real" data-tooltip="Rota real (Alt+P)">
+                        <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 21 10 3m6 18L14 3M12 6v3m0 3v3m0 3v3"/></svg></span>
+                        <span class="instrument-label">Rota real (Alt+P)</span>
+                      </button>
+                    </div>
+                  </section>
+                </div>
+              </div>
+
+              <span class="command-divider" aria-hidden="true"></span>
+
+              <button class="route-action command-btn is-visibility" id="toggle-map-menu-btn" type="button" aria-label="Ocultar barra de comandos" data-tooltip="Ocultar barra de comandos">
+                <span class="command-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12s3.3-5 9-5 9 5 9 5-3.3 5-9 5-9-5-9-5Z"/><circle cx="12" cy="12" r="2.5"/><path d="m4 4 16 16"/></svg></span>
+                <span class="command-label">Ocultar barra de comandos</span>
+              </button>
             </div>
           </div>
 
@@ -6833,7 +8254,10 @@ body.login-active .routex-ai-panel { display:none !important; }
           </div>
         </div>
 
-        <button class="route-action menu-reveal-btn" id="show-map-menu-btn">Mostrar menu</button>
+        <button class="route-action menu-reveal-btn command-btn is-visibility" id="show-map-menu-btn" type="button" aria-label="Mostrar barra de comandos" data-tooltip="Mostrar barra de comandos">
+          <span class="command-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12s3.3-5 9-5 9 5 9 5-3.3 5-9 5-9-5-9-5Z"/><circle cx="12" cy="12" r="2.5"/></svg></span>
+          <span class="command-label">Mostrar barra de comandos</span>
+        </button>
 
         <aside class="manual-planning-panel" id="manual-planning-panel" aria-hidden="true">
           <div class="panel-scroll">
@@ -6898,74 +8322,6 @@ body.login-active .routex-ai-panel { display:none !important; }
           <div class="planner-hint" id="planner-hint">Arraste um PDV para semana e dia. A localizacao do cliente permanece fixa.</div>
         </div>
 
-        <div class="instruments-hub">
-          <button class="instruments-toggle" id="toggle-instruments-btn" type="button" aria-expanded="false" aria-controls="instruments-panel" aria-label="Abrir painel de instrumentos">&gt;</button>
-          <div class="instruments-panel" id="instruments-panel" aria-hidden="true">
-            <section class="instrument-group" aria-labelledby="instrument-group-navigation">
-              <h3 class="instrument-group-title" id="instrument-group-navigation">Navegação</h3>
-              <div class="instrument-group-grid">
-                <button class="instrument-btn" id="toggle-nav-btn" type="button" title="Navegar">
-                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 4 16 6-7 3-3 7-6-16Z"/><path d="m13 13 5 5"/></svg></span>
-                  <span class="instrument-label">Navegar</span>
-                </button>
-                <button class="instrument-btn" id="toggle-lasso-btn" type="button" title="Laço">
-                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.5 7.2c1.1-2 3.3-3.3 5.7-3.2 3.8.1 6.8 3.1 6.8 6.8 0 3.9-3.4 7.2-7.6 7.2H9"/><circle cx="5" cy="7.5" r="1.5"/><circle cx="6" cy="18" r="2"/></svg></span>
-                  <span class="instrument-label">Laço</span>
-                </button>
-                <button class="instrument-btn" id="toggle-maintenance-btn" type="button" title="Manutencao">
-                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.5 6.5a4.2 4.2 0 0 0-5.7 5.7L3.4 17.6a2.1 2.1 0 1 0 3 3l5.4-5.4a4.2 4.2 0 0 0 5.7-5.7l-2.7 2.7-3-3 2.7-2.7Z"/></svg></span>
-                  <span class="instrument-label">Manut.</span>
-                </button>
-              </div>
-            </section>
-            <section class="instrument-group" aria-labelledby="instrument-group-analysis">
-              <h3 class="instrument-group-title" id="instrument-group-analysis">Análise e medição</h3>
-              <div class="instrument-group-grid">
-                <button class="instrument-btn" type="button" title="Configuracao">
-                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></span>
-                  <span class="instrument-label">Config.</span>
-                </button>
-                <button class="instrument-btn" id="toggle-ruler-btn" type="button" title="Régua" aria-haspopup="menu" aria-controls="ruler-mode-menu" aria-expanded="false">
-                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 16 12-12 4 4L8 20H4v-4Z"/><path d="m13 7 2 2M10 10l2 2m-5 1 2 2"/></svg></span>
-                  <span class="instrument-label">Régua</span>
-                </button>
-                <div class="ruler-mode-menu" id="ruler-mode-menu" role="menu" aria-hidden="true">
-                  <button class="ruler-mode-option" id="ruler-straight-mode-btn" type="button" role="menuitem" aria-pressed="false">Linha reta</button>
-                  <button class="ruler-mode-option" id="ruler-sequence-km-mode-btn" type="button" role="menuitem" aria-pressed="false">KM da sequência</button>
-                </div>
-                <button class="instrument-btn" type="button" title="Metricas">
-                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V10h4v10M10 20V5h4v15m2 0v-8h4v8M3 20h18"/></svg></span>
-                  <span class="instrument-label">Métricas</span>
-                </button>
-              </div>
-            </section>
-            <section class="instrument-group" aria-labelledby="instrument-group-control">
-              <h3 class="instrument-group-title" id="instrument-group-control">Controle e inteligência</h3>
-              <div class="instrument-group-grid">
-                <button class="instrument-btn" id="open-params-btn" type="button" title="Parametros">
-                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h7m4 0h5M4 12h3m4 0h9M4 18h9m4 0h3"/><circle cx="13" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="18" r="2"/></svg></span>
-                  <span class="instrument-label">Parâmetro</span>
-                </button>
-                <button class="instrument-btn" id="toggle-barrier-btn" type="button" title="Barreiras">
-                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 10h14v7H5zM8 10V7m8 3V7M7 17v3m10-3v3M7 12l3 3m1-3 3 3m1-3 2 2"/></svg></span>
-                  <span class="instrument-label">Barreira</span>
-                </button>
-                <button class="instrument-btn" id="toggle-insight-btn" type="button" title="Modo Insight — análise comercial">
-                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18h6m-5 3h4m-7.2-8.2A7 7 0 1 1 17 12.6c-1.2 1-1.7 1.9-1.8 3.4H8.8c-.1-1.4-.7-2.3-2-3.2Z"/><path d="M12 4v2"/></svg></span>
-                  <span class="instrument-label">Insight</span>
-                </button>
-                <button class="instrument-btn" id="toggle-swap-btn" type="button" title="Trocar sequência no mapa (2 cliques)">
-                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7h-9l3-3m-3 3 3 3M4 17h9l-3 3m3-3-3-3"/></svg></span>
-                  <span class="instrument-label">Troca</span>
-                </button>
-                <button class="instrument-btn" id="toggle-road-route-btn" type="button" title="Rota real rodoviária da rota selecionada (ALT+P) — apenas no modo Operacional">
-                  <span class="instrument-glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 21 10 3m6 18L14 3M12 6v3m0 3v3m0 3v3"/></svg></span>
-                  <span class="instrument-label">Rota real</span>
-                </button>
-              </div>
-            </section>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -7458,57 +8814,29 @@ body.login-active .routex-ai-panel { display:none !important; }
   </main>
 </div>
 
-<!-- ══ ROUTEX AI ══════════════════════════════════════════════ -->
-<button class="routex-ai-fab" id="routex-ai-fab" type="button"
-  aria-label="Abrir ROUTEX AI" aria-expanded="false" aria-controls="routex-ai-panel">
-  <svg class="routflex-orb-routes routflex-orb-routes-back" viewBox="0 0 84 84" aria-hidden="true" focusable="false">
-    <path class="routflex-orb-route routflex-orb-route-a" pathLength="100" d="M6 42 C7 17 66 10 79 36 C88 55 40 76 12 59 C1 52 0 46 6 42 Z"/>
-    <path class="routflex-orb-route-particle routflex-orb-route-particle-a" pathLength="100" d="M6 42 C7 17 66 10 79 36 C88 55 40 76 12 59 C1 52 0 46 6 42 Z"/>
-    <path class="routflex-orb-route routflex-orb-route-b" pathLength="100" d="M18 12 C45 1 76 23 72 50 C68 77 25 80 11 54 C1 36 5 20 18 12 Z"/>
-    <path class="routflex-orb-route-particle routflex-orb-route-particle-b" pathLength="100" d="M18 12 C45 1 76 23 72 50 C68 77 25 80 11 54 C1 36 5 20 18 12 Z"/>
+<!-- ══ ROUTEX ═════════════════════════════════════════════════ -->
+<button class="routex-launcher" id="routex-ai-fab" type="button"
+  aria-label="Abrir ROUTEX" aria-expanded="false" aria-controls="routex-ai-panel" aria-busy="false">
+  <svg class="routex-orb-plasma routex-orb-plasma-back" viewBox="0 0 84 84" aria-hidden="true" focusable="false">
+    <path pathLength="100" d="M7 43 C8 18 28 7 49 10 C72 13 82 31 76 52 C70 74 42 80 20 67 C9 60 3 51 7 43 Z"/>
   </svg>
-  <span class="routflex-orb-fluid" aria-hidden="true"></span>
-  <span class="routflex-orb-energy" aria-hidden="true"></span>
-  <svg class="routflex-orb-routes routflex-orb-routes-front" viewBox="0 0 84 84" aria-hidden="true" focusable="false">
-    <path class="routflex-orb-route routflex-orb-route-front-a" pathLength="100" d="M6 42 C7 17 66 10 79 36 C88 55 40 76 12 59 C1 52 0 46 6 42 Z"/>
-    <path class="routflex-orb-route routflex-orb-route-front-b" pathLength="100" d="M18 12 C45 1 76 23 72 50 C68 77 25 80 11 54 C1 36 5 20 18 12 Z"/>
-  </svg>
-  <svg class="routflex-orb-mark" viewBox="0 0 52 58" aria-hidden="true" focusable="false">
-    <defs>
-      <linearGradient id="routflex-r-gradient" x1="12" y1="8" x2="40" y2="50" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#efffff"/>
-        <stop offset=".38" stop-color="#53e9ff"/>
-        <stop offset=".72" stop-color="#159cff"/>
-        <stop offset="1" stop-color="#b6f8ff"/>
-      </linearGradient>
-    </defs>
-    <path class="routflex-orb-mark-glow" d="M16 49 C16 38 15.8 23 18 9 M18 10 C29 5 39 9 39 18 C39 26 31 29 19 27 M23 28 C30 32 36 40 41 49"/>
-    <path class="routflex-orb-mark-core" d="M16 49 C16 38 15.8 23 18 9 M18 10 C29 5 39 9 39 18 C39 26 31 29 19 27 M23 28 C30 32 36 40 41 49"/>
-    <path class="routflex-orb-mark-flow" pathLength="100" d="M16 49 C16 38 15.8 23 18 9 M18 10 C29 5 39 9 39 18 C39 26 31 29 19 27 M23 28 C30 32 36 40 41 49"/>
+  <span class="routex-orb-mass" aria-hidden="true"></span>
+  <span class="routex-orb-energy" aria-hidden="true"></span>
+  <span class="routex-orb-nucleus" aria-hidden="true"></span>
+  <svg class="routex-orb-plasma routex-orb-plasma-front" viewBox="0 0 84 84" aria-hidden="true" focusable="false">
+    <path pathLength="100" d="M7 43 C8 18 28 7 49 10 C72 13 82 31 76 52 C70 74 42 80 20 67 C9 60 3 51 7 43 Z"/>
   </svg>
 </button>
 
 <aside class="routex-ai-panel" id="routex-ai-panel" aria-hidden="true">
   <div class="ai-panel-header">
     <div class="ai-panel-header-left">
-      <div class="ai-panel-avatar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round">
-          <rect x="6" y="9" width="12" height="10" rx="2"/>
-          <circle cx="9.5"  cy="13.5" r="1" fill="currentColor" stroke="none"/>
-          <circle cx="14.5" cy="13.5" r="1" fill="currentColor" stroke="none"/>
-          <path d="M10 17.5h4"/>
-          <path d="M12 9V6.5"/>
-          <circle cx="12" cy="5.5" r="1" fill="currentColor" stroke="none"/>
-          <path d="M6 13.5H4M18 13.5h2"/>
-        </svg>
-      </div>
       <div class="ai-panel-info">
-        <strong>ROUTEX AI</strong>
-        <em>online &mdash; Assistente operacional</em>
+        <strong>ROUTEX</strong>
+        <em>Assistente do ecossistema &middot; Planning</em>
       </div>
     </div>
-    <button class="ai-panel-close" id="routex-ai-close" type="button" aria-label="Fechar ROUTEX AI">&times;</button>
+    <button class="ai-panel-close" id="routex-ai-close" type="button" aria-label="Fechar ROUTEX">&times;</button>
   </div>
 
   <div class="ai-messages" id="ai-messages"></div>
@@ -9912,6 +11240,10 @@ function switchPlanningSession(sessionId, options = {}) {
     captureActivePlanningSessionSnapshot();
   }
 
+  if (previousId && previousId !== target.id) {
+    _invalidateMarkerRenderBatch();
+  }
+
   // 2. SWAP de state.clients/state.drivers para isolar cenário de produção.
   if (previousMeta && previousMeta.id !== target.id) {
     if (isScenarioSession(previousMeta)) {
@@ -10457,6 +11789,8 @@ function deleteActiveSimulationSessionForDDD(options = {}) {
     if (!confirmed) return;
   }
 
+  _invalidateMarkerRenderBatch();
+
   planningSessionRegistry.forEach((item, itemId) => {
     if (item.sourceSessionId === meta.id) {
       planningSessionRegistry.set(itemId, {
@@ -10512,6 +11846,8 @@ function deleteRealPlanningSessionForDDD(options = {}) {
     const confirmed = window.confirm(`Apagar a sessão de produção DDD ${ddd} e ${Math.max(0, allSessionsForDDD.length - 1)} cenário(s) vinculado(s)?`);
     if (!confirmed) return;
   }
+
+  _invalidateMarkerRenderBatch();
 
   allSessionsForDDD.forEach((session) => {
     planningSessionRegistry.delete(session.id);
@@ -11647,6 +12983,9 @@ function createDriver(event) {
 
   drivers.push(driver);
   normalizeDriverTerritoryAssignments();
+  if (String(state.selectedDDD) !== String(ddd)) {
+    _invalidateMarkerRenderBatch();
+  }
   state.selectedDDD = String(ddd);
   state.selectedDriverId = driver.id;
   state.selectedDriverIds.clear();
@@ -18414,8 +19753,50 @@ function renderTerritoryShapes(routeGroups) {
   if (_t1_ts - _t0_ts > _tsE.maxMs) _tsE.maxMs = _t1_ts - _t0_ts;
 }
 
+let _markerRenderEpoch = 0;
 let _batchRenderAbort = null;
 const _driverBaseRegistry = new Map(); // routeId -> { marker, signature, popupFP }
+
+function _invalidateMarkerRenderBatch() {
+  _markerRenderEpoch += 1;
+  const token = _batchRenderAbort;
+  if (!token) return _markerRenderEpoch;
+
+  token.aborted = true;
+  if (token.timerId != null) {
+    clearTimeout(token.timerId);
+    token.timerId = null;
+  }
+  if (_batchRenderAbort === token) {
+    _batchRenderAbort = null;
+  }
+  return _markerRenderEpoch;
+}
+
+function _isCurrentMarkerBatch(token, layer) {
+  return Boolean(
+    token
+    && !token.aborted
+    && token.epoch === _markerRenderEpoch
+    && token.layer === layer
+    && clusterLayer === layer
+    && _batchRenderAbort === token
+  );
+}
+
+function _canAddOwnedMarker(token, layer, marker) {
+  return _isCurrentMarkerBatch(token, layer)
+    && _markerRegistry.get(marker._clientId)?.marker === marker;
+}
+
+function _completeMarkerBatch(token, layer) {
+  if (!_isCurrentMarkerBatch(token, layer)) return;
+  token.timerId = null;
+  if (!map.hasLayer(layer)) map.addLayer(layer);
+  if (_batchRenderAbort === token) {
+    _batchRenderAbort = null;
+  }
+}
 
 function _buildDriverBaseSignature(route) {
   return [
@@ -18529,34 +19910,44 @@ function syncDriverBaseMarkers(desiredBaseMarkers) {
   }
 }
 
-function addMarkersToLayerInBatches(markerList, layer) {
-  if (_batchRenderAbort) {
-    _batchRenderAbort.aborted = true;
-  }
-  const token = { aborted: false };
+function addMarkersToLayerInBatches(markerList, layer, renderEpoch) {
+  if (renderEpoch !== _markerRenderEpoch) return;
+
+  const token = {
+    aborted: false,
+    epoch: renderEpoch,
+    layer,
+    timerId: null
+  };
   _batchRenderAbort = token;
 
   if (markerList.length <= MARKER_BATCH_SIZE) {
-    markerList.forEach(m => layer.addLayer(m));
-    if (!map.hasLayer(layer)) map.addLayer(layer);
+    markerList.forEach((marker) => {
+      if (_canAddOwnedMarker(token, layer, marker)) layer.addLayer(marker);
+    });
+    _completeMarkerBatch(token, layer);
     return;
   }
 
   let offset = 0;
   function nextBatch() {
-    if (token.aborted) return;
+    token.timerId = null;
+    if (!_isCurrentMarkerBatch(token, layer)) return;
     const batch = markerList.slice(offset, offset + MARKER_BATCH_SIZE);
     if (batch.length === 0) {
-      if (!map.hasLayer(layer)) map.addLayer(layer);
+      _completeMarkerBatch(token, layer);
       return;
     }
-    batch.forEach(m => layer.addLayer(m));
+    batch.forEach((marker) => {
+      if (_canAddOwnedMarker(token, layer, marker)) layer.addLayer(marker);
+    });
     offset += MARKER_BATCH_SIZE;
+    if (!_isCurrentMarkerBatch(token, layer)) return;
     if (offset >= markerList.length) {
-      if (!map.hasLayer(layer)) map.addLayer(layer);
+      _completeMarkerBatch(token, layer);
       return;
     }
-    setTimeout(nextBatch, MARKER_BATCH_DELAY_MS);
+    token.timerId = setTimeout(nextBatch, MARKER_BATCH_DELAY_MS);
   }
 
   nextBatch();
@@ -18943,6 +20334,7 @@ function updateMarkerIconsOnly() {
 // renderMap — diff-based marker reconciliation
 // ════════════════════════════════════════════════════════════════
 function renderMap(filteredClients, routeGroups, _precomputedSelect) {
+  const markerRenderEpoch = _invalidateMarkerRenderBatch();
   const _t0_rm = performance.now();
   window.__rfxPerf.count('renderMap.input.clients', filteredClients ? filteredClients.length : 0);
   window.__rfxPerf.count('renderMap.input.routeGroups', routeGroups ? routeGroups.length : 0);
@@ -19271,7 +20663,7 @@ function renderMap(filteredClients, routeGroups, _precomputedSelect) {
 
   // Add new markers — batched to avoid long frame blocks on cold load
   if (newMarkersList.length > 0) {
-    addMarkersToLayerInBatches(newMarkersList, clusterLayer);
+    addMarkersToLayerInBatches(newMarkersList, clusterLayer, markerRenderEpoch);
   }
 
   // Track rendered set for viewport diff guard
@@ -19639,7 +21031,12 @@ map.on('zoomend', scheduleViewportMapRefresh);
 function syncManualPlanningModeUI() {
   document.body.classList.toggle('manual-planning-mode', state.manualPlanningMode);
   const button = document.getElementById('toggle-manual-mode-btn');
-  button.textContent = state.manualPlanningMode ? 'Fechar expandido' : 'Expandir planejamento';
+  const buttonLabel = state.manualPlanningMode ? 'Fechar planejamento expandido' : 'Expandir planejamento';
+  const label = button.querySelector('.command-label');
+  if (label) label.textContent = buttonLabel;
+  button.setAttribute('aria-label', buttonLabel);
+  button.setAttribute('aria-pressed', String(state.manualPlanningMode));
+  button.dataset.tooltip = buttonLabel;
   button.classList.toggle('is-active', state.manualPlanningMode);
   document.getElementById('manual-planning-panel').setAttribute('aria-hidden', String(!state.manualPlanningMode));
   if (!state.manualPlanningMode) {
@@ -19652,7 +21049,12 @@ function syncManualPlanningModeUI() {
 function syncMapMenuVisibility() {
   const mapPanel = document.querySelector('.map-panel');
   mapPanel.classList.toggle('map-menu-collapsed', state.mapMenuCollapsed);
-  document.getElementById('toggle-map-menu-btn').textContent = state.mapMenuCollapsed ? 'Mostrar menu' : 'Ocultar menu';
+  const button = document.getElementById('toggle-map-menu-btn');
+  const buttonLabel = state.mapMenuCollapsed ? 'Mostrar barra de comandos' : 'Ocultar barra de comandos';
+  const label = button.querySelector('.command-label');
+  if (label) label.textContent = buttonLabel;
+  button.setAttribute('aria-label', buttonLabel);
+  button.dataset.tooltip = buttonLabel;
 }
 
 function toggleMapMenuVisibility() {
@@ -19674,9 +21076,14 @@ function syncInstrumentsPanelUI() {
 
   panel.classList.toggle('is-open', state.instrumentsPanelOpen);
   panel.setAttribute('aria-hidden', String(!state.instrumentsPanelOpen));
-  button.textContent = state.instrumentsPanelOpen ? '<' : '>';
+  panel.toggleAttribute('inert', !state.instrumentsPanelOpen);
+  button.classList.toggle('is-open', state.instrumentsPanelOpen);
+  const buttonLabel = state.instrumentsPanelOpen ? 'Ocultar ferramentas' : 'Mostrar ferramentas';
+  const label = button.querySelector('.command-label');
+  if (label) label.textContent = buttonLabel;
   button.setAttribute('aria-expanded', String(state.instrumentsPanelOpen));
-  button.setAttribute('aria-label', state.instrumentsPanelOpen ? 'Fechar painel de instrumentos' : 'Abrir painel de instrumentos');
+  button.setAttribute('aria-label', buttonLabel);
+  button.dataset.tooltip = buttonLabel;
 }
 
 function toggleInstrumentsPanel() {
@@ -19930,6 +21337,7 @@ function switchViewMode(newMode) {
   }
 
   // Single source of truth: viewMode drives everything
+  _invalidateMarkerRenderBatch();
   state.viewMode = newMode;
 
   // Reset territory transfer counters when entering territorial
@@ -20323,6 +21731,9 @@ async function activatePlanningSessionScope(ddd, sessionId = null) {
   captureActivePlanningSessionSnapshot();
   closeLassoConfirmModal();
   clearLassoSelection({ skipRender: true });
+  if (String(state.selectedDDD) !== dddText) {
+    _invalidateMarkerRenderBatch();
+  }
   state.selectedDDD = dddText;
   const dddSelect = document.getElementById('session-select');
   if (dddSelect) dddSelect.value = dddText;
@@ -21224,7 +22635,7 @@ async function initializeApp() {
 
 const bootstrapApp = initializeApp;
 
-// ══ ROUTEX AI ══════════════════════════════════════════════════
+// ══ ROUTEX ═════════════════════════════════════════════════════
 const AI_KB = [
   { tags:['curva','abc'], resp:'**Curva ABC** classifica os clientes por valor comercial:\n• **A** — alto valor, visita quinzenal\n• **B** — visita semanal\n• **C** — visita mensal\n\nO badge colorido aparece no popup do PDV (duplo clique no marcador).' },
   { tags:['arrastar','drag','reprogramar','mover pdv','rebalancear'], resp:'Arraste um marcador no mapa:\n• Sobre os botões **S1–S8** → muda de semana\n• Sobre os botões de dia **(SEG–DOM)** → muda de dia\n• Sobre um **motorista na lista** → transfere o cliente\n\nA latitude/longitude do PDV não é alterada.' },
@@ -21246,7 +22657,7 @@ const AI_KB = [
   { tags:['dividir clientes','balancear motoristas','inteligente','proximidade base','50 50'], resp:'Posso dividir clientes de forma inteligente entre **2 motoristas** do DDD ativo.\n\nUse: *"dividir clientes inteligente"* ou *"balancear entre dois motoristas"*.\nA divisão fica 50/50 (ou 1 cliente a mais para um lado quando ímpar) com base na proximidade da base de cada motorista, preservando dia e ciclo.' },
   { tags:['clientes novos','novos','alocar novos','sugerir novos','novo motorista dia','alocacao novo'], resp:'Posso sugerir alocação para clientes NOVOS por proximidade geográfica (motorista + dia), sem aplicar automaticamente.\n\nUse: *"sugerir alocação dos clientes novos"*.' },
   { tags:['manual','planejamento manual','expandir'], resp:'O botão **"Expandir planejamento"** ativa o modo tela cheia do mapa.\n\nOs painéis laterais somem e um painel de KPIs aparece à direita. Arrastar e atalhos funcionam normalmente.' },
-  { tags:['ola','olá','oi','hello','hey','bom dia','boa tarde','boa noite'], resp:'Olá! Sou o **ROUTEX AI**, assistente do ROUTflex. 👋\n\nDigite *ajuda* para ver tudo que posso fazer.' },
+  { tags:['ola','olá','oi','hello','hey','bom dia','boa tarde','boa noite'], resp:'Olá! Sou o **ROUTEX**, assistente do ecossistema ROUTflex. 👋\n\nDigite *ajuda* para ver tudo que posso fazer.' },
   { tags:['ajuda','help','funcionalidades','comandos','o que pode'], resp:'**Dúvidas que respondo:**\nCurva ABC • Arrastar PDV • Atalhos • Motoristas • Semanas/dias • OSRM • Clustering • Territórios\n\n**Ações que executo:**\n→ *"otimizar"* — sequencia PDVs\n→ *"exportar csv"* — baixa planilha\n→ *"publicar plano"* — muda status\n→ *"centralizar"* — foca o mapa\n→ *"limpar foco"* — deseleciona\n→ *"novo cenário"* — regenera dados\n→ *"coloque todos os clientes na quarta da semana 1"* — move em lote para dia/semana\n\n**Território no comando:**\nUse formatos como *65-02*, *65_02*, *65 02* ou *6502*.' },
 ];
 const AI_QUICK = [
@@ -21257,6 +22668,26 @@ const AI_QUICK = [
   { label:'🧭 Sugerir NOVOS', q:'sugerir alocação dos clientes novos' },
 ];
 const aiUI = { open:false, ready:false, busy:false };
+let _aiActivationTimer = null;
+function _aiSetBusy(nextBusy) {
+  aiUI.busy = Boolean(nextBusy);
+  const launcher = document.getElementById('routex-ai-fab');
+  if (!launcher) return;
+  launcher.classList.toggle('routex-processing', aiUI.busy);
+  launcher.setAttribute('aria-busy', String(aiUI.busy));
+}
+function _aiAnimateActivation() {
+  const launcher = document.getElementById('routex-ai-fab');
+  if (!launcher) return;
+  launcher.classList.remove('routex-activating');
+  void launcher.offsetWidth;
+  launcher.classList.add('routex-activating');
+  if (_aiActivationTimer) clearTimeout(_aiActivationTimer);
+  _aiActivationTimer = setTimeout(() => {
+    launcher.classList.remove('routex-activating');
+    _aiActivationTimer = null;
+  }, 480);
+}
 window._rfxPendingVisitScheduleSuggestion = null;
 const AI_MAX_CLIENTES_DIA = 20;
 const AI_DAY_ALIASES = {
@@ -22399,8 +23830,10 @@ function _aiPushActionCard(text, actions) {
 function _aiShowTyping() {
   const box = document.getElementById('ai-messages');
   const el = document.createElement('div');
-  el.id = 'ai-typing'; el.className = 'ai-typing-wrap';
-  el.innerHTML = '<div class="ai-typing"><div class="ai-typing-dot"></div><div class="ai-typing-dot"></div><div class="ai-typing-dot"></div></div>';
+  el.id = 'ai-typing';
+  el.className = 'routex-thinking';
+  el.textContent = 'ROUTEX está processando';
+  el.setAttribute('role', 'status');
   box.appendChild(el);
   box.scrollTop = box.scrollHeight;
 }
@@ -22530,7 +23963,7 @@ function _aiTryVisitScheduleBalanceCommand(query) {
 function aiSend(query) {
   query = (query || '').trim();
   if (!query || aiUI.busy) return;
-  aiUI.busy = true;
+  _aiSetBusy(true);
   _aiPush('user', query);
   const inp = document.getElementById('ai-input');
   const btn = document.getElementById('ai-send');
@@ -22563,7 +23996,7 @@ function aiSend(query) {
       if (smartSplitCommand.run) {
         if (smartSplitCommand.confirm && !window.confirm(smartSplitCommand.confirm)) {
           _aiPush('ai', 'Operação cancelada. Nenhum cliente foi alterado.');
-          aiUI.busy = false;
+          _aiSetBusy(false);
           inp.disabled = false; btn.disabled = false;
           inp.focus();
           return;
@@ -22578,7 +24011,7 @@ function aiSend(query) {
       if (smartCommand.run) {
         if (smartCommand.confirm && !window.confirm(smartCommand.confirm)) {
           _aiPush('ai', 'Operação cancelada. Nenhum cliente foi alterado.');
-          aiUI.busy = false;
+          _aiSetBusy(false);
           inp.disabled = false; btn.disabled = false;
           inp.focus();
           return;
@@ -22594,7 +24027,7 @@ function aiSend(query) {
     } else {
       _aiPush('ai', 'Não encontrei uma resposta para isso. Tente:\n\n**curva abc** • **arrastar** • **atalhos** • **motorista**\n**otimizar** • **exportar csv** • **percurso real** • **ajuda**');
     }
-    aiUI.busy = false;
+    _aiSetBusy(false);
     inp.disabled = false; btn.disabled = false;
     inp.focus();
   }, 520 + Math.random() * 440);
@@ -22609,9 +24042,10 @@ function aiOpen() {
   document.getElementById('routex-ai-panel').setAttribute('aria-hidden','false');
   document.getElementById('routex-ai-fab').classList.add('is-open');
   document.getElementById('routex-ai-fab').setAttribute('aria-expanded','true');
+  _aiAnimateActivation();
   if (!aiUI.ready) {
     aiUI.ready = true;
-    _aiPush('ai', 'Olá! Sou o **ROUTEX AI**, assistente do ROUTflex Control Tower. 👋\n\nPosso responder dúvidas sobre o sistema e executar ações.\nDigite *ajuda* para ver tudo que posso fazer.');
+    _aiPush('ai', 'Olá! Sou o **ROUTEX**, assistente do ecossistema ROUTflex Planning. 👋\n\nPosso responder dúvidas sobre o sistema e executar ações.\nDigite *ajuda* para ver tudo que posso fazer.');
     _aiRenderQuick();
   }
   setTimeout(() => document.getElementById('ai-input').focus(), 300);
@@ -22630,6 +24064,9 @@ document.getElementById('routex-ai-close').addEventListener('click', aiClose);
 document.getElementById('ai-send').addEventListener('click', () => aiSend(document.getElementById('ai-input').value));
 document.getElementById('ai-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); aiSend(document.getElementById('ai-input').value); }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && aiUI.open) aiClose();
 });
 
 bootstrapApp();
