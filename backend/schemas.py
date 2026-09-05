@@ -89,6 +89,7 @@ class ManualPlanClientSnapshot(BaseModel):
 class ManualPlanSnapshot(BaseModel):
     version: int = 1
     savedAt: Optional[str] = None
+    savedBy: Optional[str] = None
     clients: List[ManualPlanClientSnapshot]
 
 
@@ -409,6 +410,7 @@ class GenericStatusResponse(BaseModel):
 class ManualPlanSaveResponse(BaseModel):
     status: str
     savedAt: str
+    savedBy: Optional[str] = None
     count: int
 
 

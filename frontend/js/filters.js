@@ -394,6 +394,34 @@ function getTerritoryScopeClients() {
   return classifyClients().territorial;
 }
 
+// Todos os clientes roteirizados do DDD ativo, ignorando filtros visuais
+// (veiculo/territorio/curva/semana/dia/motorista) — usado por "Exportar sessao inteira".
+// Reaproveita a mesma regra de elegibilidade de roteirizacao usada em getClientMapVisibility.
+function getWholeSessionRoutedClients() {
+  const selectedDDD = Number(state.selectedDDD);
+  return clients.filter((client) => {
+    if (client.ddd !== selectedDDD) return false;
+    if (!hasValidCoordinate(client)) return false;
+    if (!client.driverId || !client.week || !client.day) return false;
+    const ct = (client.clientType || 'ativo').toLowerCase();
+    if (isActiveEquivalentClientType(ct)) return true;
+    if (ct === 'inativo') return Boolean(client.manualRouteInclude);
+    if (ct === 'novo') return Boolean(client.eligibleForRouting);
+    return false;
+  });
+}
+
+// Clientes que hoje aparecem no mapa como o marcador especial "D" (rosa) — cliente
+// ativo sem dia de visita definido. Mesma fonte de verdade usada no rotulo do marcador
+// (ver map.html: `_spCt === 'ativo' && !client.day ? 'D' : 'N'`), aplicada sobre o
+// bucket "special" ja calculado por classifyClients() (mesmos filtros do mapa atual).
+function getNotRoutedClients() {
+  return classifyClients().special.filter((client) => {
+    const ct = (client.clientType || 'ativo').toLowerCase();
+    return ct === 'ativo' && !client.day;
+  });
+}
+
 // ── Safe accessor for cached route groups (avoids redundant buildRouteGroups) ──
 function getRouteGroupsSafe() {
   if (state.routeGroupsCache && state.routeGroupsCache.length > 0) {

@@ -868,6 +868,165 @@ body.login-active .app-shell {
   font-size: 0.9rem;
 }
 
+.operational-context {
+  flex: 0 1 300px;
+  min-width: 220px;
+  padding: 8px 11px;
+  border: 1px solid rgba(125, 177, 227, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  overflow: hidden;
+}
+
+.operational-context-operator,
+.operational-context-meta,
+.operational-context-save,
+.operational-context-footer {
+  min-width: 0;
+}
+
+.operational-context-operator {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.operational-context-operator strong {
+  overflow: hidden;
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.operational-context-identity-source {
+  flex: 0 0 auto;
+  padding: 1px 5px;
+  border: 1px solid rgba(143, 167, 196, 0.28);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.operational-context-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  color: #bdd0e5;
+  font-size: 0.63rem;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.operational-context-kind,
+.operational-context-mode,
+.operational-context-separator {
+  flex: 0 0 auto;
+}
+
+.operational-context-session {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operational-context-save {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.67rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.operational-context-save[data-state="saved"] { color: var(--success); }
+.operational-context-save[data-state="pending"] { color: var(--warning); }
+.operational-context-save[data-state="saving"] { color: var(--primary); }
+.operational-context-save[data-state="error"] { color: var(--danger); }
+
+.operational-context-save[data-state="saving"] .operational-context-save-icon {
+  animation: operational-context-spin 0.9s linear infinite;
+}
+
+.operational-context-footer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.operational-context-autosave,
+.operational-context-save-now {
+  flex: 0 0 auto;
+  min-height: 20px;
+  padding: 2px 6px;
+  border: 1px solid rgba(143, 167, 196, 0.3);
+  border-radius: 7px;
+  background: rgba(7, 18, 33, 0.58);
+  color: var(--muted);
+  font: 700 0.54rem/1 'Inter', sans-serif;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.operational-context-autosave[aria-pressed="true"] {
+  border-color: rgba(49, 215, 158, 0.45);
+  color: var(--success);
+}
+
+.operational-context-save-now:not(:disabled) {
+  border-color: rgba(82, 208, 255, 0.42);
+  color: var(--primary);
+}
+
+.operational-context-autosave:focus-visible,
+.operational-context-save-now:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.operational-context-save-now:disabled {
+  cursor: default;
+  opacity: 0.48;
+}
+
+.operational-context-history {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.55rem;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes operational-context-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .operational-context-save[data-state="saving"] .operational-context-save-icon {
+    animation: none;
+  }
+}
+
 .header-status {
   display: grid;
   grid-template-columns: repeat(3, minmax(90px, 1fr));
@@ -5914,6 +6073,36 @@ body.manual-planning-mode .manual-planning-panel {
   animation: slideInUp 0.35s ease;
 }
 
+@media (min-width: 961px) and (max-width: 1400px) {
+  .app-header { gap: 10px; }
+  .brand { flex: 0 0 auto; }
+  .brand p { display: none; }
+  .operational-context {
+    flex: 1 1 230px;
+    min-width: 200px;
+  }
+  .header-status {
+    flex: 1 1 290px;
+    min-width: 270px;
+  }
+  #mode-switcher .mode-btn { padding-inline: 8px; }
+  #mode-switcher .mode-icon { display: none; }
+  .header-actions .route-action {
+    min-width: 96px;
+    padding-inline: 12px;
+  }
+}
+
+@media (min-width: 961px) and (max-width: 1120px) {
+  .app-header { flex-wrap: wrap; }
+  .operational-context { min-width: 220px; }
+  .header-status {
+    order: 4;
+    flex: 1 0 100%;
+    min-width: 0;
+  }
+}
+
 @media (max-width: 1280px) {
   .workspace {
     grid-template-columns: 290px minmax(0, 1fr);
@@ -5943,6 +6132,12 @@ body.manual-planning-mode .manual-planning-panel {
   .app-header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .operational-context {
+    flex: none;
+    width: 100%;
+    min-width: 0;
   }
 
   .header-status {
@@ -7787,7 +7982,7 @@ body.login-active .routex-ai-panel { display:none !important; }
     <div class="login-card" aria-label="Acesso ao ROUTflex Planning">
       <div class="login-field">
         <label class="login-label" for="entry-planner-name">Usuário</label>
-        <input class="login-input" id="entry-planner-name" type="text" value="Phillips David" placeholder="Digite seu usuário" autocomplete="username">
+        <input class="login-input" id="entry-planner-name" type="text" placeholder="Digite seu usuário" autocomplete="username" required>
       </div>
 
       <div class="login-field">
@@ -7825,6 +8020,28 @@ body.login-active .routex-ai-panel { display:none !important; }
       <h1>ROUTflex</h1>
       <p>Estrutura visual do cockpit de roteirizacao com filtros, cenarios, rotas e painel operacional.</p>
     </div>
+    <section class="operational-context" id="operational-context" aria-label="Contexto operacional atual">
+      <div class="operational-context-operator">
+        <strong id="operational-context-operator">Operador não identificado</strong>
+        <span class="operational-context-identity-source" title="Identidade informada na entrada local do Planning; não há autenticação integrada">Sessão local</span>
+      </div>
+      <div class="operational-context-meta" id="operational-context-meta">
+        <span class="operational-context-kind" id="operational-context-kind">Produção</span>
+        <span class="operational-context-separator" aria-hidden="true">·</span>
+        <span class="operational-context-session" id="operational-context-session">DDD 65</span>
+        <span class="operational-context-separator" aria-hidden="true">·</span>
+        <span class="operational-context-mode" id="operational-context-mode">Territorial</span>
+      </div>
+      <div class="operational-context-save" id="operational-context-save" data-state="idle" role="status" aria-live="polite" aria-atomic="true">
+        <span class="operational-context-save-icon" id="operational-context-save-icon" aria-hidden="true">—</span>
+        <span id="operational-context-save-text">Sem salvamento confirmado</span>
+      </div>
+      <div class="operational-context-footer">
+        <button class="operational-context-autosave" id="operational-context-autosave" type="button" aria-pressed="false" title="Ativar autosave nesta sessão">Autosave OFF</button>
+        <button class="operational-context-save-now" id="operational-context-save-now" type="button" title="Salvar agora (Ctrl+S)" disabled>Salvar</button>
+        <span class="operational-context-history" id="operational-context-history" title="Nenhuma atualização confirmada">Sem atualização confirmada</span>
+      </div>
+    </section>
     <div class="header-status">
       <div class="status-tile">
         <span>Status do plano</span>
@@ -8082,15 +8299,26 @@ body.login-active .routex-ai-panel { display:none !important; }
           </div>
           <div class="action-stack">
             <button class="action-button primary" id="optimize-plan-btn">Otimizar sequenciamento</button>
-            <button class="action-button secondary" id="regenerate-data-btn">Gerar novo cenario</button>
-            <button class="action-button" id="publish-plan-btn">Publicar plano</button>
-            <button class="action-button" id="export-csv-btn">Exportar rota CSV</button>
+            <button class="action-button" id="import-clients-btn">Importar clientes</button>
+            <input type="file" id="import-clients-file" accept=".csv,text/csv" hidden>
+            <button class="action-button" id="export-routes-btn">Exportar rotas</button>
+            <div class="report-options" id="export-options" hidden>
+              <button class="action-button slim" id="export-session-btn" type="button">Sessao inteira (recomendado)</button>
+              <button class="action-button slim" id="export-filtered-btn" type="button">Filtro atual</button>
+            </div>
             <button class="action-button" id="generate-reports-btn">Gerar relatorios</button>
             <div class="report-options" id="report-options" hidden>
               <button class="action-button slim" id="report-active-btn" type="button">Relatorio de clientes roteirizados</button>
+              <button class="action-button slim" id="report-notrouted-btn" type="button">Relatorio de clientes nao roteirizados</button>
               <button class="action-button slim" id="report-inactive-btn" type="button">Relatorio de clientes inativos</button>
               <button class="action-button slim" id="report-nocoord-btn" type="button">Relatorio de clientes sem coordenada</button>
             </div>
+            <button class="action-button" id="backup-restore-btn">Backup / Restaurar</button>
+            <div class="report-options" id="backup-options" hidden>
+              <button class="action-button slim" id="backup-generate-btn" type="button">Gerar backup da sessao atual</button>
+              <button class="action-button slim" id="backup-restore-file-btn" type="button">Restaurar backup (.rfxbackup)</button>
+            </div>
+            <input type="file" id="backup-restore-file" accept=".rfxbackup,.json,application/json" hidden>
           </div>
         </section>
 
@@ -8536,6 +8764,42 @@ body.login-active .routex-ai-panel { display:none !important; }
         <div class="modal-actions" style="margin-top: 14px;">
           <button class="action-button" id="lasso-confirm-cancel-btn" type="button">Cancelar</button>
           <button class="action-button primary" id="lasso-confirm-apply-btn" type="button">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: IMPORTAR CLIENTES ──────────────────────────────── -->
+    <div class="planning-apply-modal" id="import-clients-modal" hidden>
+      <div class="planning-apply-modal-card" role="dialog" aria-modal="true" aria-labelledby="import-clients-modal-title">
+        <div class="planning-create-header">
+          <h4 id="import-clients-modal-title">Importar clientes</h4>
+          <p id="import-clients-modal-subtitle">Prévia da importação. Clientes válidos entram como NÃO ROTEIRIZADOS (sem motorista, semana ou dia).</p>
+        </div>
+        <div class="planning-apply-summary" id="import-clients-summary"></div>
+        <div class="planning-apply-table-wrap">
+          <table class="planning-apply-table" id="import-clients-table">
+            <thead>
+              <tr>
+                <th>Linha</th>
+                <th>Status</th>
+                <th>Cliente</th>
+                <th>Cidade</th>
+                <th>Bairro</th>
+                <th>Lat</th>
+                <th>Lon</th>
+                <th>Motivo</th>
+              </tr>
+            </thead>
+            <tbody id="import-clients-table-body"></tbody>
+          </table>
+        </div>
+        <div class="planning-create-modal-actions">
+          <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.72rem;color:#cbe4fc;margin-right:auto;">
+            <input type="checkbox" id="import-include-dupes">
+            Incluir possíveis duplicados
+          </label>
+          <button class="planning-toolbar-btn is-create is-main" id="import-clients-confirm-btn" type="button">Importar</button>
+          <button class="planning-toolbar-btn is-ghost" id="import-clients-cancel-btn" type="button">Cancelar</button>
         </div>
       </div>
     </div>
@@ -9227,7 +9491,7 @@ async function tryLoadCustomersFromLocalMock(ddd) {
   return { loaded: false, customers: [] };
 }
 
-async function loadCustomersFromSource(ddd, options = {}) {
+async function _loadCustomersFromConfiguredSources(ddd, options = {}) {
   const dddText = String(ddd || state.selectedDDD || '').trim();
   const entryPoint = String(options.entryPoint || 'boot');
   logger.info('[MAP] carregando clientes via SOURCE', {
@@ -9274,6 +9538,15 @@ async function loadCustomersFromSource(ddd, options = {}) {
   return [];
 }
 
+// Importados (Planning-owned) sao mesclados apos QUALQUER fonte carregar, para
+// que sobrevivam a reload mesmo com o CRM online (que nao os conhece).
+async function loadCustomersFromSource(ddd, options = {}) {
+  const dddText = String(ddd || state.selectedDDD || '').trim();
+  const customers = await _loadCustomersFromConfiguredSources(dddText, options);
+  if (state.mode !== 'REAL') return customers;
+  return mergeImportedClientsIntoSource(dddText, customers);
+}
+
 function crmFetch(endpoint, options = {}) {
   if (!state.selectedDDD) state.selectedDDD = '65';
   const sessionId = getCrmSessionIdForDDD(state.selectedDDD);
@@ -9294,9 +9567,11 @@ function _deepCloneTransfer(obj) {
  * Formato: { version:1, meta:{id,ddd,name,sourceSessionId,createdAt}, clients:[...], drivers:[...] }
  * Chave: rfx:scenario:buf:{sessionId}
  */
-function persistScenarioSession(sessionId) {
+function persistScenarioSession(sessionId, options = {}) {
   var meta = planningSessionRegistry.get(sessionId);
-  if (!meta || meta.type !== 'scenario') return;
+  if (!meta || meta.type !== 'scenario') return null;
+  if (options.autosaveOnly && !isPlanningAutosaveEnabled(sessionId)) return null;
+  var persistenceAttempt = beginPlanningPersistence(sessionId);
   try {
     var rawClients = planningSessionClients.get(sessionId) || [];
     var clientsArr = Array.isArray(rawClients)
@@ -9306,8 +9581,14 @@ function persistScenarioSession(sessionId) {
     var driversArr = Array.isArray(rawDrivers)
       ? rawDrivers
       : (rawDrivers instanceof Map ? Array.from(rawDrivers.values()) : Object.values(rawDrivers));
+    var savedAt = options.savedAt || new Date().toISOString();
+    var savedBy = Object.prototype.hasOwnProperty.call(options, 'savedBy')
+      ? options.savedBy
+      : getCurrentPlanningOperatorName();
     var payload = {
       version: 1,
+      savedAt: savedAt,
+      savedBy: savedBy,
       meta: {
         id: meta.id, ddd: meta.ddd, name: meta.name || null,
         sourceSessionId: meta.sourceSessionId || null,
@@ -9317,9 +9598,13 @@ function persistScenarioSession(sessionId) {
       drivers: driversArr
     };
     localStorage.setItem('rfx:scenario:buf:' + sessionId, JSON.stringify(payload));
+    markPlanAsSaved(savedAt, sessionId, 'local', persistenceAttempt.changeSeq, savedBy);
     console.debug('[SCENARIO] persisted', sessionId, clientsArr.length, 'clientes');
+    return payload;
   } catch(e) {
+    markPlanSaveError(sessionId);
     console.warn('[SCENARIO] persistScenarioSession failed', e);
+    return null;
   }
 }
 
@@ -9348,10 +9633,11 @@ function _scheduleScenarioPersist() {
   var _spMeta = planningSessionRegistry.get(state.activePlanningSessionId);
   if (!_spMeta || _spMeta.tipo_sessao !== 'SIMULACAO') return;
   var _spId = state.activePlanningSessionId;
+  if (!isPlanningAutosaveEnabled(_spId)) return;
   if (_scenarioPersistTimer) clearTimeout(_scenarioPersistTimer);
   _scenarioPersistTimer = setTimeout(function() {
     _scenarioPersistTimer = null;
-    persistScenarioSession(_spId);
+    if (isPlanningAutosaveEnabled(_spId)) persistScenarioSession(_spId, { autosaveOnly: true });
   }, 1500);
 }
 
@@ -10214,14 +10500,27 @@ function _schedulePlanningAutosave(ddd) {
   // Scenario sessions have tipo_sessao === 'SIMULACAO' regardless of state.mode.
   var _schedActiveMeta = planningSessionRegistry.get(state.activePlanningSessionId);
   if (_schedActiveMeta && _schedActiveMeta.tipo_sessao === 'SIMULACAO') return;
+  var _schedDDD = String(ddd || state.selectedDDD);
+  if (!isPlanningAutosaveEnabled(getRealSessionIdForDDD(_schedDDD))) return;
   if (ddd) _autosaveDirtyDDDs.add(String(ddd));
   if (_autosaveTimer) clearTimeout(_autosaveTimer);
   _autosaveTimer = setTimeout(function() {
     _autosaveTimer = null;
     var ddds = Array.from(_autosaveDirtyDDDs);
     _autosaveDirtyDDDs.clear();
-    ddds.forEach(function(d) { _flushPlanningForDDD(d); });
+    ddds.forEach(function(d) {
+      if (isPlanningAutosaveEnabled(getRealSessionIdForDDD(d))) _flushPlanningForDDD(d);
+    });
   }, _AUTOSAVE_DELAY_MS);
+}
+
+function _saveProductionPlanLocally(ddd, payload, sessionId, changeSeq) {
+  var savedAt = new Date().toISOString();
+  var savedBy = getCurrentPlanningOperatorName();
+  var localPayload = Object.assign({}, payload, { savedAt: savedAt, savedBy: savedBy });
+  localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(localPayload));
+  markPlanAsSaved(savedAt, sessionId, 'local', changeSeq, savedBy);
+  return localPayload;
 }
 
 function _flushPlanningForDDD(ddd) {
@@ -10229,6 +10528,8 @@ function _flushPlanningForDDD(ddd) {
   // scenario session is active. state.clients holds scenario data in that case.
   var _flushActiveMeta = planningSessionRegistry.get(state.activePlanningSessionId);
   if (_flushActiveMeta && _flushActiveMeta.tipo_sessao === 'SIMULACAO') return;
+  var sessionId = getRealSessionIdForDDD(ddd);
+  if (!isPlanningAutosaveEnabled(sessionId)) return;
   // CORREÇÃO 1: Suspender autosave se houver drag ativo (estado intermediário)
   if (state.dragClientId) {
     _autosaveDirtyDDDs.add(String(ddd));
@@ -10239,9 +10540,11 @@ function _flushPlanningForDDD(ddd) {
   var dddClients = clients.filter(function(c) { return c.ddd === numDdd; });
   if (!dddClients.length) return;
 
+  var changeSeq = beginPlanningPersistence(sessionId).changeSeq;
+
   var payload = {
     version: 1,
-    savedAt: new Date().toISOString(),
+    savedBy: getCurrentPlanningOperatorName(),
     clients: dddClients.map(function(c) {
       return {
         id: c.id,
@@ -10259,18 +10562,27 @@ function _flushPlanningForDDD(ddd) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   }).then(function(res) {
-    if (res.ok) {
-      markPlanAsSaved();
-      if (typeof console !== 'undefined' && console.debug) {
-        console.debug('[AUTOSAVE] DDD ' + ddd + ' salvo (' + dddClients.length + ' clientes)');
-      }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }).then(function(data) {
+    var confirmedSavedAt = data && data.savedAt;
+    if (!confirmedSavedAt || Number.isNaN(Date.parse(confirmedSavedAt))) {
+      throw new Error('Backend não retornou confirmação temporal válida');
+    }
+    var confirmedSavedBy = data && typeof data.savedBy === 'string' ? data.savedBy : payload.savedBy;
+    var confirmedPayload = Object.assign({}, payload, { savedAt: confirmedSavedAt, savedBy: confirmedSavedBy });
+    try { localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(confirmedPayload)); } catch (_) {}
+    markPlanAsSaved(confirmedSavedAt, sessionId, 'backend', changeSeq, confirmedSavedBy);
+    if (typeof console !== 'undefined' && console.debug) {
+      console.debug('[AUTOSAVE] DDD ' + ddd + ' salvo (' + dddClients.length + ' clientes)');
     }
   }).catch(function() {
     // Fallback: localStorage
     try {
-      localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(payload));
+      _saveProductionPlanLocally(ddd, payload, sessionId, changeSeq);
     } catch(e) {
       // CORREÇÃO 2: Falha dupla (backend + localStorage) — avisar o usuário
+      markPlanSaveError(sessionId);
       updatePlannerHint('⚠️ Autosave falhou: backend offline e armazenamento local indisponível. Salve manualmente com CTRL+S.');
     }
   });
@@ -10396,6 +10708,7 @@ function enterMainMenu() {
   // O bootstrap já definiu/restaurou o contexto da sessão ativa.
   // Apenas refletir esse estado na UI; não sobrescrever Operacional por Territorial.
   syncPlanningSessionViewContextUI();
+  renderOperationalContext();
 
   window.setTimeout(() => {
     map.invalidateSize(true);
@@ -10473,9 +10786,32 @@ hydrateEntryVisualFields();
   field.addEventListener('input', saveEntryVisualFields);
 });
 
+// Única fonte de identidade hoje: nome informado na entrada local do Planning
+// (não há autenticação integrada — ver rótulo "Sessão local" no card de contexto).
+function resolvePlanningOperatorFromEntry() {
+  var typedName = entryPlannerName ? entryPlannerName.value.trim() : '';
+  state.currentPlanningOperator = typedName ? { displayName: typedName, source: 'local-session' } : null;
+}
+
 entryAccessButton.addEventListener('click', () => {
+  if (entryPlannerName && !entryPlannerName.value.trim()) {
+    entryPlannerName.reportValidity();
+    return;
+  }
+  resolvePlanningOperatorFromEntry();
   playFuturisticSound();
   enterMainMenu();
+});
+
+const operationalAutosaveButton = document.getElementById('operational-context-autosave');
+const operationalSaveNowButton = document.getElementById('operational-context-save-now');
+if (operationalAutosaveButton) operationalAutosaveButton.addEventListener('click', togglePlanningAutosave);
+if (operationalSaveNowButton) operationalSaveNowButton.addEventListener('click', savePlanningAdjustments);
+
+window.addEventListener('beforeunload', (event) => {
+  if (!shouldProtectUnsavedSessionChange()) return;
+  event.preventDefault();
+  event.returnValue = '';
 });
 
 
@@ -10981,9 +11317,10 @@ async function confirmApplyScenarioToProduction() {
   // produção (savePlanningAdjustments não é reutilizável aqui: tem guard de modo
   // SIMULATION e lê state.clients, que é o buffer do cenário no contexto da promoção).
   var dddProdClients = prodPool.filter(function(c) { return c.ddd === numDdd; });
+  var _promotionAttempt = beginPlanningPersistence(prodId);
   var payload = {
     version: 1,
-    savedAt: new Date().toISOString(),
+    savedBy: getCurrentPlanningOperatorName(),
     clients: dddProdClients.map(function(c) {
       return { id: c.id, week: c.week, day: c.day, driverId: c.driverId, driverName: c.driverName, sequence: c.sequence };
     })
@@ -10993,7 +11330,7 @@ async function confirmApplyScenarioToProduction() {
   if (confirmBtn) confirmBtn.disabled = true;
   updatePlannerHint('Aplicando ao plano real e salvando no backend...');
 
-  var _ok = false, _status = null, _respText = '';
+  var _ok = false, _status = null, _respText = '', _confirmData = null;
   try {
     var response = await fetch(BACKEND_API_BASE + '/manual-plan/' + encodeURIComponent(ddd), {
       method: 'PUT',
@@ -11002,7 +11339,15 @@ async function confirmApplyScenarioToProduction() {
     });
     _status = response.status;
     _ok = response.ok;
-    if (!_ok) { try { _respText = await response.text(); } catch (_) {} }
+    if (_ok) {
+      try { _confirmData = await response.json(); } catch (_) {}
+      if (!_confirmData || !_confirmData.savedAt || Number.isNaN(Date.parse(_confirmData.savedAt))) {
+        _ok = false;
+        _respText = 'resposta sem savedAt válido';
+      }
+    } else {
+      try { _respText = await response.text(); } catch (_) {}
+    }
   } catch (err) {
     _ok = false;
     _respText = (err && err.message) ? err.message : String(err);
@@ -11019,6 +11364,7 @@ async function confirmApplyScenarioToProduction() {
       if (_backupLocalStorage === null) localStorage.removeItem('ROUTflex:plan:ddd:' + ddd);
       else localStorage.setItem('ROUTflex:plan:ddd:' + ddd, _backupLocalStorage);
     } catch (_) {}
+    markPlanSaveError(prodId);
     if (confirmBtn) confirmBtn.disabled = false; // permite nova tentativa (cenário preservado)
     console.error('[APPLY-TO-PROD] backend não confirmou a promoção', {
       endpoint: 'PUT /manual-plan/' + ddd, status: _status, response: _respText
@@ -11028,9 +11374,12 @@ async function confirmApplyScenarioToProduction() {
     return;
   }
 
-  // Sucesso confirmado pelo backend: espelhar EXATAMENTE o mesmo payload no localStorage.
-  try { localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(payload)); } catch (_) {}
-  markPlanAsSaved();
+  // Sucesso confirmado pelo backend: espelhar os metadados confirmados no cache local.
+  var _confirmedSavedAt = _confirmData.savedAt;
+  var _confirmedSavedBy = typeof _confirmData.savedBy === 'string' ? _confirmData.savedBy : payload.savedBy;
+  var _confirmedPayload = Object.assign({}, payload, { savedAt: _confirmedSavedAt, savedBy: _confirmedSavedBy });
+  try { localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(_confirmedPayload)); } catch (_) {}
+  markPlanAsSaved(_confirmedSavedAt, prodId, 'backend', _promotionAttempt.changeSeq, _confirmedSavedBy);
   closeApplyScenarioToProductionModal();
 
   var appliedCount = patchMap.size;
@@ -11483,6 +11832,7 @@ function switchPlanningSession(sessionId, options = {}) {
   // quando o calculateRoutes rodar — mas skipFitBounds:true já garante o bloqueio).
   state.suppressAutoFit = wasSuppressed;
   updatePlannerHint(`Sessão ativa: ${getSessionDisplayLabel(target)}.`);
+  syncActivePlanningPersistenceState();
   return restoredViewContext;
 }
 
@@ -11585,6 +11935,7 @@ function _restoreSimulationSession() {
             });
             planningSessionClients.set(scenarioId, clients);
             planningSessionDrivers.set(scenarioId, drivers);
+            markPlanAsSaved(bufParsed.savedAt || null, scenarioId, 'local', null, bufParsed.savedBy || null);
             console.info('[SESSION-RESTORE] cenário restaurado', scenarioId, clients.length, 'clientes');
             restored = true;
           } catch(e) {
@@ -11624,13 +11975,15 @@ function _restoreSimulationSession() {
             planningSessionSnapshots.set(savedSessionId, parsed.clients);
             planningSessionClients.set(savedSessionId, parsed.clients);
             planningSessionDrivers.set(savedSessionId, []);
+            markPlanAsSaved(parsed.savedAt || null, savedSessionId, 'local', null, parsed.savedBy || null);
             restored = true;
             console.info('[SESSION-RESTORE] cenário restaurado (legado)', savedSessionId, parsed.clients.length, 'clientes');
             // ── Migrate legacy key → new namespace ──────────────────────────
             // Absorb into rfx:scenario:buf:{id} + rfx:sim:scenarios:{ddd} so
             // subsequent reloads use Path A and the legacy key is never read again.
             try {
-              persistScenarioSession(savedSessionId);
+              var migratedScenario = persistScenarioSession(savedSessionId, { savedAt: parsed.savedAt || null, savedBy: parsed.savedBy || null });
+              if (!migratedScenario) throw new Error('buffer canônico não foi persistido');
               _saveScenarioRegistry(ddd);
               localStorage.removeItem('rfx:sim:data:' + ddd);
               localStorage.removeItem('rfx:sim:active:' + ddd);
@@ -11804,12 +12157,15 @@ function deleteActiveSimulationSessionForDDD(options = {}) {
   planningSessionSnapshots.delete(meta.id);
   planningSessionClients.delete(meta.id);
   planningSessionDrivers.delete(meta.id);
+  state.planningPersistenceBySession.delete(meta.id);
+  state.planningAutosaveBySession.delete(meta.id);
   if (state.lastPromotionBackupByDDD[ddd] === meta.id) {
     delete state.lastPromotionBackupByDDD[ddd];
   }
   // Limpar localStorage: buffer do cenário e índice de cenários do DDD
   try { localStorage.removeItem('rfx:scenario:buf:' + meta.id); } catch(_) {}
   try { localStorage.removeItem(PLANNING_SESSION_VIEW_STORAGE_PREFIX + meta.id); } catch(_) {}
+  try { localStorage.removeItem(PLANNING_AUTOSAVE_STORAGE_PREFIX + meta.id); } catch(_) {}
   _saveScenarioRegistry(ddd);
   // Sanity check: confirmar que o id foi removido do índice pelo _saveScenarioRegistry
   try {
@@ -11854,11 +12210,14 @@ function deleteRealPlanningSessionForDDD(options = {}) {
     planningSessionSnapshots.delete(session.id);
     planningSessionClients.delete(session.id);
     planningSessionDrivers.delete(session.id);
+    state.planningPersistenceBySession.delete(session.id);
+    state.planningAutosaveBySession.delete(session.id);
     // Limpar buffer do localStorage para cenários (sessão de produção não tem buffer próprio)
     if (session.type === 'scenario') {
       try { localStorage.removeItem('rfx:scenario:buf:' + session.id); } catch(_) {}
     }
     try { localStorage.removeItem(PLANNING_SESSION_VIEW_STORAGE_PREFIX + session.id); } catch(_) {}
+    try { localStorage.removeItem(PLANNING_AUTOSAVE_STORAGE_PREFIX + session.id); } catch(_) {}
   });
   // Remover índice de cenários do DDD — evita restauração zombie após F5
   try { localStorage.removeItem('rfx:sim:scenarios:' + ddd); } catch(_) {}
@@ -12146,13 +12505,282 @@ function markDriverAsAdjusted(driverId) {
   state.manualAdjustedDriverIds.add(driverId);
 }
 
-function markPlanAsDirty() {
-  state.hasUnsavedPlanChanges = true;
-  _territoryShapesCacheKey = null;
+function getPlanningPersistenceSessionId(sessionId = null) {
+  return String(sessionId || state.activePlanningSessionId || getRealSessionIdForDDD(state.selectedDDD));
 }
 
-function markPlanAsSaved() {
-  state.hasUnsavedPlanChanges = false;
+function getPlanningPersistenceEntry(sessionId = null) {
+  const resolvedSessionId = getPlanningPersistenceSessionId(sessionId);
+  if (!(state.planningPersistenceBySession instanceof Map)) {
+    state.planningPersistenceBySession = new Map();
+  }
+  if (!state.planningPersistenceBySession.has(resolvedSessionId)) {
+    state.planningPersistenceBySession.set(resolvedSessionId, {
+      status: 'idle',
+      lastSavedAt: null,
+      lastSavedBy: null,
+      source: null,
+      changeSeq: 0,
+      savedSeq: 0,
+      savingSeq: null
+    });
+  }
+  return state.planningPersistenceBySession.get(resolvedSessionId);
+}
+
+const PLANNING_AUTOSAVE_STORAGE_PREFIX = 'ROUTflex:planning:autosave:v1:';
+
+function getCurrentPlanningOperatorName() {
+  const operator = state.currentPlanningOperator;
+  return operator && typeof operator.displayName === 'string' && operator.displayName.trim()
+    ? operator.displayName.trim()
+    : null;
+}
+
+function isPlanningAutosaveEnabled(sessionId = null) {
+  const resolvedSessionId = getPlanningPersistenceSessionId(sessionId);
+  if (!(state.planningAutosaveBySession instanceof Map)) {
+    state.planningAutosaveBySession = new Map();
+  }
+  if (!state.planningAutosaveBySession.has(resolvedSessionId)) {
+    let enabled = false;
+    try {
+      const stored = localStorage.getItem(PLANNING_AUTOSAVE_STORAGE_PREFIX + resolvedSessionId);
+      enabled = stored === 'true' || stored === '1';
+    } catch (_) {}
+    state.planningAutosaveBySession.set(resolvedSessionId, enabled);
+  }
+  return state.planningAutosaveBySession.get(resolvedSessionId) === true;
+}
+
+function setPlanningAutosaveEnabled(sessionId, enabled) {
+  const resolvedSessionId = getPlanningPersistenceSessionId(sessionId);
+  const nextEnabled = enabled === true;
+  if (!(state.planningAutosaveBySession instanceof Map)) {
+    state.planningAutosaveBySession = new Map();
+  }
+  state.planningAutosaveBySession.set(resolvedSessionId, nextEnabled);
+  try {
+    localStorage.setItem(PLANNING_AUTOSAVE_STORAGE_PREFIX + resolvedSessionId, nextEnabled ? 'true' : 'false');
+  } catch (_) {
+    updatePlannerHint('Não foi possível persistir a preferência de autosave neste navegador.');
+  }
+
+  const meta = planningSessionRegistry.get(resolvedSessionId);
+  if (!nextEnabled) {
+    if (meta && isProductionSession(meta)) {
+      _autosaveDirtyDDDs.delete(String(meta.ddd));
+      if (_autosaveDirtyDDDs.size === 0 && _autosaveTimer) {
+        clearTimeout(_autosaveTimer);
+        _autosaveTimer = null;
+      }
+    }
+    if (resolvedSessionId === getPlanningPersistenceSessionId() && _scenarioPersistTimer) {
+      clearTimeout(_scenarioPersistTimer);
+      _scenarioPersistTimer = null;
+    }
+  } else if (['pending', 'error'].includes(getPlanningPersistenceEntry(resolvedSessionId).status)) {
+    if (meta && isScenarioSession(meta)) _scheduleScenarioPersist();
+    else if (meta) _schedulePlanningAutosave(meta.ddd);
+  }
+
+  if (isActivePlanningPersistenceSession(resolvedSessionId)) renderOperationalContext();
+  return nextEnabled;
+}
+
+function togglePlanningAutosave() {
+  const sessionId = getPlanningPersistenceSessionId();
+  const enabled = setPlanningAutosaveEnabled(sessionId, !isPlanningAutosaveEnabled(sessionId));
+  updatePlannerHint(`Autosave ${enabled ? 'ativado' : 'desativado'} para ${getSessionDisplayLabel(planningSessionRegistry.get(sessionId)) || sessionId}.`);
+}
+
+function isActivePlanningPersistenceSession(sessionId) {
+  return getPlanningPersistenceSessionId(sessionId) === getPlanningPersistenceSessionId();
+}
+
+function markPlanningPersistenceAsDirty(sessionId = null) {
+  const resolvedSessionId = getPlanningPersistenceSessionId(sessionId);
+  const entry = getPlanningPersistenceEntry(resolvedSessionId);
+  const changedStatus = entry.status !== 'pending';
+  if (changedStatus) entry.changeSeq += 1;
+  entry.status = 'pending';
+  entry.savingSeq = null;
+  if (isActivePlanningPersistenceSession(resolvedSessionId)) {
+    state.hasUnsavedPlanChanges = true;
+    if (changedStatus) renderOperationalContext();
+  }
+  return entry.changeSeq;
+}
+
+function beginPlanningPersistence(sessionId = null) {
+  const resolvedSessionId = getPlanningPersistenceSessionId(sessionId);
+  const entry = getPlanningPersistenceEntry(resolvedSessionId);
+  entry.status = 'saving';
+  entry.savingSeq = entry.changeSeq;
+  if (isActivePlanningPersistenceSession(resolvedSessionId)) {
+    state.hasUnsavedPlanChanges = true;
+    renderOperationalContext();
+  }
+  return { sessionId: resolvedSessionId, changeSeq: entry.changeSeq };
+}
+
+function markPlanAsDirty(options = {}) {
+  state.hasUnsavedPlanChanges = true;
+  _territoryShapesCacheKey = null;
+  if (options.persistenceRelevant !== false) {
+    markPlanningPersistenceAsDirty(options.sessionId || null);
+  }
+}
+
+function markPlanAsSaved(savedAt = null, sessionId = null, source = null, confirmedChangeSeq = null, savedBy = null) {
+  const resolvedSessionId = getPlanningPersistenceSessionId(sessionId);
+  const entry = getPlanningPersistenceEntry(resolvedSessionId);
+  const hasConfirmedTimestamp = typeof savedAt === 'string' && savedAt.trim() && !Number.isNaN(Date.parse(savedAt));
+  if (hasConfirmedTimestamp) entry.lastSavedAt = savedAt;
+  if (hasConfirmedTimestamp) entry.lastSavedBy = typeof savedBy === 'string' && savedBy.trim() ? savedBy.trim() : null;
+  if (source) entry.source = source;
+
+  const savedSeq = Number.isFinite(confirmedChangeSeq) ? confirmedChangeSeq : entry.changeSeq;
+  entry.savedSeq = Math.max(entry.savedSeq, savedSeq);
+  entry.savingSeq = null;
+  entry.status = Number.isFinite(confirmedChangeSeq) && entry.changeSeq !== confirmedChangeSeq
+    ? 'pending'
+    : (entry.lastSavedAt ? 'saved' : 'idle');
+
+  if (isActivePlanningPersistenceSession(resolvedSessionId)) {
+    state.hasUnsavedPlanChanges = entry.status === 'pending';
+    renderOperationalContext();
+  }
+}
+
+function markPlanSaveError(sessionId = null) {
+  const resolvedSessionId = getPlanningPersistenceSessionId(sessionId);
+  const entry = getPlanningPersistenceEntry(resolvedSessionId);
+  entry.status = 'error';
+  entry.savingSeq = null;
+  if (isActivePlanningPersistenceSession(resolvedSessionId)) {
+    state.hasUnsavedPlanChanges = true;
+    renderOperationalContext();
+  }
+}
+
+function syncActivePlanningPersistenceState() {
+  const entry = getPlanningPersistenceEntry();
+  state.hasUnsavedPlanChanges = entry.status === 'pending' || entry.status === 'saving' || entry.status === 'error';
+  renderOperationalContext();
+}
+
+function formatPlanningSavedTime(savedAt) {
+  const date = savedAt ? new Date(savedAt) : null;
+  if (!date || Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(date);
+}
+
+function formatPlanningSavedDateTime(savedAt) {
+  const date = savedAt ? new Date(savedAt) : null;
+  if (!date || Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  }).format(date);
+}
+
+function formatPlanningSavedCompact(savedAt) {
+  const date = savedAt ? new Date(savedAt) : null;
+  if (!date || Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+  }).format(date).replace(',', '');
+}
+
+function shouldProtectUnsavedSessionChange(targetSessionId = null) {
+  const currentSessionId = getPlanningPersistenceSessionId();
+  if (targetSessionId && String(targetSessionId) === currentSessionId) return false;
+  const persistence = getPlanningPersistenceEntry(currentSessionId);
+  return !isPlanningAutosaveEnabled(currentSessionId)
+    && (persistence.status === 'pending' || persistence.status === 'error');
+}
+
+function confirmUnsavedSessionChange(targetSessionId = null) {
+  if (!shouldProtectUnsavedSessionChange(targetSessionId)) return true;
+  return window.confirm('Há alterações pendentes nesta sessão com o autosave desativado. Continuar sem salvar agora?');
+}
+
+function renderOperationalContext() {
+  const contextEl = document.getElementById('operational-context');
+  const operatorEl = document.getElementById('operational-context-operator');
+  const kindEl = document.getElementById('operational-context-kind');
+  const sessionEl = document.getElementById('operational-context-session');
+  const modeEl = document.getElementById('operational-context-mode');
+  const saveEl = document.getElementById('operational-context-save');
+  const saveIconEl = document.getElementById('operational-context-save-icon');
+  const saveTextEl = document.getElementById('operational-context-save-text');
+  const autosaveEl = document.getElementById('operational-context-autosave');
+  const saveNowEl = document.getElementById('operational-context-save-now');
+  const historyEl = document.getElementById('operational-context-history');
+  if (!contextEl || !operatorEl || !kindEl || !sessionEl || !modeEl || !saveEl || !saveIconEl || !saveTextEl || !autosaveEl || !saveNowEl || !historyEl) return;
+
+  const operator = state.currentPlanningOperator;
+  const operatorName = operator && typeof operator.displayName === 'string'
+    ? operator.displayName.trim()
+    : '';
+  operatorEl.textContent = operatorName || 'Operador não identificado';
+  operatorEl.title = operatorName
+    ? `${operatorName} — identidade informada na sessão local do Planning`
+    : 'O Planning atual não possui autenticação integrada';
+
+  const sessionMeta = planningSessionRegistry.get(state.activePlanningSessionId) || {
+    id: getRealSessionIdForDDD(state.selectedDDD),
+    ddd: state.selectedDDD,
+    tipo_sessao: 'REAL'
+  };
+  const isSimulation = sessionMeta.tipo_sessao === 'SIMULACAO';
+  const sessionLabel = getSessionDisplayLabel(sessionMeta) || String(sessionMeta.id || 'Sessão atual');
+  const modeLabels = {
+    territorial: 'Territorial',
+    operational: 'Operacional',
+    analytics: 'Inteligência'
+  };
+
+  kindEl.textContent = isSimulation ? 'Simulação' : 'Produção';
+  sessionEl.textContent = sessionLabel;
+  sessionEl.title = sessionLabel;
+  modeEl.textContent = modeLabels[state.viewMode] || String(state.viewMode || '');
+  contextEl.dataset.sessionType = isSimulation ? 'simulation' : 'production';
+
+  const persistence = getPlanningPersistenceEntry(sessionMeta.id);
+  const autosaveEnabled = isPlanningAutosaveEnabled(sessionMeta.id);
+  const savedTime = formatPlanningSavedTime(persistence.lastSavedAt);
+  const copies = {
+    idle: { icon: '—', text: 'Sem salvamento confirmado' },
+    pending: { icon: '●', text: 'Alterações pendentes' },
+    saving: { icon: '↻', text: 'Salvando...' },
+    error: { icon: '⚠', text: 'Falha ao salvar' },
+    saved: {
+      icon: '✓',
+      text: `${persistence.source === 'local' ? 'Salvo local' : 'Salvo'}${savedTime ? ` ${savedTime}` : ''}`
+    }
+  };
+  const copy = copies[persistence.status] || copies.idle;
+  saveEl.dataset.state = persistence.status || 'idle';
+  saveIconEl.textContent = copy.icon;
+  saveTextEl.textContent = copy.text;
+  autosaveEl.textContent = `Autosave ${autosaveEnabled ? 'ON' : 'OFF'}`;
+  autosaveEl.setAttribute('aria-pressed', autosaveEnabled ? 'true' : 'false');
+  autosaveEl.title = `${autosaveEnabled ? 'Desativar' : 'Ativar'} autosave nesta sessão`;
+  saveNowEl.disabled = persistence.status === 'idle' || persistence.status === 'saved' || persistence.status === 'saving';
+  const savedDateTime = formatPlanningSavedDateTime(persistence.lastSavedAt);
+  const savedCompact = formatPlanningSavedCompact(persistence.lastSavedAt);
+  const savedByLabel = persistence.lastSavedBy || 'operador não informado';
+  historyEl.textContent = savedCompact
+    ? `Última: ${savedCompact} · ${savedByLabel}`
+    : 'Sem atualização confirmada';
+  historyEl.title = savedDateTime
+    ? `Última atualização: ${savedDateTime} por ${savedByLabel}`
+    : 'Nenhuma atualização confirmada';
+  saveEl.title = persistence.lastSavedAt
+    ? `${persistence.source === 'local' ? 'Persistência local confirmada' : 'Persistência confirmada pelo backend'}: ${new Date(persistence.lastSavedAt).toLocaleString('pt-BR')} por ${savedByLabel}`
+    : copy.text;
 }
 
 
@@ -12200,15 +12828,21 @@ async function loadPlanningForDDD(ddd) {
   var dddText = String(ddd);
   var numDdd = Number(dddText);
   var applied = false;
+  var appliedSavedAt = null;
+  var appliedSavedBy = null;
+  var appliedSource = null;
 
   // 1. Tentar backend DDD-scoped
   try {
     var response = await fetch(BACKEND_API_BASE + '/manual-plan/' + encodeURIComponent(dddText));
     if (response.ok) {
       var saved = await response.json();
-      if (saved && Array.isArray(saved.clients) && saved.clients.length) {
+      if (saved && Array.isArray(saved.clients)) {
         _applyPlanningAssignments(saved.clients, numDdd);
         applied = true;
+        appliedSavedAt = saved.savedAt || null;
+        appliedSavedBy = saved.savedBy || null;
+        appliedSource = 'backend';
         logger.info('[PLAN] DDD ' + dddText + ': ' + saved.clients.length + ' assignments restaurados do backend');
       }
     }
@@ -12222,9 +12856,12 @@ async function loadPlanningForDDD(ddd) {
       var raw = localStorage.getItem('ROUTflex:plan:ddd:' + dddText);
       if (raw) {
         var saved = JSON.parse(raw);
-        if (saved && Array.isArray(saved.clients) && saved.clients.length) {
+        if (saved && Array.isArray(saved.clients)) {
           _applyPlanningAssignments(saved.clients, numDdd);
           applied = true;
+          appliedSavedAt = saved.savedAt || null;
+          appliedSavedBy = saved.savedBy || null;
+          appliedSource = 'local';
           logger.info('[PLAN] DDD ' + dddText + ': assignments restaurados do localStorage');
         }
       }
@@ -12244,6 +12881,9 @@ async function loadPlanningForDDD(ddd) {
           if (dddClients.length) {
             _applyPlanningAssignments(dddClients, numDdd);
             applied = true;
+            appliedSavedAt = saved.savedAt || null;
+            appliedSavedBy = saved.savedBy || null;
+            appliedSource = 'backend';
             logger.info('[PLAN] DDD ' + dddText + ': assignments restaurados do legacy /manual-plan');
           }
         }
@@ -12263,7 +12903,7 @@ async function loadPlanningForDDD(ddd) {
     logger.info('[PLAN] DDD ' + dddText + ': snapshot real atualizado com assignments canônicos');
   }
 
-  markPlanAsSaved();
+  markPlanAsSaved(appliedSavedAt, getRealSessionIdForDDD(dddText), appliedSource, null, appliedSavedBy);
 }
 
 // Aplica assignments persistidos aos clientes já carregados do DDD.
@@ -12348,37 +12988,44 @@ async function savePlanningAdjustments() {
   const activeSessionMeta = planningSessionRegistry.get(state.activePlanningSessionId);
   const isSimulationSession = activeSessionMeta && activeSessionMeta.tipo_sessao === 'SIMULACAO';
   if (isSimulationSession) {
-    try {
+    const simSessionId = state.activePlanningSessionId;
+    if (_scenarioPersistTimer) {
+      clearTimeout(_scenarioPersistTimer);
+      _scenarioPersistTimer = null;
+    }
+    planningSessionClients.set(simSessionId, state.clients);
+    planningSessionDrivers.set(simSessionId, state.drivers);
+    const confirmedScenario = persistScenarioSession(simSessionId);
+    if (confirmedScenario) {
       const ddd = String(state.selectedDDD);
-      const simPayload = JSON.stringify({
+      const legacyPayload = JSON.stringify({
         version: 1,
-        savedAt: new Date().toISOString(),
-        sessionId: state.activePlanningSessionId,
+        savedAt: confirmedScenario.savedAt,
+        savedBy: confirmedScenario.savedBy,
+        sessionId: simSessionId,
         name: activeSessionMeta.name || null,
-        clients: planningSessionSnapshots.get(state.activePlanningSessionId) || []
+        clients: planningSessionSnapshots.get(simSessionId) || []
       });
-      // Chave nova determinística — recuperável após reload
-      localStorage.setItem(`rfx:sim:data:${ddd}`, simPayload);
-      localStorage.setItem(`rfx:sim:active:${ddd}`, state.activePlanningSessionId);
-      // Chave antiga — mantida para compatibilidade
-      localStorage.setItem(`${PLAN_SAVE_STORAGE_KEY}:sim:${state.activePlanningSessionId}`, simPayload);
-      markPlanAsSaved();
+      // Espelhos legados são best-effort; o buffer canônico acima define o sucesso.
+      try {
+        localStorage.setItem(`rfx:sim:data:${ddd}`, legacyPayload);
+        localStorage.setItem(`rfx:sim:active:${ddd}`, simSessionId);
+        localStorage.setItem(`${PLAN_SAVE_STORAGE_KEY}:sim:${simSessionId}`, legacyPayload);
+      } catch (_) {}
       const _scenarioLabel = getSessionDisplayLabel(activeSessionMeta);
       updatePlannerHint(`Ajustes salvos apenas no cenário ${_scenarioLabel}. Produção não foi alterada.`);
       applyFilters({ skipFitBounds: true });
       return;
-    } catch (storageError) {
-      updatePlannerHint('Falha ao salvar ajustes do cenário no navegador.');
-      return;
     }
+    updatePlannerHint('Falha ao salvar ajustes do cenário no navegador.');
+    return;
   }
 
   // Segurança: nunca salvar no backend de produção em modo SIMULATION.
   // isSimulationSession verifica a sessão ativa, mas após F5 em SIMULATION
   // a sessão ativa pode ser REAL (DDD_65) enquanto state.mode ainda é SIMULATION.
   if (state.mode === 'SIMULATION') {
-    markPlanAsSaved();
-    updatePlannerHint('Modo cenário: nenhum dado de produção foi alterado.');
+    updatePlannerHint('Modo cenário inconsistente: nenhum dado de produção foi alterado nem marcado como salvo.');
     return;
   }
 
@@ -12386,10 +13033,12 @@ async function savePlanningAdjustments() {
   const ddd = String(state.selectedDDD);
   const numDdd = Number(ddd);
   const dddClients = clients.filter(function(c) { return c.ddd === numDdd; });
+  const sessionId = getRealSessionIdForDDD(ddd);
+  const changeSeq = beginPlanningPersistence(sessionId).changeSeq;
 
   const payload = {
     version: 1,
-    savedAt: new Date().toISOString(),
+    savedBy: getCurrentPlanningOperatorName(),
     clients: dddClients.map(function(c) {
       return {
         id: c.id,
@@ -12420,22 +13069,30 @@ async function savePlanningAdjustments() {
       throw new Error(`HTTP ${response.status}`);
     }
 
+    const confirmData = await response.json();
+    const confirmedSavedAt = confirmData && confirmData.savedAt;
+    if (!confirmedSavedAt || Number.isNaN(Date.parse(confirmedSavedAt))) {
+      throw new Error('Backend não retornou confirmação temporal válida');
+    }
+    const confirmedSavedBy = typeof confirmData.savedBy === 'string' ? confirmData.savedBy : payload.savedBy;
+    const confirmedPayload = Object.assign({}, payload, { savedAt: confirmedSavedAt, savedBy: confirmedSavedBy });
+
     try {
-      localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(payload));
+      localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(confirmedPayload));
     } catch (error) {}
 
-    markPlanAsSaved();
-    updatePlannerHint(`Ajustes DDD ${ddd} salvos no backend em ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.`);
+    markPlanAsSaved(confirmedSavedAt, sessionId, 'backend', changeSeq, confirmedSavedBy);
+    updatePlannerHint(`Ajustes DDD ${ddd} salvos no backend em ${formatPlanningSavedTime(confirmedSavedAt) || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.`);
     applyFilters({ skipFitBounds: true });
     return;
   } catch (error) {
     try {
-      localStorage.setItem('ROUTflex:plan:ddd:' + ddd, JSON.stringify(payload));
-      markPlanAsSaved();
+      _saveProductionPlanLocally(ddd, payload, sessionId, changeSeq);
       updatePlannerHint('Backend indisponivel. Ajustes salvos localmente no navegador.');
       applyFilters({ skipFitBounds: true });
       return;
     } catch (storageError) {
+      markPlanSaveError(sessionId);
       updatePlannerHint('Falha ao salvar os ajustes no backend e no navegador.');
     }
   }
@@ -21398,6 +22055,7 @@ function switchViewMode(newMode) {
   syncMapDragging();
 
   logger.info('[MODE] Modo alterado', { from: previousMode, to: newMode });
+  renderOperationalContext();
 }
 
 async function optimizeSelectedRoutes() {
@@ -21459,52 +22117,86 @@ async function optimizeSelectedRoutes() {
   }
 }
 
-function exportRoutesCSV() {
-  const routeGroups = getRouteGroupsSafe();
-  const filteredClients = state.filteredClientsCache;
+function exportRoutesCSV(scope = 'session') {
+  const sessionMeta = planningSessionRegistry.get(state.activePlanningSessionId);
+  const sessionLabel = getSessionDisplayLabel(sessionMeta) || `DDD ${state.selectedDDD}`;
+  const isFilteredScope = scope === 'filtered';
+
+  const routeGroups = isFilteredScope
+    ? getRouteGroupsSafe()
+    : buildRouteGroups(getWholeSessionRoutedClients());
+
   if (!routeGroups.length) {
-    updatePlannerHint('Nenhuma rota no recorte atual para exportar.');
+    updatePlannerHint(isFilteredScope
+      ? 'Nenhuma rota no filtro atual para exportar.'
+      : 'Nenhuma rota roteirizada na sessao atual para exportar.');
     return;
   }
 
-  const header = ['Ordem', 'Rota', 'Motorista', 'DDD', 'Semana', 'Dia', 'Nome Fantasia', 'Codigo CRM', 'Endereco', 'Territorio Vinculado', 'Veiculo', 'Janela', 'Prioridade', 'Curva', 'Tempo (min)', 'Lat', 'Lon'];
-  const rows = [header];
+  const header = [
+    'Sessao', 'Motorista', 'Semana', 'Dia', 'Ordem',
+    'ID ROUTflex', 'Cliente', 'Cidade', 'Bairro', 'Latitude', 'Longitude',
+    'Rota', 'DDD', 'Endereco', 'Territorio Vinculado', 'Veiculo', 'Janela', 'Prioridade', 'Curva', 'Codigo CRM', 'Tempo (min)'
+  ];
+  const entries = [];
 
   routeGroups.forEach((route) => {
     route.clients.forEach((client, index) => {
-      rows.push([
-        index + 1,
-        route.routeId,
-        route.driver.name,
-        route.ddd,
-        route.week,
-        route.day,
-        client.nomeFantasia || client.tradeName || client.name,
-        getClientCrmCode(client, parseInt(String(client.id).replace(/\D/g, ''), 10) || 1),
-        client.address,
-        getDriverTerritoryLabel(client.driverId),
-        client.vehicle,
-        client.window,
-        client.priority,
-        client.curva,
-        client.serviceTime,
-        client.lat.toFixed(6),
-        client.lon.toFixed(6)
-      ]);
+      const ordem = Number.isFinite(client.sequence) ? client.sequence : index + 1;
+      entries.push({
+        motorista: route.driver.name,
+        semana: route.week,
+        dia: route.day,
+        ordem,
+        row: [
+          sessionLabel,
+          route.driver.name,
+          route.week,
+          route.day,
+          ordem,
+          client.id,
+          client.nomeFantasia || client.tradeName || client.name,
+          client.city || '-',
+          client.neighborhood || '-',
+          client.lat.toFixed(6),
+          client.lon.toFixed(6),
+          route.routeId,
+          route.ddd,
+          client.address,
+          getDriverTerritoryLabel(client.driverId),
+          client.vehicle,
+          client.window,
+          client.priority,
+          client.curva,
+          getClientCrmCode(client, parseInt(String(client.id).replace(/\D/g, ''), 10) || 1),
+          client.serviceTime
+        ]
+      });
     });
   });
 
+  // Ordenacao operacional: Motorista -> Semana -> Dia (SEG..DOM, nao alfabetico) -> Ordem da visita.
+  entries.sort((a, b) => {
+    const motoristaCmp = String(a.motorista).localeCompare(String(b.motorista));
+    if (motoristaCmp !== 0) return motoristaCmp;
+    if (a.semana !== b.semana) return (a.semana || 0) - (b.semana || 0);
+    const dayCmp = days.indexOf(a.dia) - days.indexOf(b.dia);
+    if (dayCmp !== 0) return dayCmp;
+    return (a.ordem || 0) - (b.ordem || 0);
+  });
+
+  const rows = [header, ...entries.map((entry) => entry.row)];
   const csv = rows.map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `ROUTflex_DDD${state.selectedDDD}_${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `ROUTflex_rotas_${isFilteredScope ? 'filtro' : 'sessao'}_DDD${state.selectedDDD}_${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
-  updatePlannerHint(`CSV exportado: ${filteredClients.length} stops em ${routeGroups.length} rotas.`);
+  updatePlannerHint(`Rotas exportadas (${isFilteredScope ? 'filtro atual' : 'sessao inteira'}): ${entries.length} stops em ${routeGroups.length} rotas.`);
 }
 
 function exportarCSV(dados, nomeArquivo) {
@@ -21610,6 +22302,38 @@ function generateReportRoteirizados() {
   updatePlannerHint(`Relatorio de roteirizados exportado com ${linhas.length} registros.`);
 }
 
+// Reaproveita EXATAMENTE a mesma fonte/predicado do marcador "D" (rosa) do mapa —
+// ver getNotRoutedClients() em filters.js.
+function generateReportNaoRoteirizados() {
+  const seen = new Set();
+  const linhas = getNotRoutedClients()
+    .filter((client) => {
+      if (seen.has(client.id)) return false;
+      seen.add(client.id);
+      return true;
+    })
+    .map((client) => ({
+      'ID do Cliente': client.id,
+      'CPF/CNPJ': getClientDocument(client),
+      'Nome Fantasia': client.nomeFantasia || client.tradeName || client.name || '-',
+      'Cidade': client.city || '-',
+      'Bairro': client.neighborhood || '-',
+      'Endereco': client.address || '-',
+      'Motorista Responsavel': getDriverById(client.driverId)?.name || getDriverShortCode(client.driverId) || '-',
+      'Semana': client.week ?? '-',
+      'Situacao': 'Sem dia de visita definido'
+    }))
+    .sort((a, b) => String(a['Motorista Responsavel']).localeCompare(String(b['Motorista Responsavel'])));
+
+  if (!linhas.length) {
+    updatePlannerHint('Nenhum cliente nao roteirizado (sem dia definido) encontrado no recorte atual.');
+    return;
+  }
+
+  exportarCSV(linhas, `relatorio_nao_roteirizados_DDD${state.selectedDDD}.csv`);
+  updatePlannerHint(`Relatorio de clientes nao roteirizados exportado com ${linhas.length} registros.`);
+}
+
 function generateReportInativos() {
   const seen = new Set();
   const linhas = clients
@@ -21674,27 +22398,582 @@ function generateReportSemCoordenada() {
   updatePlannerHint(`Relatorio de clientes sem coordenada exportado com ${linhas.length} registros.`);
 }
 
-function toggleReportOptions() {
-  const panel = document.getElementById('report-options');
+function toggleActionOptionsPanel(panelId) {
+  const panel = document.getElementById(panelId);
   if (!panel) return;
   panel.hidden = !panel.hidden;
 }
 
-async function regenerateScenario() {
-  if (state.mode !== 'SIMULATION') {
-    state.mode = 'SIMULATION';
+function toggleExportOptions() {
+  toggleActionOptionsPanel('export-options');
+}
+
+function toggleReportOptions() {
+  toggleActionOptionsPanel('report-options');
+}
+
+function toggleBackupOptions() {
+  toggleActionOptionsPanel('backup-options');
+}
+
+// ── Backup / Restauração de sessão ─────────────────────────────────────────
+const PLAN_BACKUP_FORMAT = 'ROUTFLEX_PLAN_BACKUP';
+const PLAN_BACKUP_VERSION = 1;
+
+// Somente o necessário para reconstruir a sessão — sem estado visual (zoom, pan,
+// markers, layers, filtros), que é recalculado na restauração.
+const PLAN_BACKUP_CLIENT_FIELDS = [
+  'id', 'clientGroupId', 'name', 'nomeFantasia', 'ddd', 'region',
+  'driverId', 'driverName', 'week', 'day', 'sequence',
+  'lat', 'lon', 'fixedLat', 'fixedLon',
+  'city', 'neighborhood', 'address', 'territory', 'territory_code',
+  'vehicle', 'priority', 'curva', 'curveCode', 'serviceTime', 'distance', 'window',
+  'status', 'clientType', 'eligibleForRouting', 'manualRouteInclude', 'accessMode',
+  'frequencia', 'semanas', 'segmentacao', 'crmCode', 'externalRef', 'importedAt', '_source'
+];
+
+function _pickBackupFields(source, fields) {
+  const out = {};
+  fields.forEach((field) => {
+    if (source && source[field] !== undefined) out[field] = source[field];
+  });
+  return out;
+}
+
+function buildSessionBackupPayload(sessionId = state.activePlanningSessionId) {
+  const meta = planningSessionRegistry.get(sessionId);
+  if (!meta) return null;
+
+  const persistence = getPlanningPersistenceEntry(meta.id);
+  const sessionClients = _rawSessionClients(meta.id);
+  const sessionDrivers = _rawSessionDrivers(meta.id);
+
+  return {
+    format: PLAN_BACKUP_FORMAT,
+    version: PLAN_BACKUP_VERSION,
+    createdAt: new Date().toISOString(),
+    createdBy: getCurrentPlanningOperatorName(),
+    session: {
+      id: meta.id,
+      name: meta.name || null,
+      label: getSessionDisplayLabel(meta),
+      tipo_sessao: meta.tipo_sessao,
+      type: meta.type || (meta.tipo_sessao === 'SIMULACAO' ? 'scenario' : 'production'),
+      ddd: String(meta.ddd),
+      sourceSessionId: meta.sourceSessionId || null,
+      createdAt: meta.createdAt || null,
+      lastSavedAt: persistence.lastSavedAt || null,
+      lastSavedBy: persistence.lastSavedBy || null
+    },
+    drivers: sessionDrivers.map((driver) => ({ ...driver })),
+    clients: sessionClients.map((client) => _pickBackupFields(client, PLAN_BACKUP_CLIENT_FIELDS))
+  };
+}
+
+function _buildBackupFileName(payload) {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
+  const slug = String(payload.session.label || payload.session.id)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '')
+    .slice(0, 32) || 'sessao';
+  return `ROUTflex_${slug}_${stamp}.rfxbackup`;
+}
+
+async function generateSessionBackup() {
+  const payload = buildSessionBackupPayload();
+  if (!payload) {
+    updatePlannerHint('Nenhuma sessao ativa para gerar backup.');
+    return;
   }
-  try { sessionStorage.setItem('rfx:mode', state.mode); } catch (_) {}
-  clearSavedPlanningAdjustments();
-  closeLassoConfirmModal();
-  clearLassoSelection({ skipRender: true });
-  state.manualAdjustedDriverIds.clear();
-  state.plannerStatus = 'draft';
-  state.selectedRouteId = null;
-  state.selectedStopId = null;
-  await initializeApp();
-  markPlanAsSaved();
+  if (!payload.clients.length) {
+    updatePlannerHint('A sessao ativa nao possui clientes. Backup nao gerado.');
+    return;
+  }
+
+  const fileName = _buildBackupFileName(payload);
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8;' });
+
+  // Janela nativa "Salvar como" quando disponível; download comum como fallback.
+  if (typeof window.showSaveFilePicker === 'function') {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{ description: 'ROUTflex Plan Backup', accept: { 'application/json': ['.rfxbackup'] } }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      updatePlannerHint(`Backup gerado: ${payload.clients.length} cliente(s) da sessao ${payload.session.label}.`);
+      return;
+    } catch (error) {
+      if (error && error.name === 'AbortError') {
+        updatePlannerHint('Backup cancelado pelo operador.');
+        return;
+      }
+      // Picker indisponivel/bloqueado: segue para o download comum.
+    }
+  }
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  updatePlannerHint(`Backup gerado: ${payload.clients.length} cliente(s) da sessao ${payload.session.label}.`);
+}
+
+function validateBackupPayload(raw) {
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (_) {
+    return { error: 'Arquivo corrompido ou nao e um JSON valido.' };
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { error: 'Estrutura de backup invalida.' };
+  }
+  if (parsed.format !== PLAN_BACKUP_FORMAT) {
+    return { error: `Formato desconhecido (${parsed.format || 'ausente'}). Esperado: ${PLAN_BACKUP_FORMAT}.` };
+  }
+  if (parsed.version !== PLAN_BACKUP_VERSION) {
+    return { error: `Versao de backup nao suportada (${parsed.version}). Esperado: ${PLAN_BACKUP_VERSION}.` };
+  }
+  const session = parsed.session;
+  if (!session || typeof session !== 'object' || !session.ddd) {
+    return { error: 'Backup sem metadados de sessao (campo "session.ddd" ausente).' };
+  }
+  if (!Array.isArray(parsed.clients) || !parsed.clients.length) {
+    return { error: 'Backup sem lista de clientes.' };
+  }
+  const invalid = parsed.clients.findIndex((client) => !client || !client.id);
+  if (invalid !== -1) {
+    return { error: `Cliente sem "id" na posicao ${invalid + 1} do backup.` };
+  }
+  if (parsed.drivers !== undefined && !Array.isArray(parsed.drivers)) {
+    return { error: 'Campo "drivers" invalido no backup.' };
+  }
+  return { payload: parsed };
+}
+
+// Restaura SEMPRE como sessao de recuperacao (cenario isolado). Producao nunca e
+// sobrescrita aqui: promover exige o fluxo existente "Aplicar ajustes ao plano real".
+function restoreBackupAsRecoverySession(payload) {
+  const ddd = String(payload.session.ddd);
+  const activeMeta = planningSessionRegistry.get(state.activePlanningSessionId);
+  if (activeMeta && isProductionSession(activeMeta)) {
+    captureActivePlanningSessionSnapshot();
+  }
+  captureActivePlanningSessionViewContext();
+
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const stamp = `${pad(now.getDate())}/${pad(now.getMonth() + 1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const originLabel = payload.session.label || payload.session.name || `DDD ${ddd}`;
+  const recoveryName = `RECUPERADO — ${originLabel} — ${stamp}`;
+
+  const clientsClone = payload.clients.map((client) => ({ ...client }));
+  const snapshot = clientsClone.map((client) => ({
+    id: client.id, week: client.week, day: client.day,
+    driverId: client.driverId, sequence: client.sequence
+  }));
+  const recoveryId = createSimulationSessionFromSnapshot(ddd, getRealSessionIdForDDD(ddd), snapshot, { name: recoveryName });
+
+  const backupDrivers = Array.isArray(payload.drivers) ? payload.drivers : [];
+  const driversClone = backupDrivers.length
+    ? backupDrivers.map((driver) => ({ ...driver }))
+    : JSON.parse(JSON.stringify(getDriversByDDD(Number(ddd))));
+
+  planningSessionClients.set(recoveryId, clientsClone);
+  planningSessionDrivers.set(recoveryId, driversClone);
+  try { localStorage.removeItem(PLANNING_SESSION_VIEW_STORAGE_PREFIX + recoveryId); } catch (_) {}
+  persistScenarioSession(recoveryId);
+  _saveScenarioRegistry(ddd);
+
+  state.selectedDDD = ddd;
+  const dddSelect = document.getElementById('session-select');
+  if (dddSelect) dddSelect.value = ddd;
+  state.activePlanningSessionByDDD[ddd] = recoveryId;
+  state.mode = 'SIMULATION';
+  try { sessionStorage.setItem('rfx:mode', 'SIMULATION'); } catch (_) {}
+  updateDataModeUI();
+  switchPlanningSession(recoveryId, { skipCapture: true });
+  renderPlanningSessionSelector();
+
+  updatePlannerHint(`${recoveryName}: ${clientsClone.length} cliente(s) restaurado(s) em sessao isolada. A producao nao foi alterada — use "Aplicar ajustes ao plano real" para promover.`);
+  console.info('[BACKUP-RESTORE] sessao de recuperacao criada', { recoveryId, ddd, clientes: clientsClone.length });
+}
+
+function openRestoreBackupPicker() {
+  const input = document.getElementById('backup-restore-file');
+  if (input) input.click();
+}
+
+function handleRestoreBackupFileSelected(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = validateBackupPayload(reader.result);
+    if (result.error) {
+      updatePlannerHint('Backup recusado: ' + result.error);
+      return;
+    }
+    const payload = result.payload;
+    const originLabel = payload.session.label || payload.session.name || `DDD ${payload.session.ddd}`;
+    const savedInfo = payload.session.lastSavedAt
+      ? new Date(payload.session.lastSavedAt).toLocaleString('pt-BR')
+      : 'nao informado';
+    const confirmed = window.confirm(
+      `Restaurar backup de "${originLabel}"?\n\n`
+      + `Clientes: ${payload.clients.length}\n`
+      + `Motoristas: ${(payload.drivers || []).length}\n`
+      + `Ultimo save da origem: ${savedInfo}\n`
+      + `Gerado em: ${payload.createdAt ? new Date(payload.createdAt).toLocaleString('pt-BR') : '-'}`
+      + `${payload.createdBy ? ' por ' + payload.createdBy : ''}\n\n`
+      + 'O backup sera aberto como SESSAO DE RECUPERACAO isolada. A producao NAO sera alterada.'
+    );
+    if (!confirmed) {
+      updatePlannerHint('Restauracao cancelada. Nenhuma alteracao foi feita.');
+      return;
+    }
+    restoreBackupAsRecoverySession(payload);
+  };
+  reader.onerror = () => updatePlannerHint('Falha ao ler o arquivo de backup selecionado.');
+  reader.readAsText(file);
+}
+
+// ── Importação de clientes (Planning-owned, independente de OPS/CRM) ────────
+const IMPORTED_CLIENTS_STORAGE_PREFIX = 'ROUTflex:imported:ddd:';
+let _importPreviewState = null;
+
+function loadImportedClientsForDDD(ddd) {
+  try {
+    const raw = localStorage.getItem(IMPORTED_CLIENTS_STORAGE_PREFIX + String(ddd));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed && parsed.clients) ? parsed.clients : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function persistImportedClientsForDDD(ddd, importedClients) {
+  try {
+    localStorage.setItem(IMPORTED_CLIENTS_STORAGE_PREFIX + String(ddd), JSON.stringify({
+      version: 1,
+      savedAt: new Date().toISOString(),
+      clients: Array.isArray(importedClients) ? importedClients : []
+    }));
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function mergeImportedClientsIntoSource(ddd, customers) {
+  const base = Array.isArray(customers) ? customers : [];
+  const imported = loadImportedClientsForDDD(ddd);
+  if (!imported.length) return base;
+  const existingIds = new Set(base.map((c) => String((c || {}).id)));
+  const merged = base.slice();
+  imported.forEach((c) => {
+    if (c && !existingIds.has(String(c.id))) merged.push(c);
+  });
+  logger.info('[IMPORT] clientes importados mesclados ao carregamento', {
+    ddd: String(ddd), importados: imported.length, mesclados: merged.length - base.length
+  });
+  return merged;
+}
+
+function _parseImportCoord(raw) {
+  const text = String(raw || '').trim().replace(',', '.');
+  if (!text) return null;
+  const value = Number(text);
+  return Number.isFinite(value) ? value : null;
+}
+
+function _normalizeImportText(value) {
+  return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function _parseImportFileText(text) {
+  const clean = String(text || '').replace(/^\uFEFF/, '');
+  const lines = clean.split(/\r\n|\n|\r/).filter((line) => line.trim() !== '');
+  if (lines.length < 2) return { error: 'Arquivo vazio ou sem linhas de dados (esperado: cabecalho + registros).' };
+
+  const headerLine = lines[0];
+  const delimiter = (headerLine.match(/;/g) || []).length >= (headerLine.match(/,/g) || []).length ? ';' : ',';
+
+  const parseLine = (line) => {
+    const cells = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (line[i + 1] === '"') { cur += '"'; i++; }
+          else inQuotes = false;
+        } else {
+          cur += ch;
+        }
+      } else if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === delimiter) {
+        cells.push(cur);
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    cells.push(cur);
+    return cells.map((c) => c.trim());
+  };
+
+  const FIELD_ALIASES = {
+    name: ['cliente', 'nome', 'name', 'nome fantasia', 'razao social', 'fantasia'],
+    city: ['cidade', 'city', 'municipio'],
+    neighborhood: ['bairro', 'neighborhood', 'distrito'],
+    lat: ['latitude', 'lat'],
+    lon: ['longitude', 'lon', 'lng', 'long'],
+    externalRef: ['id externo', 'codigo', 'codigo crm', 'codigo externo', 'crm', 'id crm', 'referencia', 'external id', 'id']
+  };
+  const headers = parseLine(headerLine).map(_normalizeImportText);
+  const fieldIndex = {};
+  Object.keys(FIELD_ALIASES).forEach((field) => {
+    const idx = headers.findIndex((h) => FIELD_ALIASES[field].includes(h));
+    if (idx !== -1) fieldIndex[field] = idx;
+  });
+
+  const missing = ['name', 'lat', 'lon'].filter((f) => fieldIndex[f] === undefined);
+  if (missing.length) {
+    return { error: `Colunas obrigatorias ausentes: ${missing.map((f) => ({ name: 'Cliente', lat: 'Latitude', lon: 'Longitude' })[f]).join(', ')}. Cabecalho lido: ${headers.join(' | ')}` };
+  }
+
+  const rows = lines.slice(1).map((line, i) => {
+    const cells = parseLine(line);
+    const pick = (f) => (fieldIndex[f] !== undefined ? (cells[fieldIndex[f]] || '').trim() : '');
+    return {
+      line: i + 2,
+      name: pick('name'),
+      city: pick('city'),
+      neighborhood: pick('neighborhood'),
+      latRaw: pick('lat'),
+      lonRaw: pick('lon'),
+      externalRef: pick('externalRef') || null
+    };
+  });
+  return { rows };
+}
+
+function _buildImportPreview(rows) {
+  const numDdd = Number(state.selectedDDD);
+  const existingNames = new Set();
+  const existingCoords = new Set();
+  clients.forEach((c) => {
+    if (c.ddd !== numDdd) return;
+    const n = _normalizeImportText(c.nomeFantasia || c.name);
+    if (n) existingNames.add(n);
+    if (hasValidCoordinate(c)) existingCoords.add(Number(c.lat).toFixed(4) + '|' + Number(c.lon).toFixed(4));
+  });
+
+  const seenInFile = new Set();
+  return rows.map((row) => {
+    const issues = [];
+    const name = String(row.name || '').trim();
+    const lat = _parseImportCoord(row.latRaw);
+    const lon = _parseImportCoord(row.lonRaw);
+    if (!name) issues.push('Cliente sem nome');
+    if (lat === null) issues.push('Latitude ausente ou nao numerica');
+    else if (lat < -90 || lat > 90) issues.push('Latitude fora do intervalo (-90 a 90)');
+    if (lon === null) issues.push('Longitude ausente ou nao numerica');
+    else if (lon < -180 || lon > 180) issues.push('Longitude fora do intervalo (-180 a 180)');
+    if (issues.length) {
+      return { row, name, lat, lon, status: 'invalid', reason: issues.join('; ') };
+    }
+
+    const normName = _normalizeImportText(name);
+    const coordKey = lat.toFixed(4) + '|' + lon.toFixed(4);
+    let dupReason = null;
+    if (seenInFile.has('n:' + normName) || seenInFile.has('c:' + coordKey)) dupReason = 'Repetido dentro do arquivo';
+    else if (existingNames.has(normName)) dupReason = `Nome ja existe no DDD ${numDdd}`;
+    else if (existingCoords.has(coordKey)) dupReason = 'Coordenada identica a cliente existente';
+    seenInFile.add('n:' + normName);
+    seenInFile.add('c:' + coordKey);
+    if (dupReason) return { row, name, lat, lon, status: 'duplicate', reason: dupReason };
+    return { row, name, lat, lon, status: 'valid', reason: '' };
+  });
+}
+
+let _importIdSeq = 0;
+// Identidade interna do Planning: clientGroupId + id com sufixo '-w1', mesmo
+// contrato usado por mapRealCustomerToClient. Nenhuma dependencia de CRM.
+function _buildImportedClient(entry) {
+  const ddd = Number(state.selectedDDD);
+  _importIdSeq += 1;
+  const clientGroupId = `RFX-IMP-${ddd}-${Date.now().toString(36).toUpperCase()}-${String(_importIdSeq).padStart(3, '0')}`;
+  const lat = entry.lat;
+  const lon = entry.lon;
+  return {
+    id: `${clientGroupId}-w1`,
+    clientGroupId,
+    name: entry.name,
+    nomeFantasia: entry.name,
+    ddd,
+    region: dddRegions[ddd] || `DDD ${ddd}`,
+    driverId: 'unassigned',
+    driverName: 'Sem motorista',
+    territory: null,
+    city: entry.row.city || (driverBases[ddd] || {}).city || `DDD ${ddd}`,
+    neighborhood: entry.row.neighborhood || '-',
+    week: 1,
+    day: null,
+    vehicle: 'carro',
+    priority: 'Media',
+    curva: 'C',
+    curveCode: null,
+    serviceTime: 20,
+    distance: 0,
+    lat,
+    lon,
+    fixedLat: lat,
+    fixedLon: lon,
+    window: '',
+    address: [entry.row.city, entry.row.neighborhood].filter(Boolean).join(' - ') || '-',
+    status: 'ok',
+    sequence: 1,
+    clientType: 'ativo',
+    eligibleForRouting: true,
+    accessMode: null,
+    territory_code: null,
+    frequencia: (typeof getDefaultFrequencyForCurve === 'function') ? getDefaultFrequencyForCurve('C') : null,
+    semanas: null,
+    segmentacao: null,
+    externalRef: entry.row.externalRef || null,
+    importedAt: new Date().toISOString(),
+    _source: 'IMPORT'
+  };
+}
+
+function openImportClientsPicker() {
+  const activeMeta = planningSessionRegistry.get(state.activePlanningSessionId);
+  if (state.mode !== 'REAL' || (activeMeta && activeMeta.tipo_sessao === 'SIMULACAO')) {
+    updatePlannerHint('Importacao de clientes disponivel apenas na sessao de Producao. Volte para a producao do DDD para importar.');
+    return;
+  }
+  const input = document.getElementById('import-clients-file');
+  if (input) input.click();
+}
+
+function handleImportFileSelected(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  if (/\.xlsx?$/i.test(file.name)) {
+    updatePlannerHint('Formato Excel (.xlsx) ainda nao suportado na importacao. Salve a planilha como CSV e tente novamente.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const parsed = _parseImportFileText(reader.result);
+    if (parsed.error) {
+      updatePlannerHint('Importacao: ' + parsed.error);
+      return;
+    }
+    _importPreviewState = { entries: _buildImportPreview(parsed.rows), fileName: file.name };
+    renderImportClientsModal();
+  };
+  reader.onerror = () => updatePlannerHint('Falha ao ler o arquivo selecionado.');
+  reader.readAsText(file);
+}
+
+const IMPORT_PREVIEW_MAX_ROWS = 200;
+
+function renderImportClientsModal() {
+  const modal = document.getElementById('import-clients-modal');
+  const summaryEl = document.getElementById('import-clients-summary');
+  const bodyEl = document.getElementById('import-clients-table-body');
+  const subtitleEl = document.getElementById('import-clients-modal-subtitle');
+  const confirmBtn = document.getElementById('import-clients-confirm-btn');
+  const dupesChk = document.getElementById('import-include-dupes');
+  if (!modal || !summaryEl || !bodyEl || !_importPreviewState) return;
+
+  const entries = _importPreviewState.entries;
+  const valid = entries.filter((e) => e.status === 'valid').length;
+  const invalid = entries.filter((e) => e.status === 'invalid').length;
+  const dupes = entries.filter((e) => e.status === 'duplicate').length;
+
+  subtitleEl.textContent = `${_importPreviewState.fileName} — ${entries.length} registro(s) lido(s). Clientes validos entram como NAO ROTEIRIZADOS (sem motorista, semana ou dia).`;
+  summaryEl.innerHTML =
+    `<span class="planning-apply-chip">Validos: <strong>${valid}</strong></span>`
+    + `<span class="planning-apply-chip is-warn">Possiveis duplicados: <strong>${dupes}</strong></span>`
+    + `<span class="planning-apply-chip is-warn">Invalidos: <strong>${invalid}</strong></span>`;
+
+  const STATUS_LABEL = { valid: 'Valido', duplicate: 'Duplicado?', invalid: 'Invalido' };
+  bodyEl.innerHTML = entries.slice(0, IMPORT_PREVIEW_MAX_ROWS).map((e) => (
+    '<tr>'
+    + `<td>${e.row.line}</td>`
+    + `<td>${e.status === 'valid' ? '<span class="val-after">' : '<span class="val-before">'}${STATUS_LABEL[e.status]}</span></td>`
+    + `<td>${_escHtml(e.name || e.row.name || '-')}</td>`
+    + `<td>${_escHtml(e.row.city || '-')}</td>`
+    + `<td>${_escHtml(e.row.neighborhood || '-')}</td>`
+    + `<td>${e.lat !== null && e.lat !== undefined ? e.lat.toFixed(5) : _escHtml(e.row.latRaw || '-')}</td>`
+    + `<td>${e.lon !== null && e.lon !== undefined ? e.lon.toFixed(5) : _escHtml(e.row.lonRaw || '-')}</td>`
+    + `<td>${_escHtml(e.reason || '')}</td>`
+    + '</tr>'
+  )).join('');
+  if (entries.length > IMPORT_PREVIEW_MAX_ROWS) {
+    bodyEl.innerHTML += `<tr><td colspan="8">… e mais ${entries.length - IMPORT_PREVIEW_MAX_ROWS} registro(s) nao exibido(s) na previa.</td></tr>`;
+  }
+
+  if (dupesChk) dupesChk.checked = false;
+  if (confirmBtn) confirmBtn.disabled = valid === 0 && dupes === 0;
+  modal.hidden = false;
+}
+
+function closeImportClientsModal() {
+  const modal = document.getElementById('import-clients-modal');
+  if (modal) modal.hidden = true;
+  _importPreviewState = null;
+}
+
+function confirmImportClients() {
+  if (!_importPreviewState) {
+    closeImportClientsModal();
+    return;
+  }
+  const includeDupes = Boolean(document.getElementById('import-include-dupes')?.checked);
+  const toImport = _importPreviewState.entries.filter((e) => e.status === 'valid' || (includeDupes && e.status === 'duplicate'));
+  if (!toImport.length) {
+    updatePlannerHint('Nenhum registro elegivel para importacao (marque "Incluir possiveis duplicados" se aplicavel).');
+    return;
+  }
+
+  const ddd = String(state.selectedDDD);
+  const built = toImport.map((entry) => _buildImportedClient(entry));
+  const persisted = loadImportedClientsForDDD(ddd);
+  if (!persistImportedClientsForDDD(ddd, persisted.concat(built))) {
+    updatePlannerHint('Falha ao persistir os clientes importados no navegador. Importacao cancelada.');
+    return;
+  }
+
+  const existingIds = new Set(state.clients.map((c) => c.id));
+  const uniqueNew = built.filter((c) => !existingIds.has(c.id));
+  updateState({
+    sourceCustomers: [...state.sourceCustomers, ...uniqueNew],
+    clients: [...state.clients, ...uniqueNew]
+  });
+  captureActivePlanningSessionSnapshot();
+  closeImportClientsModal();
   applyFilters({ skipFitBounds: true });
+  updatePlannerHint(`${uniqueNew.length} cliente(s) importado(s) como NAO ROTEIRIZADO no DDD ${ddd}. Use o mapa ou o modo Territorial para atribui-los.`);
 }
 
 function publishPlan() {
@@ -21727,6 +23006,17 @@ function togglePanel(panelId, stateKey) {
 
 async function activatePlanningSessionScope(ddd, sessionId = null) {
   const dddText = String(ddd);
+  const targetSessionId = sessionId
+    || state.activePlanningSessionByDDD[dddText]
+    || getRealSessionIdForDDD(dddText);
+  if (!confirmUnsavedSessionChange(targetSessionId)) {
+    const dddSelect = document.getElementById('session-select');
+    const sessionSelect = document.getElementById('planning-session-select');
+    if (dddSelect) dddSelect.value = String(state.selectedDDD);
+    if (sessionSelect) sessionSelect.value = String(state.activePlanningSessionId || '');
+    updatePlannerHint('Troca de sessão cancelada; alterações pendentes preservadas.');
+    return false;
+  }
   captureActivePlanningSessionViewContext();
   captureActivePlanningSessionSnapshot();
   closeLassoConfirmModal();
@@ -21772,10 +23062,6 @@ async function activatePlanningSessionScope(ddd, sessionId = null) {
     }
   }
 
-  const targetSessionId = sessionId
-    || state.activePlanningSessionByDDD[dddText]
-    || getRealSessionIdForDDD(dddText);
-
   const restoredViewContext = switchPlanningSession(targetSessionId, { skipCapture: true });
   renderPlanningSessionSelector();
   state.manualAdjustedDriverIds.clear();
@@ -21793,16 +23079,17 @@ async function activatePlanningSessionScope(ddd, sessionId = null) {
   }
 
   applyFilters({ skipFitBounds: true });
+  return true;
 }
 
-function handlePlanningSessionRowAction(action, sessionId, ddd) {
+async function handlePlanningSessionRowAction(action, sessionId, ddd) {
   const sessionMeta = planningSessionRegistry.get(sessionId);
   const targetDDD = String(ddd || (sessionMeta && sessionMeta.ddd) || state.selectedDDD);
   const targetSessionId = sessionMeta ? sessionMeta.id : (state.activePlanningSessionByDDD[targetDDD] || getRealSessionIdForDDD(targetDDD));
 
   if (action !== 'activate-session') return;
-  activatePlanningSessionScope(targetDDD, targetSessionId);
-  closePlanningSessionsPopover();
+  const activated = await activatePlanningSessionScope(targetDDD, targetSessionId);
+  if (activated !== false) closePlanningSessionsPopover();
 }
 
 document.getElementById('session-select').onchange = (event) => {
@@ -21810,6 +23097,11 @@ document.getElementById('session-select').onchange = (event) => {
 };
 
 document.getElementById('planning-session-select').onchange = (event) => {
+  if (!confirmUnsavedSessionChange(event.target.value)) {
+    event.target.value = String(state.activePlanningSessionId || '');
+    updatePlannerHint('Troca de sessão cancelada; alterações pendentes preservadas.');
+    return;
+  }
   switchPlanningSession(event.target.value);
 };
 
@@ -21822,14 +23114,14 @@ if (planningCurrentSessionBtn) {
 
 const planningSessionsList = document.getElementById('planning-sessions-list');
 if (planningSessionsList) {
-  planningSessionsList.onclick = (event) => {
+  planningSessionsList.onclick = async (event) => {
     const actionButton = event.target.closest('[data-action]');
     if (!actionButton) return;
     const action = actionButton.getAttribute('data-action');
     const sessionId = actionButton.getAttribute('data-session-id');
     const ddd = actionButton.getAttribute('data-session-ddd');
     if (!action || !sessionId) return;
-    handlePlanningSessionRowAction(action, sessionId, ddd);
+    await handlePlanningSessionRowAction(action, sessionId, ddd);
   };
 }
 
@@ -22021,8 +23313,17 @@ map.on('click', (e) => {
 });
 
 document.getElementById('optimize-plan-btn').onclick = optimizeSelectedRoutes;
-document.getElementById('regenerate-data-btn').onclick = regenerateScenario;
-document.getElementById('publish-plan-btn').onclick = publishPlan;
+document.getElementById('import-clients-btn').onclick = openImportClientsPicker;
+document.getElementById('import-clients-file').addEventListener('change', handleImportFileSelected);
+document.getElementById('import-clients-confirm-btn').onclick = confirmImportClients;
+document.getElementById('import-clients-cancel-btn').onclick = closeImportClientsModal;
+document.getElementById('import-clients-modal').onclick = function(ev) {
+  if (ev.target.id === 'import-clients-modal') closeImportClientsModal();
+};
+document.getElementById('backup-restore-btn').onclick = toggleBackupOptions;
+document.getElementById('backup-generate-btn').onclick = generateSessionBackup;
+document.getElementById('backup-restore-file-btn').onclick = openRestoreBackupPicker;
+document.getElementById('backup-restore-file').addEventListener('change', handleRestoreBackupFileSelected);
 
 // ── Manutenção de Carteiras — event handlers ──────────────────────────────
 document.getElementById('toggle-maintenance-btn').onclick = openMaintenanceModal;
@@ -22069,9 +23370,12 @@ document.getElementById('mnt-lasso-import-btn').addEventListener('click', functi
   _renderMaintenanceClientList(srcClients);
   _renderMaintenanceSummary();
 });
-document.getElementById('export-csv-btn').onclick = exportRoutesCSV;
+document.getElementById('export-routes-btn').onclick = toggleExportOptions;
+document.getElementById('export-session-btn').onclick = () => exportRoutesCSV('session');
+document.getElementById('export-filtered-btn').onclick = () => exportRoutesCSV('filtered');
 document.getElementById('generate-reports-btn').onclick = toggleReportOptions;
 document.getElementById('report-active-btn').onclick = generateReportRoteirizados;
+document.getElementById('report-notrouted-btn').onclick = generateReportNaoRoteirizados;
 document.getElementById('report-inactive-btn').onclick = generateReportInativos;
 document.getElementById('report-nocoord-btn').onclick = generateReportSemCoordenada;
 document.getElementById('toggle-manual-mode-btn').onclick = toggleManualPlanningMode;
@@ -22642,10 +23946,10 @@ const AI_KB = [
   { tags:['alt d','alt+d','ocultar base','esconder base','base'], resp:'**ALT+D** alterna a visibilidade da base (marcador "B") no mapa.\n\nCom a base oculta, as rotas ligam PDV a PDV diretamente e o percurso real (ALT+P) ignora o ponto de partida.' },
   { tags:['alt p','alt+p','percurso real','osrm','rota real','estrada'], resp:'**ALT+P** busca o percurso real nas estradas (OSRM) para a rota selecionada.\n\nA linha traçejada aparece no mapa. Pressione ALT+P novamente para fechar. Limite: 98 PDVs.' },
   { tags:['ctrl s','ctrl+s','salvar','save'], resp:'**CTRL+S** salva os ajustes manuais (semana, dia, motorista de cada PDV).\n\nTenta salvar no backend; se offline, usa o localStorage do navegador.' },
-  { tags:['exportar','csv','download','planilha'], resp:'Exportando o CSV do recorte atual…', action:'EXPORT' },
+  { tags:['exportar','csv','download','planilha'], resp:'Exportando as rotas da sessão inteira…', action:'EXPORT' },
   { tags:['otimizar','optimize','sequenciar','balancear rota','balancear'], resp:'Otimizando o sequenciamento… Os PDVs são reordenados por distância crescente a partir da base do motorista.', action:'OPTIMIZE' },
   { tags:['publicar','publish'], resp:'Publicando o plano. O status muda para **Publicado**.', action:'PUBLISH' },
-  { tags:['novo cenario','novo cenário','regenerar','resetar'], resp:'Gerando novo cenário… Os ajustes manuais serão descartados.', action:'REGENERATE', confirm:'Gerar um novo cenário? Os ajustes manuais serão perdidos.' },
+  { tags:['novo cenario','novo cenário','regenerar','resetar'], resp:'Cenários são criados pelo botão **Nova Sessão**, no painel "Sessão de planejamento" (opção **Novo Cenário**).\n\nO cenário nasce como sandbox isolado e não altera a produção, o CRM ou o PALM.' },
   { tags:['centralizar','focar mapa'], resp:'Centralizando o mapa na rota selecionada.', action:'CENTER' },
   { tags:['limpar foco','deselecionar'], resp:'Seleção limpa — rota e parada desfocadas.', action:'CLEAR' },
   { tags:['semana','semanas','ciclo'], resp:'O planejamento suporta de **4 a 8 semanas** por ciclo.\n\nUse o botão **>** no dock inferior para adicionar semanas. As 4 primeiras são fixas.' },
@@ -22658,7 +23962,7 @@ const AI_KB = [
   { tags:['clientes novos','novos','alocar novos','sugerir novos','novo motorista dia','alocacao novo'], resp:'Posso sugerir alocação para clientes NOVOS por proximidade geográfica (motorista + dia), sem aplicar automaticamente.\n\nUse: *"sugerir alocação dos clientes novos"*.' },
   { tags:['manual','planejamento manual','expandir'], resp:'O botão **"Expandir planejamento"** ativa o modo tela cheia do mapa.\n\nOs painéis laterais somem e um painel de KPIs aparece à direita. Arrastar e atalhos funcionam normalmente.' },
   { tags:['ola','olá','oi','hello','hey','bom dia','boa tarde','boa noite'], resp:'Olá! Sou o **ROUTEX**, assistente do ecossistema ROUTflex. 👋\n\nDigite *ajuda* para ver tudo que posso fazer.' },
-  { tags:['ajuda','help','funcionalidades','comandos','o que pode'], resp:'**Dúvidas que respondo:**\nCurva ABC • Arrastar PDV • Atalhos • Motoristas • Semanas/dias • OSRM • Clustering • Territórios\n\n**Ações que executo:**\n→ *"otimizar"* — sequencia PDVs\n→ *"exportar csv"* — baixa planilha\n→ *"publicar plano"* — muda status\n→ *"centralizar"* — foca o mapa\n→ *"limpar foco"* — deseleciona\n→ *"novo cenário"* — regenera dados\n→ *"coloque todos os clientes na quarta da semana 1"* — move em lote para dia/semana\n\n**Território no comando:**\nUse formatos como *65-02*, *65_02*, *65 02* ou *6502*.' },
+  { tags:['ajuda','help','funcionalidades','comandos','o que pode'], resp:'**Dúvidas que respondo:**\nCurva ABC • Arrastar PDV • Atalhos • Motoristas • Semanas/dias • OSRM • Clustering • Territórios\n\n**Ações que executo:**\n→ *"otimizar"* — sequencia PDVs\n→ *"exportar csv"* — baixa planilha\n→ *"publicar plano"* — muda status\n→ *"centralizar"* — foca o mapa\n→ *"limpar foco"* — deseleciona\n→ *"coloque todos os clientes na quarta da semana 1"* — move em lote para dia/semana\n\n**Território no comando:**\nUse formatos como *65-02*, *65_02*, *65 02* ou *6502*.' },
 ];
 const AI_QUICK = [
   { label:'❓ Ajuda',        q:'ajuda' },
@@ -23843,7 +25147,6 @@ function _aiDoAction(action, confirmMsg) {
   if (action === 'EXPORT')     exportRoutesCSV();
   if (action === 'OPTIMIZE')   optimizeSelectedRoutes();
   if (action === 'PUBLISH')    publishPlan();
-  if (action === 'REGENERATE') regenerateScenario();
   if (action === 'CENTER')     centerCurrentRoute();
   if (action === 'CLEAR')      clearSelection();
 }

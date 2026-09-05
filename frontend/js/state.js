@@ -73,6 +73,9 @@ const state = {
   _lassoPointerY: null,
   manualAdjustedDriverIds: new Set(),
   hasUnsavedPlanChanges: false,
+  planningPersistenceBySession: new Map(),
+  planningAutosaveBySession: new Map(),
+  currentPlanningOperator: null,
   driverFormMode: 'create',
   driverEditingId: null,
   _lastBaseClickDriverId: null,
@@ -154,6 +157,7 @@ function driverMatchesFilter(driverId) {
 
 // ── Campos de planejamento — mutações nestes campos marcam o plano como dirty ──
 var _PLANNING_KEYS = new Set(['week', 'day', 'driverId', 'sequence', 'manualRouteInclude', 'eligibleForRouting']);
+var _PERSISTED_PLANNING_KEYS = new Set(['week', 'day', 'driverId', 'sequence']);
 
 // Hook interno chamado após qualquer mutação de cliente.
 // Marca dirty quando algum campo de planejamento foi alterado e loga a mudança.
@@ -163,12 +167,16 @@ function _onClientMutated(client, changedKeys) {
   state._clientMutationCounter = (state._clientMutationCounter || 0) + 1;
   if (typeof invalidateClassifyCache === 'function') invalidateClassifyCache();
   var hasPlanningChange = false;
+  var hasPersistedPlanningChange = false;
   for (var i = 0; i < changedKeys.length; i++) {
     if (_PLANNING_KEYS.has(changedKeys[i])) {
       hasPlanningChange = true;
       state.hasUnsavedPlanChanges = true;
-      break;
     }
+    if (_PERSISTED_PLANNING_KEYS.has(changedKeys[i])) hasPersistedPlanningChange = true;
+  }
+  if (hasPersistedPlanningChange && typeof markPlanningPersistenceAsDirty === 'function') {
+    markPlanningPersistenceAsDirty();
   }
   if (hasPlanningChange && client.ddd) {
     _schedulePlanningAutosave(client.ddd);

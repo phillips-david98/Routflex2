@@ -8,7 +8,7 @@ import json
 import os
 import uuid
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from event_logger import append_event, read_events
 from logging_manager import set_request_id
 from coordinate_rules import is_sem_coordenada, normalize_status_with_coordinates
@@ -117,6 +117,12 @@ def write_manual_plan_snapshot(payload: dict):
     MANUAL_PLAN_FILE.write_text(json.dumps(payload, ensure_ascii=True, indent=2), encoding="utf-8")
 
 
+def build_confirmable_manual_plan_payload(snapshot: ManualPlanSnapshot) -> dict:
+    payload = snapshot.model_dump()
+    payload["savedAt"] = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+    return payload
+
+
 # ── Persistência DDD-scoped ────────────────────────────────────────────────
 MANUAL_PLAN_DATA_DIR = Path(__file__).resolve().parent / "data"
 
@@ -168,9 +174,14 @@ def get_manual_plan():
 
 @app.put("/manual-plan", response_model=ManualPlanSaveResponse)
 def save_manual_plan(snapshot: ManualPlanSnapshot):
-    payload = snapshot.model_dump()
+    payload = build_confirmable_manual_plan_payload(snapshot)
     write_manual_plan_snapshot(payload)
-    return {"status": "saved", "savedAt": payload["savedAt"], "count": len(payload["clients"])}
+    return {
+        "status": "saved",
+        "savedAt": payload["savedAt"],
+        "savedBy": payload.get("savedBy"),
+        "count": len(payload["clients"]),
+    }
 
 
 @app.delete("/manual-plan", response_model=GenericStatusResponse)
@@ -200,10 +211,15 @@ def save_manual_plan_ddd(ddd: str, snapshot: ManualPlanSnapshot):
         _get_ddd_plan_file(ddd)
     except ValueError:
         raise HTTPException(status_code=400, detail=f"DDD invalido: {ddd!r}")
-    payload = snapshot.model_dump()
+    payload = build_confirmable_manual_plan_payload(snapshot)
     write_manual_plan_snapshot_ddd(ddd, payload)
     app_logger.info(f"[PLAN][DDD {ddd}] saved", extra={"clients_count": len(payload.get("clients", []))})
-    return {"status": "saved", "savedAt": payload["savedAt"], "count": len(payload["clients"])}
+    return {
+        "status": "saved",
+        "savedAt": payload["savedAt"],
+        "savedBy": payload.get("savedBy"),
+        "count": len(payload["clients"]),
+    }
 
 
 @app.delete("/manual-plan/{ddd}", response_model=GenericStatusResponse)
