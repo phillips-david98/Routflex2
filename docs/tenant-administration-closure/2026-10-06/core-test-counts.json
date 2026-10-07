@@ -1,0 +1,156 @@
+{
+  "method": "Static TypeScript AST test-registration count reconciled to final passing Jest log; no test import or rerun",
+  "jestPassed": 291,
+  "unitPassed": 135,
+  "integrationPassed": 156,
+  "reconciles": true,
+  "files": [
+    {
+      "project": "unit",
+      "file": "core-config.spec.ts",
+      "directTests": 12,
+      "parameterizedTests": 10,
+      "total": 22
+    },
+    {
+      "project": "unit",
+      "file": "domain-exception-filter-privacy.spec.ts",
+      "directTests": 2,
+      "parameterizedTests": 0,
+      "total": 2
+    },
+    {
+      "project": "unit",
+      "file": "operation-session-compatibility.service.spec.ts",
+      "directTests": 3,
+      "parameterizedTests": 2,
+      "total": 5
+    },
+    {
+      "project": "unit",
+      "file": "planning-context-guards.spec.ts",
+      "directTests": 11,
+      "parameterizedTests": 4,
+      "total": 15
+    },
+    {
+      "project": "unit",
+      "file": "planning-module-access.spec.ts",
+      "directTests": 2,
+      "parameterizedTests": 28,
+      "total": 30
+    },
+    {
+      "project": "unit",
+      "file": "planning-operation-context.service.spec.ts",
+      "directTests": 3,
+      "parameterizedTests": 0,
+      "total": 3
+    },
+    {
+      "project": "unit",
+      "file": "refresh-cookie.service.spec.ts",
+      "directTests": 4,
+      "parameterizedTests": 3,
+      "total": 7
+    },
+    {
+      "project": "unit",
+      "file": "request-id.spec.ts",
+      "directTests": 1,
+      "parameterizedTests": 13,
+      "total": 14
+    },
+    {
+      "project": "unit",
+      "file": "seats.spec.ts",
+      "directTests": 8,
+      "parameterizedTests": 0,
+      "total": 8
+    },
+    {
+      "project": "unit",
+      "file": "session-revocation-guard.spec.ts",
+      "directTests": 1,
+      "parameterizedTests": 4,
+      "total": 5
+    },
+    {
+      "project": "unit",
+      "file": "token.service.spec.ts",
+      "directTests": 11,
+      "parameterizedTests": 2,
+      "total": 13
+    },
+    {
+      "project": "unit",
+      "file": "units-path.spec.ts",
+      "directTests": 11,
+      "parameterizedTests": 0,
+      "total": 11
+    },
+    {
+      "project": "integration",
+      "file": "auth-hardening.spec.ts",
+      "directTests": 6,
+      "parameterizedTests": 0,
+      "total": 6
+    },
+    {
+      "project": "integration",
+      "file": "isolation.spec.ts",
+      "directTests": 13,
+      "parameterizedTests": 0,
+      "total": 13
+    },
+    {
+      "project": "integration",
+      "file": "operation-session-compatibility.spec.ts",
+      "directTests": 3,
+      "parameterizedTests": 0,
+      "total": 3
+    },
+    {
+      "project": "integration",
+      "file": "operation-sessions.spec.ts",
+      "directTests": 10,
+      "parameterizedTests": 0,
+      "total": 10
+    },
+    {
+      "project": "integration",
+      "file": "planning-business-permissions.spec.ts",
+      "directTests": 15,
+      "parameterizedTests": 26,
+      "total": 41
+    },
+    {
+      "project": "integration",
+      "file": "planning-context.spec.ts",
+      "directTests": 14,
+      "parameterizedTests": 0,
+      "total": 14
+    },
+    {
+      "project": "integration",
+      "file": "planning-snapshot-rollout.spec.ts",
+      "directTests": 6,
+      "parameterizedTests": 0,
+      "total": 6
+    },
+    {
+      "project": "integration",
+      "file": "tenant-administration-closure.spec.ts",
+      "directTests": 32,
+      "parameterizedTests": 20,
+      "total": 52
+    },
+    {
+      "project": "integration",
+      "file": "tenant-kernel.spec.ts",
+      "directTests": 11,
+      "parameterizedTests": 0,
+      "total": 11
+    }
+  ]
+}

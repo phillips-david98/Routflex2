@@ -1,0 +1,48 @@
+{
+  "at": "2026-10-07T00:35:40.866Z",
+  "readOnlyRequests": true,
+  "noLoginOrRealTenantMutation": true,
+  "checks": [
+    {
+      "route": "/core/health",
+      "status": 200
+    },
+    {
+      "route": "/.well-known/jwks.json",
+      "status": 200
+    },
+    {
+      "route": "/core/admin/tenants",
+      "status": 401
+    },
+    {
+      "route": "/core/me",
+      "status": 401
+    },
+    {
+      "route": "/core/invitations/preview",
+      "status": 404,
+      "cacheControl": "no-store"
+    },
+    {
+      "port": 5500,
+      "route": "/workspace.html",
+      "status": 200
+    },
+    {
+      "port": 5500,
+      "route": "/invitation.html",
+      "status": 200
+    },
+    {
+      "port": 5500,
+      "route": "/control-center/index.html",
+      "status": 200
+    },
+    {
+      "port": 8080,
+      "route": "/",
+      "status": 200
+    }
+  ]
+}

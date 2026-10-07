@@ -1,0 +1,32 @@
+{
+  "database": "routflex_core_test",
+  "schema": "core",
+  "operationalDatabaseUsedForFixtures": false,
+  "baseline": { "suitesPassed": 20, "suitesTotal": 20, "testsPassed": 239, "testsTotal": 239, "typecheck": "PASS", "build": "PASS" },
+  "tenantAdministrationHttp": { "suitesPassed": 1, "suitesTotal": 1, "testsPassed": 52, "testsTotal": 52 },
+  "final": { "suitesPassed": 21, "suitesTotal": 21, "testsPassed": 291, "testsTotal": 291, "typecheck": "PASS", "build": "PASS" },
+  "finalByProject": {
+    "unit": { "suitesPassed": 12, "testsPassed": 135 },
+    "integration": { "suitesPassed": 9, "testsPassed": 156 },
+    "countEvidence": "core-test-counts.json (static registration count reconciled to passing Jest log; no rerun)"
+  },
+  "existingTestsModified": 0,
+  "newSuite": "C:/ROUTflex-core/test/integration/tenant-administration-closure.spec.ts",
+  "cleanupReadOnlyVerification": {
+    "tenantFixturesRemaining": 0,
+    "userFixturesRemaining": 0,
+    "platformRoleFixturesRemaining": 0,
+    "audit_logs_no_delete": "ENABLED",
+    "audit_logs_no_update": "ENABLED"
+  },
+  "initialFailuresResolved": [
+    "New test expectation aligned with HTTP 409 for activation from CANCELLED; denial and domain code remained required.",
+    "Advisory lock query changed from returning PostgreSQL VOID to SELECT 1 FROM pg_advisory_xact_lock; acceptance paths pass afterward.",
+    "Expired ON_INVITE reservation closure exposes reserved seats, releases them through administrative revoke, and repeats without duplicate audit events."
+  ],
+  "logs": [
+    "baseline-core-tests.log", "baseline-core-typecheck.log", "baseline-core-build.log",
+    "tenant-admin-http-first.log", "tenant-admin-http-advisory-lock-before-fix.log",
+    "tenant-admin-http.log", "core-tests-final.log", "core-typecheck-final.log", "core-build-final.log"
+  ]
+}

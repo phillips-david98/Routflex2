@@ -1,0 +1,90 @@
+{
+  "at": "2026-10-07T00:38:43.421Z",
+  "repositories": {
+    "C:\\ROUTflex-core": {
+      "baselineFiles": 135,
+      "unchanged": 126,
+      "changes": [
+        {
+          "path": "prisma/schema.prisma",
+          "status": "modified"
+        },
+        {
+          "path": "src/modules/context/context.service.ts",
+          "status": "modified"
+        },
+        {
+          "path": "src/modules/http/dto.ts",
+          "status": "modified"
+        },
+        {
+          "path": "src/modules/http/platform.controller.ts",
+          "status": "modified"
+        },
+        {
+          "path": "src/modules/http/tenant.controller.ts",
+          "status": "modified"
+        },
+        {
+          "path": "src/modules/invitations/invitations.service.ts",
+          "status": "modified"
+        },
+        {
+          "path": "src/modules/memberships/memberships.service.ts",
+          "status": "modified"
+        },
+        {
+          "path": "src/modules/rbac/rbac.service.ts",
+          "status": "modified"
+        },
+        {
+          "path": "src/modules/tenants/tenants.service.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    "C:\\ROUTflex-landing": {
+      "baselineFiles": 446,
+      "unchanged": 441,
+      "changes": [
+        {
+          "path": "control-center/cc-live.js",
+          "status": "modified"
+        },
+        {
+          "path": "core-client.js",
+          "status": "modified"
+        },
+        {
+          "path": "tests/core-client.test.cjs",
+          "status": "modified"
+        },
+        {
+          "path": "workspace.html",
+          "status": "modified"
+        },
+        {
+          "path": "workspace.js",
+          "status": "modified"
+        }
+      ]
+    },
+    "C:\\ROUTflex-sales": {
+      "baselineFiles": 352,
+      "unchanged": 352,
+      "changes": []
+    },
+    "C:\\ROUTflex": {
+      "baselineFiles": 1552,
+      "unchanged": 1552,
+      "changes": []
+    }
+  },
+  "protectedPlanning": {
+    "filesChanged": 0,
+    "databaseSha256": "1cadd6cb7da276544ee6295caa44c52134dbcfbbbaf050f890af738a8aa14d58",
+    "manualPlan65Sha256": "290bdee975e6b7bf53c9677ca42fdd8eca81482888c9f4e387999b21aee487f8",
+    "newSourceFiles": [],
+    "sourceInventoryCheck": "git ls-files --cached --others --exclude-standard -- frontend backend"
+  }
+}

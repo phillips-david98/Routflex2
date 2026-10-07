@@ -1,0 +1,126 @@
+{
+  "at": "2026-10-07T00:35:41.097Z",
+  "mode": "after",
+  "readOnly": true,
+  "database": "routflex_core",
+  "schema": "core",
+  "duplicateOwners": 0,
+  "hashes": {
+    "_prisma_migrations": {
+      "count": 5,
+      "sha256": "0b5b7b7a909f1c9b0c3f10cc8eb2734cf60470eb54935348e2cb701b99ab63e8"
+    },
+    "audit_logs": {
+      "count": 316,
+      "sha256": "8620f66dd2bfe6b911dd8ac71e3127dd97eb9a49f9b6df398356f4ecc924477a"
+    },
+    "authentication_refresh_tokens": {
+      "count": 214,
+      "sha256": "6a6f9c039aecc6a652c7db15903bda34d2209e78551af289893ee77795bb5ab7"
+    },
+    "authentication_sessions": {
+      "count": 79,
+      "sha256": "0d9caead46d26018d3a04704cfc9c9b0e8fab126bf282d711f5a04a39415ba3d"
+    },
+    "entitlement_seat_quotas": {
+      "count": 15,
+      "sha256": "43b64687f948b6f7917e286ac11df8182a1c940e821bf524f7b72b4d4b814449"
+    },
+    "invitations": {
+      "count": 5,
+      "sha256": "26db6dfcd8bbdc9512882b604b8c491e2c432f4944722ed5cf7a3b0340bf2589"
+    },
+    "membership_roles": {
+      "count": 14,
+      "sha256": "6c73a76c4876cc51baeb05029f683aba1897ad31a316264808990532ae7b7ed3"
+    },
+    "modules": {
+      "count": 4,
+      "sha256": "a22e3fddc45c4d35c825998d2fbfe81b2be2c2fb404aeae02abb2b4d2363f8e6"
+    },
+    "operation_session_aliases": {
+      "count": 1,
+      "sha256": "51f1663839b54208679e7505c83aa1af74ce50f9ac1a985fe8aa341c5a82d5fd"
+    },
+    "operation_sessions": {
+      "count": 1,
+      "sha256": "8554b2c0aeb57e83425b319df1c4a336b4e264f9969c5ca5ddfdf73fd27892fc"
+    },
+    "permissions": {
+      "count": 32,
+      "sha256": "3dc6b1a373e324f8a0a6c17e76c4785169ed3c4f8950b28c5c1af2dfcba08daf"
+    },
+    "role_permissions": {
+      "count": 63,
+      "sha256": "45d39e71a0367d9c96e613a4cc4abcfbf88092a72caab0edce1db5c7eddbeb10"
+    },
+    "roles": {
+      "count": 8,
+      "sha256": "317b46586e7ed744e0dcd0e1e35c5dba9db4a6598527b48890f681814526f230"
+    },
+    "seat_assignments": {
+      "count": 12,
+      "sha256": "3e6bd7fcb8bf33609c27c55bb0ef8f1b3bbf582a2f79846e2ce571804bc10101"
+    },
+    "seat_types": {
+      "count": 6,
+      "sha256": "b2e61482f1d3b82594b0ad28a71fd96443c7d3524642d9751e3cfa2d607a5714"
+    },
+    "tenant_entitlements": {
+      "count": 18,
+      "sha256": "cee3515f91730fcf4369c1e0bc1f2f86969a73b5d9e5fe0bdd678d185afeb844"
+    },
+    "tenant_memberships": {
+      "count": 11,
+      "sha256": "3decb009cecfc83d3d1e9001ad1f8952cdacfa8fadf47560b366753168fb59f4"
+    },
+    "tenant_unit_codes": {
+      "count": 10,
+      "sha256": "15052cff4bf499d64339f4adf82f733947a9fe4e8a259dc5fd38e3b5b2e0395a"
+    },
+    "tenant_units": {
+      "count": 14,
+      "sha256": "681c3d693046fd01cd6f664a642610172afdda406f4a0d52d95db1034be7c772"
+    },
+    "tenants": {
+      "count": 6,
+      "sha256": "e074296cdd1028fd38ea8137524e76caa449c6ec298ed21c959c643ec2f2f8ac"
+    },
+    "user_unit_scopes": {
+      "count": 6,
+      "sha256": "49c79068cebe2a08f3e3cbdd89fc55c35aa83e5c717b79c35f1cd7f7e54da4b1"
+    },
+    "users": {
+      "count": 12,
+      "sha256": "984b1c714f691bd52372209f6c8de8d38f6cff449dc0e76539a365e7ae2901ac"
+    }
+  },
+  "changed": [
+    "_prisma_migrations",
+    "invitations"
+  ],
+  "migrations": [
+    {
+      "migration_name": "20260801000000_core_tenant_kernel_v1",
+      "finished": true
+    },
+    {
+      "migration_name": "20260811000000_core_authentication_hardening_b1",
+      "finished": true
+    },
+    {
+      "migration_name": "20260811120000_core_operation_session_registry_b2",
+      "finished": true
+    },
+    {
+      "migration_name": "20260811123000_core_operation_session_registry_b2_hardening",
+      "finished": true
+    },
+    {
+      "migration_name": "20261006000100_tenant_administration_closure",
+      "finished": true
+    }
+  ],
+  "originalInvitationsPreserved": true,
+  "ownerIntentCount": 0
+}

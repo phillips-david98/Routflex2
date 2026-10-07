@@ -1,0 +1,27 @@
+{
+  "C:/ROUTflex-core": [
+    "prisma/schema.prisma",
+    "prisma/migrations/20261006000100_tenant_administration_closure/migration.sql",
+    "src/modules/context/context.service.ts",
+    "src/modules/http/dto.ts",
+    "src/modules/http/platform.controller.ts",
+    "src/modules/http/tenant.controller.ts",
+    "src/modules/invitations/invitations.service.ts",
+    "src/modules/memberships/memberships.service.ts",
+    "src/modules/rbac/rbac.service.ts",
+    "src/modules/tenants/tenants.service.ts",
+    "TENANT_ADMINISTRATION_CLOSURE_V1.md",
+    "test/integration/tenant-administration-closure.spec.ts"
+  ],
+  "C:/ROUTflex-landing": [
+    "core-client.js",
+    "workspace.js",
+    "workspace.html",
+    "control-center/cc-live.js",
+    "invitation.html",
+    "invitation.js",
+    "tests/core-client.test.cjs",
+    "tests/invitation.test.cjs",
+    "tests/tenant-admin-ui.test.cjs"
+  ]
+}
