@@ -9,3 +9,5 @@
 Antes dos pushes foram consultados metadados, Actions/workflows, webhooks, Pages e deployments dos tr?s remotos via GET autenticado. Zero workflows, zero webhooks e zero deployments; Pages desativado. Nenhum workflow ou hook local ativo foi inclu?do. N?o foi encontrada associa??o de publica??o autom?tica. Nenhum deploy foi executado.
 
 Foram inspecionados 283 blobs pendentes no ROUTflex, 77 na Landing e dois no Sales, sem correspond?ncia com seis valores de credenciais configuradas nem padr?es de chave privada/token. A confer?ncia separada de 2.792 identificadores dos arquivos DEV localizou os relat?rios antigos que bloquearam o push da branch original. Um teste antigo com identificador DEV foi exclu?do do arquivo selecionado, mantendo o original local. Bancos, dados empresariais, .env, backups e tempor?rios n?o integram os novos commits.
+
+A branch de arquivo Planning foi enviada e seu HEAD remoto `c578e68` foi confirmado antes do commit final de documenta??o.
