@@ -1,0 +1,152 @@
+[
+  {
+    "path": "frontend/js/field-mission-controller.js",
+    "beforeSha256": "18ccb6e8e608db7c3ec9941ac3c5929a7229a52d2aca3a9af31cb1312f2ef85d",
+    "afterSha256": "34214f138121d3d69b3767e85fc3010a81bf962f4f592fc59af2db93a4b882cc",
+    "afterLfSha256": "07e55796f086e4ca4038eb94df49860a63faf3fa232ce8000500cdccc5953b21"
+  },
+  {
+    "path": "frontend/js/integration/connected-controller.mjs",
+    "beforeSha256": "e0fc66ac9f9ccdd05a260eeabdb9d2820132e0263fd7ae2ab7cbcf22b066482b",
+    "afterSha256": "c418a306f66f386a7ce8788ea9eaf6f0f1a782af91d8c67550d3b801b81f5772",
+    "afterLfSha256": "c418a306f66f386a7ce8788ea9eaf6f0f1a782af91d8c67550d3b801b81f5772"
+  },
+  {
+    "path": "frontend/js/integration/controller.mjs",
+    "beforeSha256": "90571e738829a5ff5a1b2f3efa91d58c8dd3f4a550cac1ffb662ad3f1a76c24c",
+    "afterSha256": "a42e23be3abf009ec58d0b488ef9f896a6b59391b26d592160e29318c397c7b0",
+    "afterLfSha256": "a42e23be3abf009ec58d0b488ef9f896a6b59391b26d592160e29318c397c7b0"
+  },
+  {
+    "path": "frontend/js/integration/models.mjs",
+    "beforeSha256": "e4916e7d3c9432403e7138cabc494ff3255b982ce495cf3958faacbd04b5ed97",
+    "afterSha256": "5d0b5d2ea7d020699513015375e579af23049c98670326f225b23b59acf1652f",
+    "afterLfSha256": "5d0b5d2ea7d020699513015375e579af23049c98670326f225b23b59acf1652f"
+  },
+  {
+    "path": "frontend/js/integration/views.mjs",
+    "beforeSha256": "5245aea1c58501898b1319662c29429c89ff3fa4b0ba51b461fe768c70b8dd9a",
+    "afterSha256": "43eea87cb4c66148eb731703b60e3b7c5b6466a44baebbb05bc2e7e2ca519dfc",
+    "afterLfSha256": "43eea87cb4c66148eb731703b60e3b7c5b6466a44baebbb05bc2e7e2ca519dfc"
+  },
+  {
+    "path": "frontend/js/planning-customer-search.js",
+    "beforeSha256": "9a98e50cd46fe0b0cd0f4ada5f03237163a0a6e14356253e3e4a893a77333303",
+    "afterSha256": "5d9f6d82789c40d2103a12786a88713a9bc17cc665064251c12b50e3bbc51fba",
+    "afterLfSha256": "63fbe1c3b66f591c90c1a5f36642c98eeeed3b906269d59af4c10dff26c8fb96"
+  },
+  {
+    "path": "frontend/js/planning-distribution-ui.js",
+    "beforeSha256": "a7bcbf77ab88bb39d4c189501426677fec572cb4647194128639c33677f8b9b6",
+    "afterSha256": "c758bd7b8f2e509f9269b7a095a481197e46e76c2a199a77141443cc791dbd9f",
+    "afterLfSha256": "c758bd7b8f2e509f9269b7a095a481197e46e76c2a199a77141443cc791dbd9f"
+  },
+  {
+    "path": "frontend/js/planning-ins-import-ui.js",
+    "beforeSha256": "f5683c91ee5d6cf00ec2250a6b546c414c7bda6d00635122fc4bec2ee4f8a902",
+    "afterSha256": "c3f30759e11418cea9682cd7ce987677b410a8a9525b4969947bd0fc0b944e0f",
+    "afterLfSha256": "c3f30759e11418cea9682cd7ce987677b410a8a9525b4969947bd0fc0b944e0f"
+  },
+  {
+    "path": "frontend/js/planning-logistics.js",
+    "beforeSha256": "96f9d65a63fff90071df1f191efdae7a7f3dd171699638bbee7b7fe2bf8f8f15",
+    "afterSha256": "8cee90615196268d1bebb3030654a10559dea15fc0d47196fd0e7168b377dd62",
+    "afterLfSha256": "8cee90615196268d1bebb3030654a10559dea15fc0d47196fd0e7168b377dd62"
+  },
+  {
+    "path": "frontend/js/planning-maintenance-ui.js",
+    "beforeSha256": "64ff839a71295b7f13feefe429dea7e1abe999fe2993158279fd019cda7cf65b",
+    "afterSha256": "2addc46424bbba801870bc43ebc6ee0de332a854ed66212b5b20e83fa2bd750e",
+    "afterLfSha256": "2addc46424bbba801870bc43ebc6ee0de332a854ed66212b5b20e83fa2bd750e"
+  },
+  {
+    "path": "frontend/js/planning-metrics.js",
+    "beforeSha256": "bf4e8bb19b6381ab2578e82b19ed8592ef9cd589ded264e926eccfd0e456d344",
+    "afterSha256": "d55e951d74261e98ec79bb1d54baf29d4ff0aa553a7e6081a6643e29270dfc2e",
+    "afterLfSha256": "f203300eef3b663cb65fa89b6701436bd9a1d74adca9d71c5a5561658fea9f40"
+  },
+  {
+    "path": "frontend/js/planning-operational-export.js",
+    "beforeSha256": "9e8774f5392d847b9c56643df978138183847f91c9a3a561e9138840a9c9fff6",
+    "afterSha256": "c436dfe2f21ed7f724e192157225e9452b0861b88a845d00fa88af46bb8352b3",
+    "afterLfSha256": "c436dfe2f21ed7f724e192157225e9452b0861b88a845d00fa88af46bb8352b3"
+  },
+  {
+    "path": "frontend/js/planning-ops-modal.mjs",
+    "beforeSha256": "7cabaf547a26668fac0b976c36f6cd161e6a5751040113768e1cd76747745936",
+    "afterSha256": "2806463adf78170b4eb82fb6c390e6716b24e014c30d78b9e60d1f5041215945",
+    "afterLfSha256": "2806463adf78170b4eb82fb6c390e6716b24e014c30d78b9e60d1f5041215945"
+  },
+  {
+    "path": "frontend/js/planning-overnight.js",
+    "beforeSha256": "42e631946768ba598fa1d54f31ed0e8f4eec0629a8f7dc65a39defdee026d828",
+    "afterSha256": "2c9c9ad50797f5d84efd073be0a5c8d794d15bf30846c251cd917fbe88917c05",
+    "afterLfSha256": "2c9c9ad50797f5d84efd073be0a5c8d794d15bf30846c251cd917fbe88917c05"
+  },
+  {
+    "path": "frontend/js/planning-period-ui.js",
+    "beforeSha256": "a44cf33e78c363b541742ea60ce1390359209fc1ec901c745741aa32e8147ea8",
+    "afterSha256": "9a93ff2620eb3d6d5ff99b049b74ce168be2e1225db82b0d072734c56e099256",
+    "afterLfSha256": "e348547318aabe64c0bd401cb028f95194d3955dfcab85a4fc444b0c4c461c97"
+  },
+  {
+    "path": "frontend/js/planning-resource-executor-ui.js",
+    "beforeSha256": "352446d2a167b08607aae7544859f9e79d3a6be4ab152b5913b2643f03f7b7f7",
+    "afterSha256": "898037f4a7882142486c95b6f4e46dbf144233d4b39f0888eb75cf2a7c7fb8c6",
+    "afterLfSha256": "898037f4a7882142486c95b6f4e46dbf144233d4b39f0888eb75cf2a7c7fb8c6"
+  },
+  {
+    "path": "frontend/js/planning-routex-center.js",
+    "beforeSha256": "87136eaef2388bbfd6e85b24f2fd14c00f11b6866cb9081b24f72965985dd2dc",
+    "afterSha256": "39b9e918b3398031b313d6f8c43e2cdeaa907d5db4459a393847b5c913c0c0bd",
+    "afterLfSha256": "39b9e918b3398031b313d6f8c43e2cdeaa907d5db4459a393847b5c913c0c0bd"
+  },
+  {
+    "path": "frontend/js/planning-save-bridge.js",
+    "beforeSha256": "40da639875fb98cf6e94b85705eb23fbf0d287df6415bfe4193706ab7fbc8219",
+    "afterSha256": "6fb2e80fe93c1cf3fc28daa15fd46eaf1c71b01d3361b3e848e40ba409f37b76",
+    "afterLfSha256": "6fb2e80fe93c1cf3fc28daa15fd46eaf1c71b01d3361b3e848e40ba409f37b76"
+  },
+  {
+    "path": "frontend/js/planning-schedule-ui.js",
+    "beforeSha256": "7a6406026b03e25de772052533ba8b999c0797c6ec07b582d08eb5402350703f",
+    "afterSha256": "6143e5b463e0793985b656000e7d4e9568e0200c763fbc9a6f4c81aa20054190",
+    "afterLfSha256": "6143e5b463e0793985b656000e7d4e9568e0200c763fbc9a6f4c81aa20054190"
+  },
+  {
+    "path": "frontend/map.html",
+    "beforeSha256": "b59b469fd1c25f8270d07048f50ecfe79c28600012b3f739126d306da50e0a64",
+    "afterSha256": "55c613d22087ea0c24e62cbadbd98b2b95dea0e97c977b6db992354dc6e93323",
+    "afterLfSha256": "73e635e0cdb8c77c15a8f824f68ac6c7f41158ce71dfcbc9f92a561c6663c45b"
+  },
+  {
+    "path": "tools/runtime/planning-public-files.json",
+    "beforeSha256": "ed4b6b2823bf6f338a9da9663866061fe5433af9a584383efd590d3bd9505ae2",
+    "afterSha256": "eae0cfcbb22990a47adca637fa8711aecee7eb23f6da8757548aeea5c9987988",
+    "afterLfSha256": "eae0cfcbb22990a47adca637fa8711aecee7eb23f6da8757548aeea5c9987988"
+  },
+  {
+    "path": "frontend/js/planning-i18n.js",
+    "beforeSha256": null,
+    "afterSha256": "7d3a83e881c243b2e3d8c2dab335d1b37d70f1da27aef0cfb7fd1992abb0f86c",
+    "afterLfSha256": "7d3a83e881c243b2e3d8c2dab335d1b37d70f1da27aef0cfb7fd1992abb0f86c"
+  },
+  {
+    "path": "frontend/js/planning-i18n-pt-BR.js",
+    "beforeSha256": null,
+    "afterSha256": "1a6c4680253efcd51d10f7ca4e55c8cda9512020d896917a36755473b6d87862",
+    "afterLfSha256": "1a6c4680253efcd51d10f7ca4e55c8cda9512020d896917a36755473b6d87862"
+  },
+  {
+    "path": "frontend/js/planning-i18n-es.js",
+    "beforeSha256": null,
+    "afterSha256": "27bb03e097e970fa18a7a3436622127bef0d86126bec5d4057edda1e1a506cca",
+    "afterLfSha256": "27bb03e097e970fa18a7a3436622127bef0d86126bec5d4057edda1e1a506cca"
+  },
+  {
+    "path": "frontend/js/planning-i18n-en.js",
+    "beforeSha256": null,
+    "afterSha256": "6e8b839900bb7caae1631f06014dd3c13d95f735d16cd5dec009885cf5765fa0",
+    "afterLfSha256": "6e8b839900bb7caae1631f06014dd3c13d95f735d16cd5dec009885cf5765fa0"
+  }
+]
