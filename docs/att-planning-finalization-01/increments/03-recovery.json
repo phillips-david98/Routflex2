@@ -1,0 +1,56 @@
+[
+  {
+    "path": "frontend/js/planning-i18n-en.js",
+    "beforeSha256": "be1a506b71de50a4ec4b2113391ff4cce419d78278957cbcd2b5c61818a253e0",
+    "afterSha256": "a9998d9a046f01647d8ae48fbdd80294f833e7d050d3adf8b9eae7d23aba8158",
+    "afterLfSha256": "a9998d9a046f01647d8ae48fbdd80294f833e7d050d3adf8b9eae7d23aba8158"
+  },
+  {
+    "path": "frontend/js/planning-i18n-es.js",
+    "beforeSha256": "0128e16127fd0bec2bd548379750facd23362434b70198b53432aa153867acc6",
+    "afterSha256": "009795e4fb4f1ad817a0c5786275b4508115bcb44e093c09228bd2d0a6d174d1",
+    "afterLfSha256": "009795e4fb4f1ad817a0c5786275b4508115bcb44e093c09228bd2d0a6d174d1"
+  },
+  {
+    "path": "frontend/js/planning-i18n-pt-BR.js",
+    "beforeSha256": "ebacfa7f1dc1c3cbea5b6437872b9632633ee3fdd7d02168f92bc50ab1b1fe1f",
+    "afterSha256": "594aeb34f942152262e17448f5cceef3978d783e14c5edccadac44d788b44be8",
+    "afterLfSha256": "594aeb34f942152262e17448f5cceef3978d783e14c5edccadac44d788b44be8"
+  },
+  {
+    "path": "frontend/js/planning-local-recovery.js",
+    "beforeSha256": "13b2cfff88a23076d5294605b6bb4e501a2d183eca0cc93474ef20d696161349",
+    "afterSha256": "7a61189812439ed0076f8875409786924668cd27c4bd2c67325ba75b724aa2a7",
+    "afterLfSha256": "7151544e3cbc86117356a707b70a491ea43dd1c0096d5757bee07512f1eb9e9e"
+  },
+  {
+    "path": "frontend/js/planning-save-bridge.js",
+    "beforeSha256": "6fb2e80fe93c1cf3fc28daa15fd46eaf1c71b01d3361b3e848e40ba409f37b76",
+    "afterSha256": "65452425304cdb930ee59aa40f92460531b028fb02b62c92241fb20744470628",
+    "afterLfSha256": "da36214fc055d4eea7c6a3f8a46bee0462f5d1b9df75abb3ae12cb22680862c3"
+  },
+  {
+    "path": "frontend/js/planning-work-recovery.js",
+    "beforeSha256": "de1cb4d67394645bcebc7b6a8573bc721149b4fd1ee41fd7394ef3e4a86a520e",
+    "afterSha256": "c471e95d1ba521d85f13b25edff6e39525624592c4c1f7b6b6ef3522d645df93",
+    "afterLfSha256": "c471e95d1ba521d85f13b25edff6e39525624592c4c1f7b6b6ef3522d645df93"
+  },
+  {
+    "path": "frontend/js/planning-work-registry-v2.js",
+    "beforeSha256": "a3892be8a9b5cb7d39f1ab6c260cc40687e9f16a0721548cfb022e55f21e508e",
+    "afterSha256": "f9eb51369e49286db467950df8e137eb8f388fac37282cde5167a31cb3d4b5c5",
+    "afterLfSha256": "f9eb51369e49286db467950df8e137eb8f388fac37282cde5167a31cb3d4b5c5"
+  },
+  {
+    "path": "frontend/js/planning-work-runtime.js",
+    "beforeSha256": "c8de7671d6c7955c7c1b85f004306df36c94a58367cae4b184ea1511b2ec199e",
+    "afterSha256": "196d9cbf03b86b0a9c85aa62b46ec2831322d554a9c50a4e48effcd254d88081",
+    "afterLfSha256": "196d9cbf03b86b0a9c85aa62b46ec2831322d554a9c50a4e48effcd254d88081"
+  },
+  {
+    "path": "frontend/map.html",
+    "beforeSha256": "cbe60b307a73e93fe4dfdd2be73f850a6110919abc7100b9f7448472d3eee411",
+    "afterSha256": "3e5180a20f712d682fe79db711c94d674636c20470400ad5d467e3bbbf323d84",
+    "afterLfSha256": "4f93f487bb4f82663ab83126b95cc7bcd32f1867bb6f3ccb66e901e0e2df0655"
+  }
+]

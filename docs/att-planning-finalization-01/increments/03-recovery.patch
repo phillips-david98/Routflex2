@@ -1,0 +1,1356 @@
+diff --git a/frontend/js/planning-i18n-en.js b/frontend/js/planning-i18n-en.js
+--- a/frontend/js/planning-i18n-en.js
++++ b/frontend/js/planning-i18n-en.js
+@@ -2,6 +2,60 @@
+ (function(root) {
+   root.ROUTFLEX_PLANNING_TRANSLATIONS ||= {};
+   root.ROUTFLEX_PLANNING_TRANSLATIONS["en"] = Object.freeze({
++  "planning.recoveryUi.title": "Recover changes",
++  "planning.recoveryUi.helpLabel": "About change recovery",
++  "planning.recoveryUi.help": "ROUTflex temporarily keeps your unsaved changes so you can recover them if the page is closed or refreshed.",
++  "planning.recoveryUi.intro": "We found unsaved changes. Choose how you want to continue.",
++  "planning.recoveryUi.export": "Export records",
++  "planning.recoveryUi.refresh": "Refresh list",
++  "planning.recoveryUi.close": "Close",
++  "planning.recoveryUi.errorChanged": "The plan has changed. Review it again before restoring changes.",
++  "planning.recoveryUi.errorScope": "The session or user has changed. Close this panel and open the intended session.",
++  "planning.recoveryUi.errorWorking": "There are active changes or a save in progress. Finish that operation before restoring changes.",
++  "planning.recoveryUi.errorLegacy": "There are other recovery records. Resolve them before restoring these changes.",
++  "planning.recoveryUi.errorConfirmation": "The decision could not be confirmed in local storage. Your changes have been kept; try again.",
++  "planning.recoveryUi.errorInProgress": "A recovery is already in progress. Wait for it to finish.",
++  "planning.recoveryUi.errorIntegrity": "Not all local changes could be read. They have been kept; try again.",
++  "planning.recoveryUi.errorGeneric": "The changes could not be validated. The records have been kept. Try again.",
++  "planning.recoveryUi.reviewReady": "Changes verified. Restoring brings back the draft; saving is confirmed separately.",
++  "planning.recoveryUi.reviewBlocked": "These changes cannot be safely restored. You can keep the server version.",
++  "planning.recoveryUi.summaryClients": "Affected customers: {count}",
++  "planning.recoveryUi.summarySchedule": "Customers with day or week changes: {count}",
++  "planning.recoveryUi.summaryDrivers": "Customers with driver changes: {count}",
++  "planning.recoveryUi.summarySequence": "Customers with sequence changes: {count}",
++  "planning.recoveryUi.summaryUnavailable": "The number of affected customers is not available for this record.",
++  "planning.recoveryUi.summaryOther": "Other identified differences: {count}",
++  "planning.recoveryUi.noDiff": "No comparable differences found.",
++  "planning.recoveryUi.field": "Customer / field",
++  "planning.recoveryUi.local": "Unsaved changes",
++  "planning.recoveryUi.serverColumn": "Server version",
++  "planning.recoveryUi.previous": "Previous",
++  "planning.recoveryUi.next": "Next",
++  "planning.recoveryUi.page": "Page {page} of {pages} · {count} differences",
++  "planning.recoveryUi.empty": "There are no changes pending recovery.",
++  "planning.recoveryUi.record": "Unsaved changes {number}",
++  "planning.recoveryUi.clientCount": "{count} customers in the draft",
++  "planning.recoveryUi.restore": "Restore changes",
++  "planning.recoveryUi.server": "Keep server version",
++  "planning.recoveryUi.review": "Review differences",
++  "planning.recoveryUi.reviewing": "Reviewing differences… You can keep the server version while waiting.",
++  "planning.recoveryUi.processingRestore": "Checking and restoring changes…",
++  "planning.recoveryUi.processingServer": "Confirming the server version…",
++  "planning.recoveryUi.restored": "Changes restored for editing. Saving still needs to be confirmed.",
++  "planning.recoveryUi.kept": "Server version kept. The selected draft will not be offered for recovery again.",
++  "planning.recoveryUi.cancelled": "Decision cancelled. Your changes have been kept.",
++  "planning.recoveryUi.absent": "Absent",
++  "planning.recoveryUi.none": "Not set",
++  "planning.recoveryUi.arrayValue": "{count} items; see the export for the full contents.",
++  "planning.recoveryUi.objectValue": "{count} fields; see the export for the full contents.",
++  "planning.recoveryUi.fieldDay": "Day",
++  "planning.recoveryUi.fieldWeek": "Week",
++  "planning.recoveryUi.fieldDriver": "Driver",
++  "planning.recoveryUi.fieldSequence": "Sequence",
++  "planning.recoveryUi.fieldDeliveryDate": "Delivery date",
++  "planning.recoveryUi.clientField": "{client} · {field}",
++  "planning.recoveryUi.confirmRestore": "Restore the unsaved changes from this draft? They will return to the workspace for editing. Saving is confirmed separately.",
++  "planning.recoveryUi.confirmServer": "Discard the unsaved changes from this draft and continue with the server version? This decision does not change saved data.",
+   "planning.sequenceKm.total": "Selected sequence distance: {km} km",
+   "planning.sequenceKm.scope": "{route} · {driver} · {count} stops · customer → customer, excluding base",
+   "planning.sequenceKm.unavailable": "Sequence distance: distance unavailable",
+diff --git a/frontend/js/planning-i18n-es.js b/frontend/js/planning-i18n-es.js
+--- a/frontend/js/planning-i18n-es.js
++++ b/frontend/js/planning-i18n-es.js
+@@ -2,6 +2,60 @@
+ (function(root) {
+   root.ROUTFLEX_PLANNING_TRANSLATIONS ||= {};
+   root.ROUTFLEX_PLANNING_TRANSLATIONS["es"] = Object.freeze({
++  "planning.recoveryUi.title": "Recuperación de cambios",
++  "planning.recoveryUi.helpLabel": "Acerca de la recuperación de cambios",
++  "planning.recoveryUi.help": "ROUTflex guarda temporalmente los cambios sin guardar para que pueda recuperarlos si se cierra o actualiza la página.",
++  "planning.recoveryUi.intro": "Encontramos cambios sin guardar. Elija cómo desea continuar.",
++  "planning.recoveryUi.export": "Exportar registros",
++  "planning.recoveryUi.refresh": "Actualizar lista",
++  "planning.recoveryUi.close": "Cerrar",
++  "planning.recoveryUi.errorChanged": "La planificación ha cambiado. Revísela de nuevo antes de recuperar los cambios.",
++  "planning.recoveryUi.errorScope": "La sesión o el usuario ha cambiado. Cierre este panel y abra la sesión deseada.",
++  "planning.recoveryUi.errorWorking": "Hay cambios o un guardado en curso. Complete esa operación antes de recuperar los cambios.",
++  "planning.recoveryUi.errorLegacy": "Existen otros registros de recuperación. Resuélvalos antes de recuperar estos cambios.",
++  "planning.recoveryUi.errorConfirmation": "No se pudo confirmar la decisión en el almacenamiento local. Los cambios se han conservado; inténtelo de nuevo.",
++  "planning.recoveryUi.errorInProgress": "Ya hay una recuperación en curso. Espere a que termine.",
++  "planning.recoveryUi.errorIntegrity": "No se pudieron leer todos los cambios locales. Se han conservado; inténtelo de nuevo.",
++  "planning.recoveryUi.errorGeneric": "No se pudieron validar los cambios. Los registros se han conservado. Inténtelo de nuevo.",
++  "planning.recoveryUi.reviewReady": "Cambios verificados. Recuperar restaura el borrador; el guardado se confirmará por separado.",
++  "planning.recoveryUi.reviewBlocked": "Estos cambios no se pueden recuperar de forma segura. Puede conservar la versión del servidor.",
++  "planning.recoveryUi.summaryClients": "Clientes afectados: {count}",
++  "planning.recoveryUi.summarySchedule": "Clientes con cambio de día o semana: {count}",
++  "planning.recoveryUi.summaryDrivers": "Clientes con cambio de conductor: {count}",
++  "planning.recoveryUi.summarySequence": "Clientes con cambio de secuencia: {count}",
++  "planning.recoveryUi.summaryUnavailable": "La cantidad de clientes afectados no está disponible para este registro.",
++  "planning.recoveryUi.summaryOther": "Otras diferencias identificadas: {count}",
++  "planning.recoveryUi.noDiff": "No se encontraron diferencias comparables.",
++  "planning.recoveryUi.field": "Cliente / campo",
++  "planning.recoveryUi.local": "Cambios sin guardar",
++  "planning.recoveryUi.serverColumn": "Versión del servidor",
++  "planning.recoveryUi.previous": "Anterior",
++  "planning.recoveryUi.next": "Siguiente",
++  "planning.recoveryUi.page": "Página {page} de {pages} · {count} diferencias",
++  "planning.recoveryUi.empty": "No hay cambios pendientes de recuperación.",
++  "planning.recoveryUi.record": "Cambios sin guardar {number}",
++  "planning.recoveryUi.clientCount": "{count} clientes en el borrador",
++  "planning.recoveryUi.restore": "Recuperar cambios",
++  "planning.recoveryUi.server": "Conservar versión del servidor",
++  "planning.recoveryUi.review": "Revisar diferencias",
++  "planning.recoveryUi.reviewing": "Revisando diferencias… Puede conservar la versión del servidor mientras espera.",
++  "planning.recoveryUi.processingRestore": "Verificando y recuperando cambios…",
++  "planning.recoveryUi.processingServer": "Confirmando la versión del servidor…",
++  "planning.recoveryUi.restored": "Cambios recuperados para su edición. El guardado aún debe confirmarse.",
++  "planning.recoveryUi.kept": "Se ha conservado la versión del servidor. El borrador seleccionado no volverá a ofrecerse para recuperación.",
++  "planning.recoveryUi.cancelled": "Decisión cancelada. Los cambios se han conservado.",
++  "planning.recoveryUi.absent": "Ausente",
++  "planning.recoveryUi.none": "Sin definir",
++  "planning.recoveryUi.arrayValue": "{count} elementos; consulte la exportación para ver el contenido completo.",
++  "planning.recoveryUi.objectValue": "{count} campos; consulte la exportación para ver el contenido completo.",
++  "planning.recoveryUi.fieldDay": "Día",
++  "planning.recoveryUi.fieldWeek": "Semana",
++  "planning.recoveryUi.fieldDriver": "Conductor",
++  "planning.recoveryUi.fieldSequence": "Secuencia",
++  "planning.recoveryUi.fieldDeliveryDate": "Fecha de entrega",
++  "planning.recoveryUi.clientField": "{client} · {field}",
++  "planning.recoveryUi.confirmRestore": "¿Recuperar los cambios sin guardar de este borrador? Volverán al área de trabajo para su edición. El guardado se confirmará por separado.",
++  "planning.recoveryUi.confirmServer": "¿Descartar los cambios sin guardar de este borrador y continuar con la versión del servidor? Esta decisión no modifica los datos guardados.",
+   "planning.sequenceKm.total": "Distancia de la secuencia seleccionada: {km} km",
+   "planning.sequenceKm.scope": "{route} · {driver} · {count} paradas · cliente → cliente, sin base",
+   "planning.sequenceKm.unavailable": "Distancia de la secuencia: distancia no disponible",
+diff --git a/frontend/js/planning-i18n-pt-BR.js b/frontend/js/planning-i18n-pt-BR.js
+--- a/frontend/js/planning-i18n-pt-BR.js
++++ b/frontend/js/planning-i18n-pt-BR.js
+@@ -2,6 +2,60 @@
+ (function(root) {
+   root.ROUTFLEX_PLANNING_TRANSLATIONS ||= {};
+   root.ROUTFLEX_PLANNING_TRANSLATIONS["pt-BR"] = Object.freeze({
++  "planning.recoveryUi.title": "Recuperação de alterações",
++  "planning.recoveryUi.helpLabel": "Sobre a recuperação de alterações",
++  "planning.recoveryUi.help": "O ROUTflex guarda temporariamente suas alterações não salvas para que você possa recuperá-las caso a página seja fechada ou atualizada.",
++  "planning.recoveryUi.intro": "Encontramos alterações não salvas. Escolha como deseja continuar.",
++  "planning.recoveryUi.export": "Exportar registros",
++  "planning.recoveryUi.refresh": "Atualizar lista",
++  "planning.recoveryUi.close": "Fechar",
++  "planning.recoveryUi.errorChanged": "O planejamento mudou. Revise novamente antes de recuperar.",
++  "planning.recoveryUi.errorScope": "A sessão ou o usuário mudou. Feche este painel e abra a sessão desejada.",
++  "planning.recoveryUi.errorWorking": "Há alterações ou um salvamento em andamento. Conclua essa operação antes de recuperar.",
++  "planning.recoveryUi.errorLegacy": "Existem outros registros de recuperação. Resolva-os antes de recuperar estas alterações.",
++  "planning.recoveryUi.errorConfirmation": "Não foi possível confirmar a decisão no armazenamento local. As alterações foram preservadas; tente novamente.",
++  "planning.recoveryUi.errorInProgress": "Uma recuperação já está em andamento. Aguarde sua conclusão.",
++  "planning.recoveryUi.errorIntegrity": "Não foi possível ler todas as alterações locais. Elas foram preservadas; tente novamente.",
++  "planning.recoveryUi.errorGeneric": "Não foi possível validar as alterações. Os registros foram preservados. Tente novamente.",
++  "planning.recoveryUi.reviewReady": "Alterações verificadas. Recuperar restaura o rascunho; o salvamento será confirmado separadamente.",
++  "planning.recoveryUi.reviewBlocked": "Estas alterações não podem ser recuperadas com segurança. Você pode manter a versão do servidor.",
++  "planning.recoveryUi.summaryClients": "Clientes afetados: {count}",
++  "planning.recoveryUi.summarySchedule": "Clientes com mudança de dia ou semana: {count}",
++  "planning.recoveryUi.summaryDrivers": "Clientes com troca de motorista: {count}",
++  "planning.recoveryUi.summarySequence": "Clientes com mudança de sequência: {count}",
++  "planning.recoveryUi.summaryUnavailable": "A quantidade de clientes afetados não está disponível para este registro.",
++  "planning.recoveryUi.summaryOther": "Outras diferenças identificadas: {count}",
++  "planning.recoveryUi.noDiff": "Nenhuma diferença comparável encontrada.",
++  "planning.recoveryUi.field": "Cliente / campo",
++  "planning.recoveryUi.local": "Alterações não salvas",
++  "planning.recoveryUi.serverColumn": "Versão do servidor",
++  "planning.recoveryUi.previous": "Anterior",
++  "planning.recoveryUi.next": "Próxima",
++  "planning.recoveryUi.page": "Página {page} de {pages} · {count} diferenças",
++  "planning.recoveryUi.empty": "Não há alterações pendentes de recuperação.",
++  "planning.recoveryUi.record": "Alterações não salvas {number}",
++  "planning.recoveryUi.clientCount": "{count} clientes no rascunho",
++  "planning.recoveryUi.restore": "Recuperar alterações",
++  "planning.recoveryUi.server": "Manter versão do servidor",
++  "planning.recoveryUi.review": "Revisar diferenças",
++  "planning.recoveryUi.reviewing": "Revisando diferenças… Você pode manter a versão do servidor enquanto aguarda.",
++  "planning.recoveryUi.processingRestore": "Verificando e recuperando alterações…",
++  "planning.recoveryUi.processingServer": "Confirmando a versão do servidor…",
++  "planning.recoveryUi.restored": "Alterações recuperadas para edição. O salvamento ainda precisa ser confirmado.",
++  "planning.recoveryUi.kept": "Versão do servidor mantida. O rascunho selecionado não será recuperado novamente.",
++  "planning.recoveryUi.cancelled": "Decisão cancelada. As alterações foram preservadas.",
++  "planning.recoveryUi.absent": "Ausente",
++  "planning.recoveryUi.none": "Não definido",
++  "planning.recoveryUi.arrayValue": "{count} itens; consulte a exportação para ver o conteúdo completo.",
++  "planning.recoveryUi.objectValue": "{count} campos; consulte a exportação para ver o conteúdo completo.",
++  "planning.recoveryUi.fieldDay": "Dia",
++  "planning.recoveryUi.fieldWeek": "Semana",
++  "planning.recoveryUi.fieldDriver": "Motorista",
++  "planning.recoveryUi.fieldSequence": "Sequência",
++  "planning.recoveryUi.fieldDeliveryDate": "Data da entrega",
++  "planning.recoveryUi.clientField": "{client} · {field}",
++  "planning.recoveryUi.confirmRestore": "Recuperar as alterações não salvas deste rascunho? Elas voltarão à área de trabalho para edição. O salvamento será confirmado separadamente.",
++  "planning.recoveryUi.confirmServer": "Descartar as alterações não salvas deste rascunho e continuar com a versão do servidor? Esta decisão não altera os dados salvos.",
+   "planning.sequenceKm.total": "KM da sequência selecionada: {km} km",
+   "planning.sequenceKm.scope": "{route} · {driver} · {count} paradas · cliente → cliente, sem base",
+   "planning.sequenceKm.unavailable": "KM da sequência: distância indisponível",
+diff --git a/frontend/js/planning-local-recovery.js b/frontend/js/planning-local-recovery.js
+--- a/frontend/js/planning-local-recovery.js
++++ b/frontend/js/planning-local-recovery.js
+@@ -115,7 +115,217 @@
+     apply(fresh, action);
+     return true;
+   }
+-  function show(document, options) {
++  // Snapshot/work recovery is an operator decision. Detailed comparison is
++  // optional and never controls whether keeping the server can be requested.
++  function showSnapshot(document, options) {
++    const originalFocus = document.activeElement, dialog = document.createElement('dialog');
++    dialog.className = 'planning-recovery-dialog planning-recovery-changes';
++    const message = (key, fallback, params = {}) => globalThis.PlanningI18n?.message('planning.recoveryUi.' + key, params)
++      ?? fallback.replace(/\{(\w+)\}/g, (all, name) => Object.hasOwn(params, name) ? String(params[name]) : all);
++    const text = (node, value) => { node.textContent = globalThis.PlanningI18n?.text(node, value) ?? value; };
++    const element = (tag, value, parent = dialog) => {
++      const node = document.createElement(tag); if (value !== undefined) text(node, value); parent.appendChild(node); return node;
++    };
++    const button = (value, parent) => { const node = element('button', value, parent); node.type = 'button'; return node; };
++    const title = element('div'); title.className = 'planning-recovery-heading';
++    element('h2', message('title', 'Recuperação de alterações'), title).id = 'planning-recovery-title';
++    dialog.setAttribute('aria-labelledby', 'planning-recovery-title');
++    const help = button('?', title); help.className = 'planning-recovery-help';
++    const helpLabel = message('helpLabel', 'Sobre a recuperação de alterações');
++    help.setAttribute('aria-label', globalThis.PlanningI18n?.attribute(help, 'aria-label', helpLabel) ?? helpLabel);
++    help.setAttribute('aria-expanded', 'false'); help.setAttribute('aria-controls', 'planning-recovery-help');
++    const helpText = element('p', message('help', 'O ROUTflex guarda temporariamente suas alterações não salvas para que você possa recuperá-las caso a página seja fechada ou atualizada.'));
++    helpText.id = 'planning-recovery-help'; helpText.hidden = true;
++    help.addEventListener('click', () => { helpText.hidden = !helpText.hidden; help.setAttribute('aria-expanded', String(!helpText.hidden)); });
++    element('p', message('intro', 'Encontramos alterações não salvas. Escolha como deseja continuar.'));
++    if (options.label) element('p', options.label).className = 'planning-recovery-session';
++    const status = element('p'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
++    const recordsRoot = element('div'), controls = element('div'); controls.className = 'planning-recovery-actions planning-recovery-footer';
++    const exportButton = button(message('export', 'Exportar registros'), controls); exportButton.setAttribute('data-planning-export', '');
++    const refresh = button(message('refresh', 'Atualizar lista'), controls), close = button(message('close', 'Fechar'), controls);
++    let deciding = false, closed = false, renderVersion = 0, cards = [], unwatch = () => {};
++    const setDeciding = value => {
++      deciding = value; close.disabled = value; refresh.disabled = value; exportButton.disabled = value;
++      for (const card of cards) {
++        card.server.disabled = value || Array.isArray(card.preview?.allowedActions) && !card.preview.allowedActions.includes('server');
++        card.restore.disabled = value || card.preview?.comparison?.compatible === false
++          || Array.isArray(card.preview?.allowedActions) && !card.preview.allowedActions.includes('restore');
++        card.review.disabled = value || card.reviewing;
++      }
++    };
++    const errors = {
++      RECOVERY_PREVIEW_CHANGED: ['errorChanged', 'O planejamento mudou. Revise novamente antes de recuperar.'],
++      RECOVERY_CONTENT_CHANGED: ['errorChanged', 'O planejamento mudou. Revise novamente antes de recuperar.'],
++      RECOVERY_SCOPE_CHANGED: ['errorScope', 'A sessão ou o usuário mudou. Feche este painel e abra a sessão desejada.'],
++      RECOVERY_WORKING_CHANGES: ['errorWorking', 'Há alterações ou um salvamento em andamento. Conclua essa operação antes de recuperar.'],
++      RECOVERY_LEGACY_REVIEW_REQUIRED: ['errorLegacy', 'Existem outros registros de recuperação. Resolva-os antes de recuperar estas alterações.'],
++      RECOVERY_CONFLICT: ['reviewBlocked', 'Estas alterações não podem ser recuperadas com segurança. Você pode manter a versão do servidor.'],
++      RECOVERY_LOCAL_CONFIRMATION_FAILED: ['errorConfirmation', 'Não foi possível confirmar a decisão no armazenamento local. As alterações foram preservadas; tente novamente.'],
++      RECOVERY_RESTORE_IN_PROGRESS: ['errorInProgress', 'Uma recuperação já está em andamento. Aguarde sua conclusão.'],
++      SAVE_LOCAL_READ_FAILED: ['errorIntegrity', 'Não foi possível ler todas as alterações locais. Elas foram preservadas; tente novamente.']
++    };
++    const error = cause => {
++      const [key, fallback] = errors[cause?.code || cause?.message] || ['errorGeneric', 'Não foi possível validar as alterações. Os registros foram preservados. Tente novamente.'];
++      text(status, message(key, fallback));
++    };
++    const snapshot = record => record?.snapshot || record?.domains?.snapshot?.applied?.snapshot;
++    function summary(record, preview) {
++      const local = snapshot(record), remote = preview.remote, affected = new Set(), schedule = new Set(), drivers = new Set(), sequence = new Set();
++      let known = false, unknownSnapshot = false, other = 0;
++      // Assignment identities are stable across list reorder. Count distinct
++      // customers, not changed cells or recurring visits of the same customer.
++      if (Array.isArray(local?.clients) && Array.isArray(remote?.clients)) {
++        const index = rows => {
++          const result = new Map();
++          for (const client of rows) {
++            const key = client?.id ?? client?.customerKey;
++            if (typeof key !== 'string' || !key || result.has(key)) return null;
++            result.set(key, client);
++          }
++          return result;
++        };
++        const left = index(local.clients), right = index(remote.clients);
++        if (left && right) {
++          known = true;
++          for (const key of new Set([...left.keys(), ...right.keys()])) {
++            const a = left.get(key), b = right.get(key), customer = a?.customerKey || b?.customerKey || key;
++            if (!a || !b) { affected.add(customer); continue; }
++            if (a.day !== b.day || a.week !== b.week) { affected.add(customer); schedule.add(customer); }
++            if (a.driverId !== b.driverId) { affected.add(customer); drivers.add(customer); }
++            if (a.sequence !== b.sequence) { affected.add(customer); sequence.add(customer); }
++            if (a.deliveryDate !== b.deliveryDate || a.customerKey !== b.customerKey) affected.add(customer);
++          }
++        } else unknownSnapshot = true;
++      }
++      if (Array.isArray(record.domains?.ins?.applied?.items) || Array.isArray(record.domains?.curves?.applied?.items)) known = true;
++      for (const row of preview.comparison.rows || []) {
++        // Count an INS customer only when a compared value actually differs,
++        // rather than treating every staged item as a proven difference.
++        const ins = String(row.path || '').match(/^(?:geração enviada\.)?ins\.(.+)\.(?:categoria|status|moeda|faturamento|operador|mix_produto|concorrente|observacoes|historico|enterpriseHistory|logistics_profile|herança)(?:[.\[].*)?$/);
++        const curve = String(row.path || '').match(/^(?:geração enviada\.)?curvas\.(.+)$/);
++        if (ins || curve) { known = true; affected.add((ins || curve)[1]); }
++        if (!/^(?:\$|snapshot\.aplicado|geração enviada\.snapshot)\.clients\[\d+\]\.(?:week|day|driverId|sequence)$/.test(row.path || '')) other++;
++      }
++      return {known: known && !unknownSnapshot, clients: affected.size, schedule: schedule.size, drivers: drivers.size, sequence: sequence.size, other};
++    }
++    function rowValues(row, record, preview) {
++      const field = String(row.path || ''), match = field.match(/^(?:\$|snapshot\.aplicado)\.clients\[(\d+)\]\.([^.]+)$/);
++      const fields = {day: ['fieldDay', 'Dia'], week: ['fieldWeek', 'Semana'], driverId: ['fieldDriver', 'Motorista'],
++        sequence: ['fieldSequence', 'Sequência'], deliveryDate: ['fieldDeliveryDate', 'Data da entrega']};
++      const local = snapshot(record), remote = preview.remote, localClient = match && local?.clients?.[Number(match[1])], remoteClient = match && remote?.clients?.[Number(match[1])];
++      const label = match && fields[match[2]] ? message('clientField', '{client} · {field}', {
++        client: localClient?.id || remoteClient?.id || localClient?.customerKey || remoteClient?.customerKey || String(Number(match[1]) + 1),
++        field: message(...fields[match[2]]) }) : field;
++      const value = (input, side) => {
++        if (input === '(ausente)' || input === undefined) return message('absent', 'Ausente');
++        if (input === null) return message('none', 'Não definido');
++        if (input && typeof input === 'object') return message(Array.isArray(input) ? 'arrayValue' : 'objectValue',
++          Array.isArray(input) ? '{count} itens; consulte a exportação para ver o conteúdo completo.' : '{count} campos; consulte a exportação para ver o conteúdo completo.',
++          {count: Array.isArray(input) ? input.length : Object.keys(input).length});
++        if (match?.[2] === 'day') return globalThis.PlanningI18n?.day(input) ?? String(input);
++        if (match?.[2] === 'driverId') {
++          const driver = (side === 'local' ? local : remote)?.drivers?.find(item => (item.driverId ?? item.id) === input);
++          return driver?.label || driver?.driverName || driver?.name || String(input);
++        }
++        return String(input);
++      };
++      return [label, value(row.local, 'local'), value(row.server, 'server')];
++    }
++    function showReview(card, record, preview) {
++      card.details.replaceChildren(); card.details.hidden = false;
++      const compatible = preview.comparison.compatible;
++      element('p', Array.isArray(preview.allowedActions) && !preview.allowedActions.length
++        ? message('errorIntegrity', 'Não foi possível ler todas as alterações locais. Elas foram preservadas; tente novamente.')
++        : compatible ? message('reviewReady', 'Alterações verificadas. Recuperar restaura o rascunho; o salvamento será confirmado separadamente.')
++          : message('reviewBlocked', 'Estas alterações não podem ser recuperadas com segurança. Você pode manter a versão do servidor.'), card.details);
++      const totals = summary(record, preview), summaryRoot = element('div', undefined, card.details); summaryRoot.className = 'planning-recovery-summary';
++      if (totals.known) {
++        for (const [key, fallback, count] of [['summaryClients', 'Clientes afetados: {count}', totals.clients], ['summarySchedule', 'Clientes com mudança de dia ou semana: {count}', totals.schedule],
++          ['summaryDrivers', 'Clientes com troca de motorista: {count}', totals.drivers], ['summarySequence', 'Clientes com mudança de sequência: {count}', totals.sequence]])
++          element('p', message(key, fallback, {count}), summaryRoot);
++      } else element('p', message('summaryUnavailable', 'A quantidade de clientes afetados não está disponível para este registro.'), summaryRoot);
++      if (totals.other) element('p', message('summaryOther', 'Outras diferenças identificadas: {count}', {count: totals.other}), summaryRoot);
++      const rows = preview.comparison.rows || [];
++      if (!rows.length) { element('p', message('noDiff', 'Nenhuma diferença comparável encontrada.'), card.details); return; }
++      const table = element('table', undefined, card.details), head = element('thead', undefined, table), tr = element('tr', undefined, head);
++      for (const [key, fallback] of [['field', 'Cliente / campo'], ['local', 'Alterações não salvas'], ['serverColumn', 'Versão do servidor']]) element('th', message(key, fallback), tr).scope = 'col';
++      const body = element('tbody', undefined, table), navigation = element('div', undefined, card.details); navigation.className = 'planning-recovery-pagination';
++      const previous = button(message('previous', 'Anterior'), navigation), pageStatus = element('span', undefined, navigation), next = button(message('next', 'Próxima'), navigation);
++      pageStatus.setAttribute('role', 'status'); let page = 0; const size = 100, pages = Math.ceil(rows.length / size);
++      const renderPage = () => {
++        body.replaceChildren();
++        for (const row of rows.slice(page * size, (page + 1) * size)) {
++          const line = element('tr', undefined, body); for (const value of rowValues(row, record, preview)) element('td', value, line);
++        }
++        text(pageStatus, message('page', 'Página {page} de {pages} · {count} diferenças', {page: page + 1, pages, count: rows.length}));
++        previous.disabled = page === 0; next.disabled = page === pages - 1;
++      };
++      previous.addEventListener('click', () => { if (page > 0) { page--; renderPage(); } });
++      next.addEventListener('click', () => { if (page < pages - 1) { page++; renderPage(); } }); renderPage();
++    }
++    const render = () => {
++      renderVersion++; recordsRoot.replaceChildren(); cards = [];
++      const records = options.list();
++      if (!records.length) text(status, message('empty', 'Não há alterações pendentes de recuperação.'));
++      else text(status, '');
++      for (const [index, record] of records.entries()) {
++        const section = element('section', undefined, recordsRoot);
++        element('h3', message('record', 'Alterações não salvas {number}', {number: index + 1}), section);
++        const count = snapshot(record)?.clients?.length;
++        if (Number.isSafeInteger(count)) element('p', message('clientCount', '{count} clientes no rascunho', {count}), section);
++        const actions = element('div', undefined, section); actions.className = 'planning-recovery-actions planning-recovery-decisions';
++        const restore = button(message('restore', 'Recuperar alterações'), actions), server = button(message('server', 'Manter versão do servidor'), actions), review = button(message('review', 'Revisar diferenças'), actions);
++        restore.className = 'planning-recovery-primary';
++        for (const [node, action] of [[restore, 'restore'], [server, 'server'], [review, 'review']]) {
++          node.setAttribute('data-recovery-action', action); if (action !== 'review') node.setAttribute('data-planning-edit', '');
++        }
++        const reviewStatus = element('p', undefined, section); reviewStatus.setAttribute('role', 'status');
++        const details = element('div', undefined, section); details.hidden = true;
++        const card = {restore, server, review, details, preview: null, reviewing: false, version: 0}; cards.push(card);
++        const version = renderVersion, current = ticket => !closed && version === renderVersion && ticket === card.version;
++        review.addEventListener('click', async () => {
++          if (deciding || card.reviewing) return;
++          card.reviewing = true; const ticket = ++card.version; review.disabled = true;
++          text(status, '');
++          text(reviewStatus, message('reviewing', 'Revisando diferenças… Você pode manter a versão do servidor enquanto aguarda.'));
++          try {
++            const preview = await options.inspect(record);
++            if (!current(ticket)) return;
++            card.preview = preview; showReview(card, record, preview); text(reviewStatus, '');
++          } catch (cause) { if (current(ticket)) { text(reviewStatus, ''); error(cause); } }
++          finally { if (current(ticket)) { card.reviewing = false; setDeciding(deciding); } }
++        });
++        for (const [node, action] of [[restore, 'restore'], [server, 'server']]) node.addEventListener('click', async () => {
++          if (deciding || closed) return;
++          card.version++; card.reviewing = false; setDeciding(true);
++          text(reviewStatus, ''); text(status, action === 'restore' ? message('processingRestore', 'Verificando e recuperando alterações…') : message('processingServer', 'Confirmando a versão do servidor…'));
++          try {
++            if (await options.resolve(record, card.preview, action)) {
++              if (closed) return;
++              const remaining = render();
++              if (!remaining) dialog.close();
++              else text(status, action === 'restore' ? message('restored', 'Alterações recuperadas para edição. O salvamento ainda precisa ser confirmado.')
++                : message('kept', 'Versão do servidor mantida. O rascunho selecionado não será recuperado novamente.'));
++            } else text(status, message('cancelled', 'Decisão cancelada. As alterações foram preservadas.'));
++          } catch (cause) { if (!closed) error(cause); }
++          finally { if (!closed) setDeciding(false); }
++        });
++      }
++      return records.length;
++    };
++    exportButton.addEventListener('click', async () => { if (deciding) return; try { await options.export(); } catch (cause) { if (!closed) error(cause); } });
++    refresh.addEventListener('click', () => { if (!deciding) { try { render(); } catch (cause) { error(cause); } } });
++    close.addEventListener('click', () => { if (!deciding) dialog.close(); });
++    dialog.addEventListener('cancel', event => { if (deciding) event.preventDefault(); });
++    dialog.addEventListener('close', () => { closed = true; renderVersion++; unwatch(); options.onClose(); dialog.remove(); originalFocus?.focus(); });
++    document.body.appendChild(dialog);
++    try {
++      render(); dialog.showModal();
++      unwatch = options.watch?.(() => { recordsRoot.replaceChildren(); dialog.close(); }) || unwatch;
++    } catch (cause) { unwatch(); options.onClose(); dialog.remove(); throw cause; }
++    return dialog;
++  }
++  function showCurves(document, options) {
+     const originalFocus = document.activeElement;
+     const dialog = document.createElement('dialog'); dialog.className = 'planning-recovery-dialog';
+     const element = (tag, text, parent = dialog) => {
+@@ -205,5 +415,8 @@
+     } catch (cause) { unwatch(); options.onClose(); dialog.remove(); throw cause; }
+     return dialog;
+   }
++  function show(document, options) {
++    return options.kind === 'snapshot' ? showSnapshot(document, options) : showCurves(document, options);
++  }
+   return Object.freeze({ sameScope, list, assertExact, removeExact, differences, compareSnapshot, compareCurves, exportCurves, download, resolve, show });
+ });
+diff --git a/frontend/js/planning-save-bridge.js b/frontend/js/planning-save-bridge.js
+--- a/frontend/js/planning-save-bridge.js
++++ b/frontend/js/planning-save-bridge.js
+@@ -9,6 +9,7 @@
+   let saveFlight=null,saveTicket=null;
+   const sentEvidence = new WeakMap(), journals = new Map();
+   const ownedDocuments = new Map(), resolutions = new Map(), reviewedRecords=new Map();
++  const pendingRecoveryDecisions=new Map();
+   const ownerKey = ctx => {
+     if (!ctx) fail('SAVE_CONTEXT_UNAVAILABLE');
+     if (!owners.has(ctx.identity)) owners.set(ctx.identity,++ownerSequence);
+@@ -28,8 +29,9 @@
+   }
+   function checkpoint() {
+     const work = globalThis.ROUTFLEX_PLANNING_WORK;
+-    work?.signal(['snapshot','ins','editors']); work?.flushLocal();
++    work?.signal(['snapshot','ins','editors']); const completion=work?.flushLocal();
+     const view = work?.view(),ctx=context(); if (view&&ctx) ownedDocuments.set(view.documentId,ownerKey(ctx));
++    return completion;
+   }
+   function changed() {
+     appliedVersion++;
+@@ -68,6 +70,8 @@
+     const acknowledged = list.records.flatMap(record => record.domains?.snapshot?.confirmed?.resolvedWork || []).concat(resolved());
+     const result=[];
+     for (const record of list.records) {
++      const pending=pendingRecoveryDecisions.get(record.storageKey);
++      if(pending&&pending.owner===ownerKey(batch)&&pending.raw===record.raw){result.push(record);continue;}
+       if (ownsWorkRecord(record) || record.origin === 'current-document') continue;
+       if (!record.invalid && !record.future && !Object.values(record.domains || {}).some(domain => domain.applied || domain.editors?.length)) continue;
+       if (acknowledged.some(ref => ref.storageKey === record.storageKey && ref.sha256)) {
+@@ -79,6 +83,29 @@
+     if (!current(batch)) fail('REQUEST_SUPERSEDED');
+     if (list.error) Object.defineProperty(result,'catalogError',{value:list.error});
+     return result;
++  }
++  async function reconcileConfirmedOwnedSnapshots(ticket,generation) {
++    // A/B/A creates a new local document while the same live planning state
++    // continues. A confirmed generation consumes its earlier owned snapshot
++    // checkpoints; another tab, unapplied editor or uncertain journal does not.
++    if(typeof ROUTFLEX_PLANNING_WORK.ownsDocument!=='function')return true;
++    const listed=await ROUTFLEX_PLANNING_WORK.list();
++    if(!current(ticket)||listed.error)return false;
++    const documentId=ROUTFLEX_PLANNING_WORK.view()?.documentId,rows=resolved().slice();
++    for(const record of listed.records){
++      const applied=record.domains?.snapshot?.applied;
++      if(record.documentId===documentId||ROUTFLEX_PLANNING_WORK.ownsDocument?.(record)!==true
++          ||!applied?.snapshot||applied.journal||!Number.isSafeInteger(applied.changeSeq)||applied.changeSeq>generation
++          ||!Number.isSafeInteger(applied.baseRevision)||applied.baseRevision>connectedPlanningSnapshots.revision(ticket.scope)
++          ||Object.values(record.domains||{}).some(domain=>domain.editors?.length)
++          ||record.domains?.ins?.applied||record.domains?.curves?.applied)continue;
++      const sha256=await digest(record.raw);if(!current(ticket))return false;
++      if(!rows.some(ref=>ref.storageKey===record.storageKey&&ref.sha256===sha256))rows.push({storageKey:record.storageKey,sha256});
++      reviewedRecords.set(record.storageKey,record.raw);
++    }
++    if(rows.length===resolved().length)return true;
++    resolutions.set(ownerKey(ticket),rows);
++    return await checkpoint()===true;
+   }
+   function blockers(meta) {
+     const result=[];
+@@ -277,6 +304,8 @@
+       const remote=connectedPlanningSnapshots.remote(ticket.scope);
+       markPlanAsSaved(remote?.savedAt,meta.id,'backend',outcome.generation,remote?.savedBy);
+       connectedRecoveryManualSave.delete(meta.id);
++      try{await reconcileConfirmedOwnedSnapshots(ticket,outcome.generation);}catch(_){/* The actual server ACK remains authoritative; local evidence is retained on failure. */}
++      if(!current(ticket))return false;
+       updatePlannerHint(getPlanningPersistenceEntry(meta.id).changeSeq!==outcome.generation ? (globalThis.PlanningI18n?.message("planning.executesave.geracao_confirmada_ha_alteracoes_posteriores_ainda_pendentes") ?? 'Geração confirmada. Há alterações posteriores ainda pendentes.') : (globalThis.PlanningI18n?.message("planning.executesave.dominios_integrados_confirmados_operacoes_empresariais_externas_mantem_coman") ?? 'Domínios integrados confirmados. Operações empresariais externas mantêm comandos próprios.'));
+       if(isPlanningAutosaveEnabled(meta.id)&&state.hasUnsavedPlanChanges)schedule();
+     } else {
+@@ -347,40 +376,80 @@
+   }
+   async function recoveryOptions(meta,previous) {
+     const ticket=context();if(!ticket)fail('RECOVERY_SCOPE_CHANGED');
+-    const records=await unresolvedWork(ticket,true);let selected=null,catalog=[],prepared=null;
++    const records=await unresolvedWork(ticket,true);
++    const preparations=new Map();
++    const equivalentLegacy=(record,legacy)=>{
++      const applied=record?.domains?.snapshot?.applied;
++      return record?.format==='planning-work'&&record.version===1&&!record.invalid&&!record.future
++        &&legacy?.version===2&&!legacy.invalid&&applied?.snapshot&&legacy.snapshot
++        &&legacy.baseRevision===applied.baseRevision
++        &&['tenantId','operationSessionId','planningSessionId','sourceSessionId','userId','membershipId'].every(field=>(record.scope?.[field]??null)===(ticket.scope[field]??null))
++        &&['tenantId','operationSessionId','planningSessionId','sourceSessionId'].every(field=>(legacy.scope?.[field]??null)===(ticket.scope[field]??null))
++        &&PlanningSaveBases.sameSnapshotContent(applied.snapshot,legacy.snapshot)
++        &&PlanningSaveBases.sameSnapshotContent(legacy.snapshot,applied.snapshot);
++    };
++    const matchingLegacy=record=>previous.list().filter(legacy=>equivalentLegacy(record,legacy));
+     const checkEmpty=()=>{
+       if(!current(ticket)||!planningCan('edit'))fail('RECOVERY_SCOPE_CHANGED');
+       if(state.hasUnsavedPlanChanges||hasPendingPdvEditDraft()||drivers.pending().length||pendingIns().length
+           ||_insClientRef&&_insHasUnsavedChanges()||connectedPlanningSaveQueues.has(meta.id))fail('RECOVERY_WORKING_CHANGES');
+     };
+-    const acknowledgeEvidence=(record,preview)=>{
++    const acknowledgeEvidence=(record,preview,action)=>{
++      // pagehide can preserve the same working generation in both stores. Only
++      // the explicitly selected, byte-checked equivalent copy is reconciled.
+       const rows=resolved().filter(item=>item.storageKey!==record.storageKey);
+-      rows.push({storageKey:record.storageKey,sha256:preview.recordEvidence.sha256});
+-      reviewedRecords.set(record.storageKey,record.raw);
+-      resolutions.set(ownerKey(ticket),rows);records.splice(records.indexOf(record),1);checkpoint();
++      const reference={storageKey:record.storageKey,sha256:preview.recordEvidence.sha256};rows.push(reference);
++      const pending={owner:ownerKey(ticket),raw:record.raw,reference,action,legacy:matchingLegacy(record),
++        generation:getPlanningPersistenceEntry(meta.id).changeSeq,appliedVersion};
++      pendingRecoveryDecisions.set(record.storageKey,pending);
++      resolutions.set(ownerKey(ticket),rows);pending.completion=checkpoint();
++    };
++    const persistDecision=async record=>{
++      const pending=pendingRecoveryDecisions.get(record.storageKey);
++      if(!pending||pending.owner!==ownerKey(ticket)||pending.raw!==record.raw)fail('RECOVERY_CONTENT_CHANGED');
++      let confirmed=false;try{confirmed=await pending.completion;}catch(_){}
++      if(!current(ticket))fail('RECOVERY_SCOPE_CHANGED');
++      if(confirmed!==true){
++        resolutions.set(ownerKey(ticket),resolved().filter(ref=>ref.storageKey!==record.storageKey));
++        fail('RECOVERY_LOCAL_CONFIRMATION_FAILED');
++      }
++      for(const legacy of pending.legacy){
++        // Another tab may replace or remove the duplicate while the checkpoint
++        // commits. Its new bytes are independent work, never this decision's target.
++        if(planningLocalStorage.getItem(legacy.storageKey)!==legacy.raw)continue;
++        PlanningLocalRecovery.removeExact(planningLocalStorage,connectedSnapshotKey(meta),ticket.scope,'snapshot',legacy);
++      }
++      reviewedRecords.set(record.storageKey,record.raw);pendingRecoveryDecisions.delete(record.storageKey);
++      const index=records.indexOf(record);if(index>=0)records.splice(index,1);
++      ROUTFLEX_PLANNING_WORK.signal('recoveries');return true;
+     };
+     const inspection=PlanningWorkRecovery.create({context:()=>ticket,current,list:()=>records,
+       async inspectRecord(record){
+         const evidence=await ROUTFLEX_PLANNING_WORK.inspect(record);if(!current(ticket)||evidence.error)fail('RECOVERY_CONTENT_CHANGED');
+-        selected=evidence;evidence.sha256=await digest(evidence.raw);return evidence;
+-      },
+-      async readSnapshot(){
++        evidence.sha256=await digest(evidence.raw);return evidence;
++      },
++      async readSnapshot(_ticket,options={}){
+         const remote=await freshSnapshot({...ticket,meta});
+-        const snapshot=selected?.domains?.snapshot?.applied?.snapshot;
+-        if(snapshot){
++        const snapshot=options.evidence?.domains?.snapshot?.applied?.snapshot;
++        if(snapshot&&options.prepare!==false){
+           const keys=Array.from(new Set(snapshot.clients.map(item=>item.customerKey)));
+           const response=await loadConnectedScopedCustomers(meta,'lookup',{keys},()=>current(ticket));
+-          catalog=response.catalog;await mergePlanningCurveAttributes(catalog,meta.id,()=>current(ticket));
+-          prepared=restoreConnectedPlanningSnapshot(meta,catalog,snapshot,{prepare:true,scope:ticket.scope});
++          const catalog=response.catalog;await mergePlanningCurveAttributes(catalog,meta.id,()=>current(ticket));
++          const prepared=restoreConnectedPlanningSnapshot(meta,catalog,snapshot,{prepare:true,scope:ticket.scope});
++          preparations.set(options.record.storageKey,{raw:options.record.raw,catalog,prepared});
+         }
+         return remote;
+       },
+       readIns:entries=>_fetchClientInsightsBulk(entries.map(item=>item.base),meta.id,()=>current(ticket)),
+       readCurves:entries=>readCurves({...ticket,meta,curves:entries}),
+-      confirm:action=>window.confirm((globalThis.PlanningI18n?.plain || (value => value))(action==='restore' ? (globalThis.PlanningI18n?.message("planning.recoveryoptions.recuperar_somente_as_alteracoes_ja_aplicadas_deste_registro_att09_como_traba") ?? 'Recuperar somente as alterações já aplicadas deste registro ATT09 como trabalho local? Autosave ficará suspenso; nenhuma gravação empresarial será enviada.') : (globalThis.PlanningI18n?.message("planning.recoveryoptions.manter_a_base_do_servidor_e_reconhecer_este_registro_como_inspecionado_o_con") ?? 'Manter a base do servidor e reconhecer este registro como inspecionado? O conteúdo local não será aplicado; os bytes originais permanecerão preservados.'))),
++      confirm:action=>window.confirm((globalThis.PlanningI18n?.plain || (value => value))(action==='restore'
++        ? (globalThis.PlanningI18n?.message('planning.recoveryUi.confirmRestore') ?? 'Recuperar as alterações não salvas deste rascunho? Elas voltarão à área de trabalho para edição. O salvamento será confirmado separadamente.')
++        : (globalThis.PlanningI18n?.message('planning.recoveryUi.confirmServer') ?? 'Descartar as alterações não salvas deste rascunho e continuar com a versão do servidor? Esta decisão não altera os dados salvos.'))),
+       restore(record,preview){
+-        checkEmpty();if(legacyRecoveries(meta).length)fail('RECOVERY_LEGACY_REVIEW_REQUIRED');
++        checkEmpty();if(legacyRecoveries(meta).some(item=>item.domain!=='snapshot'||!equivalentLegacy(record,item.record)))fail('RECOVERY_LEGACY_REVIEW_REQUIRED');
+         const data=preview.recordEvidence.domains;
++        const preparedContext=preparations.get(record.storageKey);
++        if(data.snapshot.applied?.snapshot&&(!preparedContext||preparedContext.raw!==record.raw))fail('RECOVERY_CONTENT_CHANGED');
+         const entries=(preview.prepared?.ins||data.ins.applied?.items||[]).map(item=>({customerKey:item.customerKey,base:item.base,
+           draft:{...item.patch,mixProduto:item.patch.mix_produto,restoreFields:item.patch.restoreFields||[]},origin:'recovery',intents:item.intents,recoveries:item.recoveries||[]}));
+         // Validate all INS entries before changing any live local domain.
+@@ -390,19 +459,24 @@
+         if(curves.length)connectedCurveDrafts.stageMany(ticket.scope,connectedSnapshotKey(meta),curves);
+         connectedRecoveryManualSave.add(meta.id);
+         suppressDirty=true;try{if(entries.length)stage.restoreReviewed(entries);}finally{suppressDirty=false;}
+-        if(data.snapshot.applied?.snapshot)restoreConnectedPlanningSnapshot(meta,catalog,data.snapshot.applied.snapshot,{prepared,draft:true});
++        if(data.snapshot.applied?.snapshot)restoreConnectedPlanningSnapshot(meta,preparedContext.catalog,data.snapshot.applied.snapshot,{prepared:preparedContext.prepared,draft:true});
+         const byKey=new Map(curves.map(item=>[item.customerKey,item.curveCode]));
+         _rawSessionClients(meta.id).forEach(client=>{if(byKey.has(buildClientCanonicalKey(client)))client.curveCode=byKey.get(buildClientCanonicalKey(client));});
+-        markPlanAsDirty();acknowledgeEvidence(record,preview);applyFilters({skipFitBounds:true});return true;
+-      },
+-      acceptServer(record,preview){checkEmpty();acknowledgeEvidence(record,preview);return true;},
++        markPlanAsDirty();acknowledgeEvidence(record,preview,'restore');applyFilters({skipFitBounds:true});return true;
++      },
++      acceptServer(record,preview){
++        checkEmpty();
++        if(!PlanningSaveBases.equalSnapshot(connectedPlanningSnapshots.remote(ticket.scope),preview.remote))fail('RECOVERY_PREVIEW_CHANGED');
++        acknowledgeEvidence(record,preview,'server');return true;
++      },
++      persistDecision,
+       exportReport:report=>{if(!planningCan('export'))fail('EXPORT_AUTHORIZATION_REQUIRED');return downloadPlanningData(JSON.stringify(report,null,2),'planning-att09-recovery.json','json');}
+     });
+     const isWork=record=>record.format==='planning-work'||record.namespaceVersion!=null;
+     return {...previous,list:()=>{
+         let legacy=[];
+         try{legacy=previous.list();}catch(error){if(!records.catalogError)throw error;}
+-        return legacy.concat(inspection.list());
++        return legacy.filter(item=>!records.some(record=>equivalentLegacy(record,item))).concat(inspection.list());
+       },
+       inspect:async record=>{
+         if(!isWork(record))return previous.inspect(record);
+@@ -412,6 +486,16 @@
+       },
+       resolve:(record,preview,action)=>{
+         if(isWork(record)&&records.catalogError)fail('SAVE_LOCAL_READ_FAILED','Leitura local incompleta. Preserve os registros e reabra a inspeção quando o armazenamento estiver disponível.');
++        const pending=pendingRecoveryDecisions.get(record.storageKey);
++        if(isWork(record)&&pending&&pending.owner===ownerKey(ticket)&&pending.raw===record.raw)return (async()=>{
++          if(!current(ticket))fail('RECOVERY_SCOPE_CHANGED');
++          if(action!==pending.action||getPlanningPersistenceEntry(meta.id).changeSeq!==pending.generation||appliedVersion!==pending.appliedVersion)
++            fail('RECOVERY_WORKING_CHANGES');
++          const exact=await ROUTFLEX_PLANNING_WORK.inspect(record);
++          if(!current(ticket)||exact.error||exact.raw!==record.raw)fail('RECOVERY_CONTENT_CHANGED');
++          resolutions.set(ownerKey(ticket),resolved().filter(ref=>ref.storageKey!==record.storageKey).concat(pending.reference));
++          pending.completion=checkpoint();return persistDecision(record);
++        })();
+         return isWork(record)?inspection.resolve(record,preview,action):previous.resolve(record,preview,action);
+       },
+       export:async()=>{await previous.export();if(records.length)await inspection.export();}};
+diff --git a/frontend/js/planning-work-recovery.js b/frontend/js/planning-work-recovery.js
+--- a/frontend/js/planning-work-recovery.js
++++ b/frontend/js/planning-work-recovery.js
+@@ -73,7 +73,7 @@
+       return value;
+     }
+     async function inspect(record) {
+-      const evidence = await exact(record), response = await hooks.readSnapshot(ticket); check();
++      const evidence = await exact(record), response = await hooks.readSnapshot(ticket,{record,evidence}); check();
+       const remote = response ? clone(response) : null;
+       if (!remote || !Number.isSafeInteger(remote.revision) || remote.revision < 1
+           || remote.tenantId !== ticket.scope.tenantId || remote.operationSessionId !== ticket.scope.operationSessionId
+@@ -175,7 +175,7 @@
+         }
+       }
+       if (!snapshot && !insEntries.length && !curveEntries.length) reject('Nenhuma alteração aplicada recuperável neste registro.');
+-      const latest = await hooks.readSnapshot(ticket); check();
++      const latest = await hooks.readSnapshot(ticket,{prepare:false}); check();
+       if (!equal(latest,remote)) fail('RECOVERY_PREVIEW_CHANGED');
+       await exact(record);
+       return {revision:remote.revision,remote:clone(remote),prepared:reasons.length?null:prepared,ins:[...ins].map(([customerKey,base]) => ({customerKey,base:clone(base)})),
+@@ -186,13 +186,32 @@
+     async function resolve(record,preview,action) {
+       check();
+       if (!['server','restore'].includes(action)) fail('RECOVERY_ACTION_INVALID');
+-      if (action === 'restore' && !preview?.comparison?.compatible) fail('RECOVERY_CONFLICT');
++      if (action === 'restore' && preview && !preview.comparison?.compatible) fail('RECOVERY_CONFLICT');
+       if (hooks.confirm(action,record,preview,ticket) !== true) return false;
+-      check(); const fresh = await inspect(record); check();
+-      if (!equal(fresh,preview)) fail('RECOVERY_PREVIEW_CHANGED');
++      check();
++      let fresh;
++      if (action === 'server') {
++        // Keeping the authoritative version needs exact local ownership and a
++        // fresh server base, not a customer lookup or a detailed difference tree.
++        const evidence = await exact(record);
++        const remote = await hooks.readSnapshot(ticket,{prepare:false}); check();
++        if (!remote || !Number.isSafeInteger(remote.revision) || remote.revision < 1
++            || remote.tenantId !== ticket.scope.tenantId || remote.operationSessionId !== ticket.scope.operationSessionId
++            || remote.session?.sessionId !== ticket.scope.planningSessionId) fail('WORK_RECOVERY_SNAPSHOT_INVALID');
++        if (preview?.remote && !equal(preview.remote,remote)) fail('RECOVERY_PREVIEW_CHANGED');
++        await exact(record); check();
++        fresh = {revision:remote.revision,remote,recordEvidence:evidence};
++      } else {
++        fresh = await inspect(record); check();
++        if (preview && !equal(fresh,preview)) fail('RECOVERY_PREVIEW_CHANGED');
++      }
+       if (action === 'restore' && !fresh.comparison.compatible) fail('RECOVERY_CONFLICT');
+       const result = action === 'restore' ? hooks.restore(record,fresh,ticket) : hooks.acceptServer(record,fresh,ticket);
+       if (result && typeof result.then === 'function') fail('WORK_RECOVERY_ASYNC_MUTATION');
++      if (result !== false && typeof hooks.persistDecision === 'function') {
++        if (await hooks.persistDecision(record,fresh,action,ticket) !== true) fail('RECOVERY_LOCAL_CONFIRMATION_FAILED');
++        check();
++      }
+       return result !== false;
+     }
+     return Object.freeze({kind:'snapshot',label:hooks.label || 'Trabalho local ATT09 · ' + ticket.scope.planningSessionId,
+diff --git a/frontend/js/planning-work-registry-v2.js b/frontend/js/planning-work-registry-v2.js
+--- a/frontend/js/planning-work-registry-v2.js
++++ b/frontend/js/planning-work-registry-v2.js
+@@ -164,6 +164,16 @@
+       }
+       check(ticket);
+       entry.catalogReadError = readErrors[0] || null;
++      // v2 envelopes already carry a verified digest. Legacy evidence needs a
++      // digest only when a durable, exact-byte resolution refers to that key.
++      const decisions=records.flatMap(record=>record.domains?.snapshot?.confirmed?.resolvedWork||[]);
++      for(const record of records)if(!record.integrity?.sha256&&typeof record.raw==='string'
++          &&decisions.some(ref=>ref.storageKey===record.storageKey&&/^[a-f0-9]{64}$/.test(ref.sha256||''))){
++        try{
++          const bytes=await globalThis.crypto.subtle.digest('SHA-256',new TextEncoder().encode(record.raw));check(ticket);
++          record.integrity={sha256:Array.from(new Uint8Array(bytes)).map(value=>value.toString(16).padStart(2,'0')).join('')};
++        }catch(_){check(ticket);/* Without verification the recovery remains visible. */}
++      }
+       // Preserve access to one reader if the other storage is unavailable, while exposing the failure.
+       Object.defineProperty(records, 'readErrors', { value: readErrors, enumerable: false });
+       return records;
+diff --git a/frontend/js/planning-work-runtime.js b/frontend/js/planning-work-runtime.js
+--- a/frontend/js/planning-work-runtime.js
++++ b/frontend/js/planning-work-runtime.js
+@@ -114,10 +114,13 @@
+         // Catalog I/O must not postpone capture of the immutable sent generation.
+         // Save/inspection still await a fresh catalog; diagnostics use this scoped cache.
+         if (listed.error && !checkpointStore) throw Object.assign(new Error(listed.error.code),listed.error);
+-        const records = listed.records.filter(record => record.origin !== 'current-document' && !ownsDocument(record)
++        const decisions = listed.records.flatMap(record => record.domains?.snapshot?.confirmed?.resolvedWork || []);
++        const resolved = record => typeof record.integrity?.sha256 === 'string'
++          && decisions.some(ref => ref.storageKey === record.storageKey && ref.sha256 === record.integrity.sha256);
++        const records = listed.records.filter(record => record.origin !== 'current-document' && !ownsDocument(record) && !resolved(record)
+           && source.excludeRecovery?.(record) !== true);
+         recoveryCount = records.filter(record => record.invalid || record.future || Object.values(record.domains || {}).some(domain =>
+-          domain.applied || domain.editors?.length || domain.recoveries?.length)).length;
++          domain.applied || domain.editors?.length)).length;
+         recoveryInvalid = records.filter(record => record.invalid || record.future).length;
+       }
+       // Remember only a successfully collected, still-authorized activation.
+diff --git a/frontend/map.html b/frontend/map.html
+--- a/frontend/map.html
++++ b/frontend/map.html
+@@ -8349,6 +8349,20 @@
+ .planning-recovery-dialog table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+ .planning-recovery-dialog th, .planning-recovery-dialog td { text-align: left; padding: 8px; border: 1px solid #cbd5e1; overflow-wrap: anywhere; }
+ .planning-recovery-dialog th { background: #eef2f7; }
++/* Snapshot/work card only; curve recovery keeps its existing presentation. */
++.planning-recovery-changes { width: min(920px, calc(100vw - 32px)); }
++.planning-recovery-changes .planning-recovery-heading { display: flex; align-items: center; gap: 12px; }
++.planning-recovery-changes .planning-recovery-heading h2 { margin: 0; flex: 1; }
++.planning-recovery-changes .planning-recovery-help { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; padding: 0; font-weight: 700; }
++.planning-recovery-changes .planning-recovery-session { color: #475569; font-size: 14px; }
++.planning-recovery-changes .planning-recovery-actions,
++.planning-recovery-changes .planning-recovery-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
++.planning-recovery-changes .planning-recovery-primary { background: #0f766e; color: #fff; border-color: #0f766e; }
++.planning-recovery-changes .planning-recovery-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 4px 16px; padding: 12px; background: #f1f5f9; border-radius: 8px; }
++.planning-recovery-changes .planning-recovery-summary p { margin: 4px 0; }
++.planning-recovery-changes .planning-recovery-footer { margin-top: 24px; border-top: 1px solid #cbd5e1; padding-top: 16px; }
++.planning-recovery-changes .planning-recovery-pagination { justify-content: space-between; margin: 12px 0; }
++.planning-recovery-changes th, .planning-recovery-changes td { max-width: 320px; }
+ .planning-recovery-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+ .planning-recovery-record-id { font-family: monospace; overflow-wrap: anywhere; }
+ </style>
+@@ -10949,7 +10963,7 @@
+       return value;
+     }
+     async function inspect(record) {
+-      const evidence = await exact(record), response = await hooks.readSnapshot(ticket); check();
++      const evidence = await exact(record), response = await hooks.readSnapshot(ticket,{record,evidence}); check();
+       const remote = response ? clone(response) : null;
+       if (!remote || !Number.isSafeInteger(remote.revision) || remote.revision < 1
+           || remote.tenantId !== ticket.scope.tenantId || remote.operationSessionId !== ticket.scope.operationSessionId
+@@ -11051,7 +11065,7 @@
+         }
+       }
+       if (!snapshot && !insEntries.length && !curveEntries.length) reject('Nenhuma alteração aplicada recuperável neste registro.');
+-      const latest = await hooks.readSnapshot(ticket); check();
++      const latest = await hooks.readSnapshot(ticket,{prepare:false}); check();
+       if (!equal(latest,remote)) fail('RECOVERY_PREVIEW_CHANGED');
+       await exact(record);
+       return {revision:remote.revision,remote:clone(remote),prepared:reasons.length?null:prepared,ins:[...ins].map(([customerKey,base]) => ({customerKey,base:clone(base)})),
+@@ -11062,13 +11076,32 @@
+     async function resolve(record,preview,action) {
+       check();
+       if (!['server','restore'].includes(action)) fail('RECOVERY_ACTION_INVALID');
+-      if (action === 'restore' && !preview?.comparison?.compatible) fail('RECOVERY_CONFLICT');
+-      if (hooks.confirm((globalThis.PlanningI18n?.plain || (value => value))(action), record, preview, ticket) !== true) return false;
+-      check(); const fresh = await inspect(record); check();
+-      if (!equal(fresh,preview)) fail('RECOVERY_PREVIEW_CHANGED');
++      if (action === 'restore' && preview && !preview.comparison?.compatible) fail('RECOVERY_CONFLICT');
++      if (hooks.confirm(action,record,preview,ticket) !== true) return false;
++      check();
++      let fresh;
++      if (action === 'server') {
++        // Keeping the authoritative version needs exact local ownership and a
++        // fresh server base, not a customer lookup or a detailed difference tree.
++        const evidence = await exact(record);
++        const remote = await hooks.readSnapshot(ticket,{prepare:false}); check();
++        if (!remote || !Number.isSafeInteger(remote.revision) || remote.revision < 1
++            || remote.tenantId !== ticket.scope.tenantId || remote.operationSessionId !== ticket.scope.operationSessionId
++            || remote.session?.sessionId !== ticket.scope.planningSessionId) fail('WORK_RECOVERY_SNAPSHOT_INVALID');
++        if (preview?.remote && !equal(preview.remote,remote)) fail('RECOVERY_PREVIEW_CHANGED');
++        await exact(record); check();
++        fresh = {revision:remote.revision,remote,recordEvidence:evidence};
++      } else {
++        fresh = await inspect(record); check();
++        if (preview && !equal(fresh,preview)) fail('RECOVERY_PREVIEW_CHANGED');
++      }
+       if (action === 'restore' && !fresh.comparison.compatible) fail('RECOVERY_CONFLICT');
+       const result = action === 'restore' ? hooks.restore(record,fresh,ticket) : hooks.acceptServer(record,fresh,ticket);
+       if (result && typeof result.then === 'function') fail('WORK_RECOVERY_ASYNC_MUTATION');
++      if (result !== false && typeof hooks.persistDecision === 'function') {
++        if (await hooks.persistDecision(record,fresh,action,ticket) !== true) fail('RECOVERY_LOCAL_CONFIRMATION_FAILED');
++        check();
++      }
+       return result !== false;
+     }
+     return Object.freeze({kind:'snapshot',label:hooks.label || 'Trabalho local ATT09 · ' + ticket.scope.planningSessionId,
+@@ -12375,6 +12408,16 @@
+       }
+       check(ticket);
+       entry.catalogReadError = readErrors[0] || null;
++      // v2 envelopes already carry a verified digest. Legacy evidence needs a
++      // digest only when a durable, exact-byte resolution refers to that key.
++      const decisions=records.flatMap(record=>record.domains?.snapshot?.confirmed?.resolvedWork||[]);
++      for(const record of records)if(!record.integrity?.sha256&&typeof record.raw==='string'
++          &&decisions.some(ref=>ref.storageKey===record.storageKey&&/^[a-f0-9]{64}$/.test(ref.sha256||''))){
++        try{
++          const bytes=await globalThis.crypto.subtle.digest('SHA-256',new TextEncoder().encode(record.raw));check(ticket);
++          record.integrity={sha256:Array.from(new Uint8Array(bytes)).map(value=>value.toString(16).padStart(2,'0')).join('')};
++        }catch(_){check(ticket);/* Without verification the recovery remains visible. */}
++      }
+       // Preserve access to one reader if the other storage is unavailable, while exposing the failure.
+       Object.defineProperty(records, 'readErrors', { value: readErrors, enumerable: false });
+       return records;
+@@ -12972,10 +13015,13 @@
+         // Catalog I/O must not postpone capture of the immutable sent generation.
+         // Save/inspection still await a fresh catalog; diagnostics use this scoped cache.
+         if (listed.error && !checkpointStore) throw Object.assign(new Error(listed.error.code),listed.error);
+-        const records = listed.records.filter(record => record.origin !== 'current-document' && !ownsDocument(record)
++        const decisions = listed.records.flatMap(record => record.domains?.snapshot?.confirmed?.resolvedWork || []);
++        const resolved = record => typeof record.integrity?.sha256 === 'string'
++          && decisions.some(ref => ref.storageKey === record.storageKey && ref.sha256 === record.integrity.sha256);
++        const records = listed.records.filter(record => record.origin !== 'current-document' && !ownsDocument(record) && !resolved(record)
+           && source.excludeRecovery?.(record) !== true);
+         recoveryCount = records.filter(record => record.invalid || record.future || Object.values(record.domains || {}).some(domain =>
+-          domain.applied || domain.editors?.length || domain.recoveries?.length)).length;
++          domain.applied || domain.editors?.length)).length;
+         recoveryInvalid = records.filter(record => record.invalid || record.future).length;
+       }
+       // Remember only a successfully collected, still-authorized activation.
+@@ -13346,7 +13392,11 @@
+   catch (_) { return true; }
+ }
+ function hasConnectedSnapshotRecovery(meta) {
+-  try { return PlanningLocalRecovery.list(planningLocalStorage, connectedSnapshotKey(meta), connectedCurveScope(meta), 'snapshot').length > 0; }
++  try {
++    const key = connectedSnapshotKey(meta), scope = connectedSnapshotScope(meta);
++    return PlanningLocalRecovery.list(planningLocalStorage, key, connectedCurveScope(meta), 'snapshot')
++      .some(record => !connectedPlanningSnapshots.ownsRecovery(scope, key, record));
++  }
+   catch (_) { return true; }
+ }
+ let connectedSnapshotCacheFailed = false;
+@@ -13694,7 +13744,11 @@
+         || state.hasUnsavedPlanChanges || ['pending', 'saving', 'error'].includes(getPlanningPersistenceEntry(meta.id).status)
+         || connectedCurveDrafts.pending(scope, key).length) throw new Error('RECOVERY_WORKING_CHANGES');
+   };
+-  const list = () => { check(); return PlanningLocalRecovery.list(planningLocalStorage, key, scope, kind); };
++  const list = () => {
++    check();
++    const records = PlanningLocalRecovery.list(planningLocalStorage, key, scope, kind);
++    return kind === 'snapshot' ? records.filter(record => !connectedPlanningSnapshots.ownsRecovery(connectedSnapshotScope(meta), key, record)) : records;
++  };
+   const exact = record => { check(); PlanningLocalRecovery.assertExact(planningLocalStorage, key, scope, kind, record); };
+   const inspect = async record => {
+     exact(record);
+@@ -13761,8 +13815,43 @@
+       check();
+       return downloadPlanningData(JSON.stringify(report, null, 2), 'planning-' + kind + '-recovery-' + meta.id + '.json', 'json');
+     },
+-    resolve(record, preview, action) {
++    async resolve(record, preview, action) {
+       if (!requirePlanningCapability('edit')) return false;
++      if (kind === 'snapshot') {
++        if (!['server', 'restore'].includes(action)) throw new Error('RECOVERY_ACTION_INVALID');
++        exact(record); checkWorkingCopy();
++        if (action === 'restore' && preview && !preview.comparison.compatible) throw new Error('RECOVERY_CONFLICT');
++        const message = action === 'restore'
++          ? (globalThis.PlanningI18n?.t('planning.recoveryUi.confirmRestore') ?? 'Recuperar estas alterações para continuar editando? Confira o planejamento e salve para confirmá-las no servidor.')
++          : (globalThis.PlanningI18n?.t('planning.recoveryUi.confirmServer') ?? 'Descartar estas alterações não salvas e manter a versão do servidor?');
++        if (!window.confirm(message)) return false;
++        exact(record); checkWorkingCopy();
++        // Keeping the server requires no diff or Customer lookup. Restoring still
++        // validates the complete draft, catalog, revision and scope before apply.
++        let fresh;
++        if (action === 'restore') fresh = await inspect(record);
++        else {
++          await ROUTFLEX_SESSION_BINDINGS.authorize(meta, planningSessionRegistry, current);
++          check();
++          const remote = await ROUTFLEX_PLANNING_AUTH.snapshotRead(meta.id, current);
++          PlanningSnapshotStore.validate(scope, remote);
++          fresh = { remote };
++        }
++        exact(record); checkWorkingCopy();
++        if (JSON.stringify(connectedPlanningSnapshots.remote(connectedSnapshotScope(meta))) !== JSON.stringify(fresh.remote))
++          throw new Error('RECOVERY_PREVIEW_CHANGED');
++        if (action === 'restore') {
++          if (!fresh.comparison.compatible) throw new Error('RECOVERY_CONFLICT');
++          const prepared = restoreConnectedPlanningSnapshot(meta, fresh.catalog, record.snapshot, { prepare: true });
++          const snapshot = connectedPlanningSnapshots.recoverSelected(connectedSnapshotScope(meta), key, record);
++          connectedRecoveryManualSave.add(meta.id);
++          connectedCustomerCatalogs.set(meta.id, fresh.catalog);
++          restoreConnectedPlanningSnapshot(meta, fresh.catalog, snapshot, { draft: true, force: true, prepared });
++          restorePlanningSessionViewContext(meta.id); applyFilters({ skipFitBounds: true });
++        } else PlanningLocalRecovery.removeExact(planningLocalStorage, key, scope, kind, record);
++        renderOperationalContext();
++        return true;
++      }
+       return PlanningLocalRecovery.resolve({ preview, action,
+         confirm: action => window.confirm((globalThis.PlanningI18n?.plain || (value => value))((action === 'restore' ? (globalThis.PlanningI18n?.message("planning.resolve.recuperar_somente_este_registro_como_rascunho_o_autosave_ficara_suspenso_ate") ?? 'Recuperar somente este registro como rascunho? O autosave ficará suspenso até um Save manual.') : action === 'server' ? (globalThis.PlanningI18n?.message("planning.resolve.manter_a_versao_do_servidor_e_remover_somente_este_rascunho_local") ?? 'Manter a versão do servidor e remover somente este rascunho local?') : (globalThis.PlanningI18n?.message("planning.resolve.descartar_definitivamente_somente_este_rascunho_local_exporte_o_antes_se_qui") ?? 'Descartar definitivamente somente este rascunho local? Exporte-o antes se quiser guardá-lo.')) + (globalThis.PlanningI18n?.message("planning.resolve.sessao") ?? '\nSessão: ') + meta.id + (globalThis.PlanningI18n?.message("planning.resolve.registro") ?? '\nRegistro: ') + record.storageKey.split(':').at(-1))),
+         read: () => inspect(record),
+@@ -22296,6 +22385,10 @@
+ 
+ function cancelAssignmentPointerDrag(message = 'Movimentação cancelada.') {
+   _dragGrid = null;
++  _dragRAFEvent = null;
++  _dragRAFClient = null;
++  _dragRAFPreviewLatLng = null;
++  _clearDropTargetRectsCache();
+   clearClientMarkerAssignmentPointerSession();
+   state.lassoHoverDriverId = null;
+   state.lassoDragTarget = null;
+@@ -22453,12 +22546,12 @@
+   return bestMatch;
+ }
+ 
+-function clearLassoLayers(options = {}) {
++function clearLassoLayers() {
+   if (lassoDrawLayer) {
+     map.removeLayer(lassoDrawLayer);
+     lassoDrawLayer = null;
+   }
+-  if (lassoSelectionLayer && !options.preserveSelection) {
++  if (lassoSelectionLayer) {
+     map.removeLayer(lassoSelectionLayer);
+     lassoSelectionLayer = null;
+   }
+@@ -22571,6 +22664,8 @@
+   state.navToolActive = !state.navToolActive;
+   if (state.navToolActive) {
+     // Deactivate conflicting tools when NAV turns on
++    if (state.swapModeActive) toggleSwapMode(false);
++    if (state.barrierMode) toggleBarrierMode(false);
+     if (state.rulerModeActive) clearRuler();
+     if (state.lassoModeActive) {
+       state.lassoModeActive = false;
+@@ -23041,6 +23136,8 @@
+ 
+   // Deactivate conflicting tools before activating
+   if (state.navToolActive) deactivateNavTool();
++  if (state.swapModeActive) toggleSwapMode(false);
++  if (state.barrierMode) toggleBarrierMode(false);
+   if (state.lassoModeActive) {
+     state.lassoModeActive = false;
+     clearLassoSelection({ skipRender: true });
+@@ -23177,6 +23274,7 @@
+   // Desativa ferramentas conflitantes antes de ativar.
+   if (state.navToolActive) deactivateNavTool();
+   if (state.rulerModeActive) toggleRulerMode(false);
++  if (state.swapModeActive) toggleSwapMode(false);
+   if (state.lassoModeActive) {
+     state.lassoModeActive = false;
+     clearLassoSelection({ skipRender: true });
+@@ -24242,6 +24340,7 @@
+   if (state.navToolActive) deactivateNavTool();
+   if (state.rulerModeActive) clearRuler();
+   if (state.swapModeActive) toggleSwapMode(false);
++  if (state.barrierMode) toggleBarrierMode(false);
+   if (state.lassoModeActive) {
+     state.lassoModeActive = false;
+     clearLassoSelection({ skipRender: true });
+@@ -24273,10 +24372,11 @@
+ }
+ 
+ function clearLassoSelection(options = {}) {
++  const selectedIds = new Set(state.lassoSelectionIds);
+   detachLassoDocumentListeners();
+   clearClientMarkerAssignmentPointerSession();
+   syncAssignmentDragVisualState({ active: false });
+-  if (!options.preserveSelection) state.lassoSelectionIds.clear();
++  state.lassoSelectionIds.clear();
+   state.lassoHoverDriverId = null;
+   state.lassoDragTarget = null;
+   state.lassoDrawingActive = false;
+@@ -24288,15 +24388,34 @@
+   state.dragHoverDay = null;
+   state.dragTargetWeek = null;
+   state.dragTargetDay = null;
++  state.dragRouteTarget = null;
++  state.dragHoverDriverId = null;
++  state._weekMoveSourceIds = null;
++  state._weekMoveOwner = null;
++  state._weekMoveTargets = null;
++  state._weekDockVisited = false;
++  state._lassoPopupClientIds = [];
++  state._lassoPopupIndex = -1;
++  state._lassoWindowsOpenCount = 0;
++  _dragGrid = null;
++  _dragRAFEvent = null;
++  _dragRAFClient = null;
++  _dragRAFPreviewLatLng = null;
++  _clearDropTargetRectsCache();
+   lassoDrawPoints = [];
+   document.body.classList.remove('rfx-dragging');
+   setLassoButtonState();
+   syncMapDragging();
+-  clearLassoLayers(options);
++  map.scrollWheelZoom.enable();
++  if (!state.barrierMode) map.doubleClickZoom.enable();
++  clearLassoLayers();
+   syncDriverListDragState();
+   syncPlannerDropState();
+ 
+-  if (!options.skipRender) {
++  if (options.skipRender) {
++    // Selection is presentation state: restore its icons without rebuilding the map.
++    if (selectedIds.size) updateMarkerIconsOnly(selectedIds);
++  } else {
+     applyFilters({ skipFitBounds: true });
+   }
+ }
+@@ -25456,14 +25575,15 @@
+ function toggleLassoMode() {
+   state.lassoModeActive = !state.lassoModeActive;
+   if (!state.lassoModeActive) {
+-    clearLassoSelection({ skipRender: true, preserveSelection: true });
++    clearLassoSelection({ skipRender: true });
+     updatePlannerHint((globalThis.PlanningI18n?.message("planning.togglelassomode.modo_laco_desativado") ?? 'Modo Laço desativado.'));
+   } else {
+     // Deactivate conflicting tools when LAS turns on
+     if (state.rulerModeActive) clearRuler();
+     if (state.navToolActive) deactivateNavTool();
++    if (state.swapModeActive) toggleSwapMode(false);
++    if (state.barrierMode) toggleBarrierMode(false);
+     if (state.insightModeActive) toggleInsightMode(false);
+-    // Reuse a completed selection after Escape; Clear selection starts a new contour.
+     updatePlannerHint((globalThis.PlanningI18n?.message("planning.togglelassomode.modo_laco_ativo_desenhe_o_contorno_selecione_os_pdvs_e_arraste_um_selecionad") ?? 'Modo Laço ativo: desenhe o contorno, selecione os PDVs e arraste um selecionado para a rota alvo (dia/semana). Latitude e longitude não mudam.'));
+   }
+   setLassoButtonState();
+@@ -33565,8 +33685,8 @@
+   if (!event.target.closest('#toggle-ruler-btn, #ruler-mode-menu')) closeRulerModeMenu();
+ });
+ document.getElementById('toggle-insight-btn').onclick = toggleInsightMode;
+-document.getElementById('toggle-barrier-btn').onclick = toggleBarrierMode;
+-document.getElementById('toggle-swap-btn').onclick = toggleSwapMode;
++document.getElementById('toggle-barrier-btn').onclick = () => toggleBarrierMode();
++document.getElementById('toggle-swap-btn').onclick = () => toggleSwapMode();
+ // RTA — Rota real: mesma ação do atalho ALT+P. Só executa no modo Operacional
+ // (fetchRoadRoute já valida o modo internamente). setRoadRouteButtonState()
+ // mantém o estado visual (ativo/desabilitado) sincronizado.
+@@ -33906,6 +34026,28 @@
+   return (event.composedPath ? event.composedPath() : [event.target]).some(node => node.matches?.(owners));
+ }
+ 
++function endMapToolInteractions() {
++  let ended = closeRulerModeMenu();
++  if (state._clientMarkerPointerDragSession) {
++    cancelAssignmentPointerDrag('Movimentação cancelada.');
++    ended = true;
++  }
++  if (state.navToolActive) { deactivateNavTool(); ended = true; }
++  if (state.rulerModeActive) { toggleRulerMode(false); ended = true; }
++  if (sequenceKmModeActive) { toggleSequenceKmMode(false); ended = true; }
++  if (state.barrierMode) { toggleBarrierMode(false); ended = true; }
++  if (state.swapModeActive) { toggleSwapMode(false); ended = true; }
++  if (state.insightModeActive) { toggleInsightMode(false); ended = true; }
++  if (state.lassoModeActive) {
++    toggleLassoMode();
++    ended = true;
++  } else if (state.lassoSelectionIds.size || state.lassoDrawingActive || state.lassoGroupDragActive) {
++    clearLassoSelection({ skipRender: true });
++    ended = true;
++  }
++  return ended;
++}
++
+ document.addEventListener('keydown', (event) => {
+   if (event.key === 'Escape') {
+     if (mapToolEscapeOwnedByInterface(event)) return;
+@@ -33918,57 +34060,7 @@
+       event.preventDefault();
+       return;
+     }
+-  }
+-  if (event.key === 'Escape' && state._clientMarkerPointerDragSession) {
+-    event.preventDefault();
+-    cancelAssignmentPointerDrag('Movimentação cancelada.');
+-    if (state.lassoModeActive) toggleLassoMode();
+-    return;
+-  }
+-
+-  if (event.key === 'Escape' && state.navToolActive) {
+-    event.preventDefault();
+-    deactivateNavTool();
+-    return;
+-  }
+-
+-  if (event.key === 'Escape' && state.rulerModeActive) {
+-    event.preventDefault();
+-    toggleRulerMode(false);
+-    return;
+-  }
+-
+-  if (event.key === 'Escape' && sequenceKmModeActive) {
+-    event.preventDefault();
+-    toggleSequenceKmMode(false);
+-    return;
+-  }
+-
+-  if (event.key === 'Escape' && state.barrierMode) {
+-    event.preventDefault();
+-    toggleBarrierMode(false);
+-    return;
+-  }
+-
+-  if (event.key === 'Escape' && state.swapModeActive) {
+-    event.preventDefault();
+-    toggleSwapMode(false);
+-    return;
+-  }
+-
+-  if (event.key === 'Escape' && state.insightModeActive) {
+-    event.preventDefault();
+-    if (_isInsightPanelOpen()) {
+-      requestCloseInsightPanel();
+-      return;
+-    }
+-    toggleInsightMode(false);
+-    return;
+-  }
+-
+-  if (event.key === 'Escape' && state.lassoModeActive) {
+-    event.preventDefault();
+-    toggleLassoMode();
++    if (endMapToolInteractions()) event.preventDefault();
+     return;
+   }
+ 
+@@ -35992,6 +36084,7 @@
+   let saveFlight=null,saveTicket=null;
+   const sentEvidence = new WeakMap(), journals = new Map();
+   const ownedDocuments = new Map(), resolutions = new Map(), reviewedRecords=new Map();
++  const pendingRecoveryDecisions=new Map();
+   const ownerKey = ctx => {
+     if (!ctx) fail('SAVE_CONTEXT_UNAVAILABLE');
+     if (!owners.has(ctx.identity)) owners.set(ctx.identity,++ownerSequence);
+@@ -36011,8 +36104,9 @@
+   }
+   function checkpoint() {
+     const work = globalThis.ROUTFLEX_PLANNING_WORK;
+-    work?.signal(['snapshot','ins','editors']); work?.flushLocal();
++    work?.signal(['snapshot','ins','editors']); const completion=work?.flushLocal();
+     const view = work?.view(),ctx=context(); if (view&&ctx) ownedDocuments.set(view.documentId,ownerKey(ctx));
++    return completion;
+   }
+   function changed() {
+     appliedVersion++;
+@@ -36051,6 +36145,8 @@
+     const acknowledged = list.records.flatMap(record => record.domains?.snapshot?.confirmed?.resolvedWork || []).concat(resolved());
+     const result=[];
+     for (const record of list.records) {
++      const pending=pendingRecoveryDecisions.get(record.storageKey);
++      if(pending&&pending.owner===ownerKey(batch)&&pending.raw===record.raw){result.push(record);continue;}
+       if (ownsWorkRecord(record) || record.origin === 'current-document') continue;
+       if (!record.invalid && !record.future && !Object.values(record.domains || {}).some(domain => domain.applied || domain.editors?.length)) continue;
+       if (acknowledged.some(ref => ref.storageKey === record.storageKey && ref.sha256)) {
+@@ -36062,6 +36158,29 @@
+     if (!current(batch)) fail('REQUEST_SUPERSEDED');
+     if (list.error) Object.defineProperty(result,'catalogError',{value:list.error});
+     return result;
++  }
++  async function reconcileConfirmedOwnedSnapshots(ticket,generation) {
++    // A/B/A creates a new local document while the same live planning state
++    // continues. A confirmed generation consumes its earlier owned snapshot
++    // checkpoints; another tab, unapplied editor or uncertain journal does not.
++    if(typeof ROUTFLEX_PLANNING_WORK.ownsDocument!=='function')return true;
++    const listed=await ROUTFLEX_PLANNING_WORK.list();
++    if(!current(ticket)||listed.error)return false;
++    const documentId=ROUTFLEX_PLANNING_WORK.view()?.documentId,rows=resolved().slice();
++    for(const record of listed.records){
++      const applied=record.domains?.snapshot?.applied;
++      if(record.documentId===documentId||ROUTFLEX_PLANNING_WORK.ownsDocument?.(record)!==true
++          ||!applied?.snapshot||applied.journal||!Number.isSafeInteger(applied.changeSeq)||applied.changeSeq>generation
++          ||!Number.isSafeInteger(applied.baseRevision)||applied.baseRevision>connectedPlanningSnapshots.revision(ticket.scope)
++          ||Object.values(record.domains||{}).some(domain=>domain.editors?.length)
++          ||record.domains?.ins?.applied||record.domains?.curves?.applied)continue;
++      const sha256=await digest(record.raw);if(!current(ticket))return false;
++      if(!rows.some(ref=>ref.storageKey===record.storageKey&&ref.sha256===sha256))rows.push({storageKey:record.storageKey,sha256});
++      reviewedRecords.set(record.storageKey,record.raw);
++    }
++    if(rows.length===resolved().length)return true;
++    resolutions.set(ownerKey(ticket),rows);
++    return await checkpoint()===true;
+   }
+   function blockers(meta) {
+     const result=[];
+@@ -36228,7 +36347,6 @@
+     saveFlight=task;return task;
+   }
+   async function executeSave(origin='manual') {
+-    if(pendingAtomicMaintenance())return saveAtomicMaintenance(origin);
+     if(!context())return false;
+     if(autosaveTimer){clearTimeout(autosaveTimer);autosaveTimer=null;}
+     const ticket=context(),meta=planningSessionRegistry.get(ticket.scope.planningSessionId);
+@@ -36261,6 +36379,8 @@
+       const remote=connectedPlanningSnapshots.remote(ticket.scope);
+       markPlanAsSaved(remote?.savedAt,meta.id,'backend',outcome.generation,remote?.savedBy);
+       connectedRecoveryManualSave.delete(meta.id);
++      try{await reconcileConfirmedOwnedSnapshots(ticket,outcome.generation);}catch(_){/* The actual server ACK remains authoritative; local evidence is retained on failure. */}
++      if(!current(ticket))return false;
+       updatePlannerHint(getPlanningPersistenceEntry(meta.id).changeSeq!==outcome.generation ? (globalThis.PlanningI18n?.message("planning.executesave.geracao_confirmada_ha_alteracoes_posteriores_ainda_pendentes") ?? 'Geração confirmada. Há alterações posteriores ainda pendentes.') : (globalThis.PlanningI18n?.message("planning.executesave.dominios_integrados_confirmados_operacoes_empresariais_externas_mantem_coman") ?? 'Domínios integrados confirmados. Operações empresariais externas mantêm comandos próprios.'));
+       if(isPlanningAutosaveEnabled(meta.id)&&state.hasUnsavedPlanChanges)schedule();
+     } else {
+@@ -36331,40 +36451,80 @@
+   }
+   async function recoveryOptions(meta,previous) {
+     const ticket=context();if(!ticket)fail('RECOVERY_SCOPE_CHANGED');
+-    const records=await unresolvedWork(ticket,true);let selected=null,catalog=[],prepared=null;
++    const records=await unresolvedWork(ticket,true);
++    const preparations=new Map();
++    const equivalentLegacy=(record,legacy)=>{
++      const applied=record?.domains?.snapshot?.applied;
++      return record?.format==='planning-work'&&record.version===1&&!record.invalid&&!record.future
++        &&legacy?.version===2&&!legacy.invalid&&applied?.snapshot&&legacy.snapshot
++        &&legacy.baseRevision===applied.baseRevision
++        &&['tenantId','operationSessionId','planningSessionId','sourceSessionId','userId','membershipId'].every(field=>(record.scope?.[field]??null)===(ticket.scope[field]??null))
++        &&['tenantId','operationSessionId','planningSessionId','sourceSessionId'].every(field=>(legacy.scope?.[field]??null)===(ticket.scope[field]??null))
++        &&PlanningSaveBases.sameSnapshotContent(applied.snapshot,legacy.snapshot)
++        &&PlanningSaveBases.sameSnapshotContent(legacy.snapshot,applied.snapshot);
++    };
++    const matchingLegacy=record=>previous.list().filter(legacy=>equivalentLegacy(record,legacy));
+     const checkEmpty=()=>{
+       if(!current(ticket)||!planningCan('edit'))fail('RECOVERY_SCOPE_CHANGED');
+       if(state.hasUnsavedPlanChanges||hasPendingPdvEditDraft()||drivers.pending().length||pendingIns().length
+           ||_insClientRef&&_insHasUnsavedChanges()||connectedPlanningSaveQueues.has(meta.id))fail('RECOVERY_WORKING_CHANGES');
+     };
+-    const acknowledgeEvidence=(record,preview)=>{
++    const acknowledgeEvidence=(record,preview,action)=>{
++      // pagehide can preserve the same working generation in both stores. Only
++      // the explicitly selected, byte-checked equivalent copy is reconciled.
+       const rows=resolved().filter(item=>item.storageKey!==record.storageKey);
+-      rows.push({storageKey:record.storageKey,sha256:preview.recordEvidence.sha256});
+-      reviewedRecords.set(record.storageKey,record.raw);
+-      resolutions.set(ownerKey(ticket),rows);records.splice(records.indexOf(record),1);checkpoint();
++      const reference={storageKey:record.storageKey,sha256:preview.recordEvidence.sha256};rows.push(reference);
++      const pending={owner:ownerKey(ticket),raw:record.raw,reference,action,legacy:matchingLegacy(record),
++        generation:getPlanningPersistenceEntry(meta.id).changeSeq,appliedVersion};
++      pendingRecoveryDecisions.set(record.storageKey,pending);
++      resolutions.set(ownerKey(ticket),rows);pending.completion=checkpoint();
++    };
++    const persistDecision=async record=>{
++      const pending=pendingRecoveryDecisions.get(record.storageKey);
++      if(!pending||pending.owner!==ownerKey(ticket)||pending.raw!==record.raw)fail('RECOVERY_CONTENT_CHANGED');
++      let confirmed=false;try{confirmed=await pending.completion;}catch(_){}
++      if(!current(ticket))fail('RECOVERY_SCOPE_CHANGED');
++      if(confirmed!==true){
++        resolutions.set(ownerKey(ticket),resolved().filter(ref=>ref.storageKey!==record.storageKey));
++        fail('RECOVERY_LOCAL_CONFIRMATION_FAILED');
++      }
++      for(const legacy of pending.legacy){
++        // Another tab may replace or remove the duplicate while the checkpoint
++        // commits. Its new bytes are independent work, never this decision's target.
++        if(planningLocalStorage.getItem(legacy.storageKey)!==legacy.raw)continue;
++        PlanningLocalRecovery.removeExact(planningLocalStorage,connectedSnapshotKey(meta),ticket.scope,'snapshot',legacy);
++      }
++      reviewedRecords.set(record.storageKey,record.raw);pendingRecoveryDecisions.delete(record.storageKey);
++      const index=records.indexOf(record);if(index>=0)records.splice(index,1);
++      ROUTFLEX_PLANNING_WORK.signal('recoveries');return true;
+     };
+     const inspection=PlanningWorkRecovery.create({context:()=>ticket,current,list:()=>records,
+       async inspectRecord(record){
+         const evidence=await ROUTFLEX_PLANNING_WORK.inspect(record);if(!current(ticket)||evidence.error)fail('RECOVERY_CONTENT_CHANGED');
+-        selected=evidence;evidence.sha256=await digest(evidence.raw);return evidence;
++        evidence.sha256=await digest(evidence.raw);return evidence;
+       },
+-      async readSnapshot(){
++      async readSnapshot(_ticket,options={}){
+         const remote=await freshSnapshot({...ticket,meta});
+-        const snapshot=selected?.domains?.snapshot?.applied?.snapshot;
+-        if(snapshot){
++        const snapshot=options.evidence?.domains?.snapshot?.applied?.snapshot;
++        if(snapshot&&options.prepare!==false){
+           const keys=Array.from(new Set(snapshot.clients.map(item=>item.customerKey)));
+           const response=await loadConnectedScopedCustomers(meta,'lookup',{keys},()=>current(ticket));
+-          catalog=response.catalog;await mergePlanningCurveAttributes(catalog,meta.id,()=>current(ticket));
+-          prepared=restoreConnectedPlanningSnapshot(meta,catalog,snapshot,{prepare:true,scope:ticket.scope});
++          const catalog=response.catalog;await mergePlanningCurveAttributes(catalog,meta.id,()=>current(ticket));
++          const prepared=restoreConnectedPlanningSnapshot(meta,catalog,snapshot,{prepare:true,scope:ticket.scope});
++          preparations.set(options.record.storageKey,{raw:options.record.raw,catalog,prepared});
+         }
+         return remote;
+       },
+       readIns:entries=>_fetchClientInsightsBulk(entries.map(item=>item.base),meta.id,()=>current(ticket)),
+       readCurves:entries=>readCurves({...ticket,meta,curves:entries}),
+-      confirm:action=>window.confirm((globalThis.PlanningI18n?.plain || (value => value))(action==='restore' ? (globalThis.PlanningI18n?.message("planning.recoveryoptions.recuperar_somente_as_alteracoes_ja_aplicadas_deste_registro_att09_como_traba") ?? 'Recuperar somente as alterações já aplicadas deste registro ATT09 como trabalho local? Autosave ficará suspenso; nenhuma gravação empresarial será enviada.') : (globalThis.PlanningI18n?.message("planning.recoveryoptions.manter_a_base_do_servidor_e_reconhecer_este_registro_como_inspecionado_o_con") ?? 'Manter a base do servidor e reconhecer este registro como inspecionado? O conteúdo local não será aplicado; os bytes originais permanecerão preservados.'))),
++      confirm:action=>window.confirm((globalThis.PlanningI18n?.plain || (value => value))(action==='restore'
++        ? (globalThis.PlanningI18n?.message('planning.recoveryUi.confirmRestore') ?? 'Recuperar as alterações não salvas deste rascunho? Elas voltarão à área de trabalho para edição. O salvamento será confirmado separadamente.')
++        : (globalThis.PlanningI18n?.message('planning.recoveryUi.confirmServer') ?? 'Descartar as alterações não salvas deste rascunho e continuar com a versão do servidor? Esta decisão não altera os dados salvos.'))),
+       restore(record,preview){
+-        checkEmpty();if(legacyRecoveries(meta).length)fail('RECOVERY_LEGACY_REVIEW_REQUIRED');
++        checkEmpty();if(legacyRecoveries(meta).some(item=>item.domain!=='snapshot'||!equivalentLegacy(record,item.record)))fail('RECOVERY_LEGACY_REVIEW_REQUIRED');
+         const data=preview.recordEvidence.domains;
++        const preparedContext=preparations.get(record.storageKey);
++        if(data.snapshot.applied?.snapshot&&(!preparedContext||preparedContext.raw!==record.raw))fail('RECOVERY_CONTENT_CHANGED');
+         const entries=(preview.prepared?.ins||data.ins.applied?.items||[]).map(item=>({customerKey:item.customerKey,base:item.base,
+           draft:{...item.patch,mixProduto:item.patch.mix_produto,restoreFields:item.patch.restoreFields||[]},origin:'recovery',intents:item.intents,recoveries:item.recoveries||[]}));
+         // Validate all INS entries before changing any live local domain.
+@@ -36374,19 +36534,24 @@
+         if(curves.length)connectedCurveDrafts.stageMany(ticket.scope,connectedSnapshotKey(meta),curves);
+         connectedRecoveryManualSave.add(meta.id);
+         suppressDirty=true;try{if(entries.length)stage.restoreReviewed(entries);}finally{suppressDirty=false;}
+-        if(data.snapshot.applied?.snapshot)restoreConnectedPlanningSnapshot(meta,catalog,data.snapshot.applied.snapshot,{prepared,draft:true});
++        if(data.snapshot.applied?.snapshot)restoreConnectedPlanningSnapshot(meta,preparedContext.catalog,data.snapshot.applied.snapshot,{prepared:preparedContext.prepared,draft:true});
+         const byKey=new Map(curves.map(item=>[item.customerKey,item.curveCode]));
+         _rawSessionClients(meta.id).forEach(client=>{if(byKey.has(buildClientCanonicalKey(client)))client.curveCode=byKey.get(buildClientCanonicalKey(client));});
+-        markPlanAsDirty();acknowledgeEvidence(record,preview);applyFilters({skipFitBounds:true});return true;
++        markPlanAsDirty();acknowledgeEvidence(record,preview,'restore');applyFilters({skipFitBounds:true});return true;
+       },
+-      acceptServer(record,preview){checkEmpty();acknowledgeEvidence(record,preview);return true;},
++      acceptServer(record,preview){
++        checkEmpty();
++        if(!PlanningSaveBases.equalSnapshot(connectedPlanningSnapshots.remote(ticket.scope),preview.remote))fail('RECOVERY_PREVIEW_CHANGED');
++        acknowledgeEvidence(record,preview,'server');return true;
++      },
++      persistDecision,
+       exportReport:report=>{if(!planningCan('export'))fail('EXPORT_AUTHORIZATION_REQUIRED');return downloadPlanningData(JSON.stringify(report,null,2),'planning-att09-recovery.json','json');}
+     });
+     const isWork=record=>record.format==='planning-work'||record.namespaceVersion!=null;
+     return {...previous,list:()=>{
+         let legacy=[];
+         try{legacy=previous.list();}catch(error){if(!records.catalogError)throw error;}
+-        return legacy.concat(inspection.list());
++        return legacy.filter(item=>!records.some(record=>equivalentLegacy(record,item))).concat(inspection.list());
+       },
+       inspect:async record=>{
+         if(!isWork(record))return previous.inspect(record);
+@@ -36396,6 +36561,16 @@
+       },
+       resolve:(record,preview,action)=>{
+         if(isWork(record)&&records.catalogError)fail('SAVE_LOCAL_READ_FAILED','Leitura local incompleta. Preserve os registros e reabra a inspeção quando o armazenamento estiver disponível.');
++        const pending=pendingRecoveryDecisions.get(record.storageKey);
++        if(isWork(record)&&pending&&pending.owner===ownerKey(ticket)&&pending.raw===record.raw)return (async()=>{
++          if(!current(ticket))fail('RECOVERY_SCOPE_CHANGED');
++          if(action!==pending.action||getPlanningPersistenceEntry(meta.id).changeSeq!==pending.generation||appliedVersion!==pending.appliedVersion)
++            fail('RECOVERY_WORKING_CHANGES');
++          const exact=await ROUTFLEX_PLANNING_WORK.inspect(record);
++          if(!current(ticket)||exact.error||exact.raw!==record.raw)fail('RECOVERY_CONTENT_CHANGED');
++          resolutions.set(ownerKey(ticket),resolved().filter(ref=>ref.storageKey!==record.storageKey).concat(pending.reference));
++          pending.completion=checkpoint();return persistDecision(record);
++        })();
+         return isWork(record)?inspection.resolve(record,preview,action):previous.resolve(record,preview,action);
+       },
+       export:async()=>{await previous.export();if(records.length)await inspection.export();}};

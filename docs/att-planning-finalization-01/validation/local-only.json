@@ -1,0 +1,5 @@
+{
+  "path": "frontend/tests/planning-local-recovery.test.cjs",
+  "sha256": "f19b53fb10ba0f8c363f21ce86aec64d6a9c1562b215a036f07b1db71f3d154c",
+  "reason": "Existing DEV identifier; original test preserved locally and excluded from GitHub archive."
+}
