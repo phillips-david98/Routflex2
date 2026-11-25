@@ -1,0 +1,21 @@
+diff --git a/frontend/js/planning-canvas-markers.js b/frontend/js/planning-canvas-markers.js
+--- a/frontend/js/planning-canvas-markers.js
++++ b/frontend/js/planning-canvas-markers.js
+@@ -29,6 +29,17 @@
+     if(renderer)return renderer;
+     const L=root.L;
+     const Renderer=L.Canvas.extend({
++      _onClick(event) {
++        // Empty pixels in markerPane still cover the route canvas below it.
++        // Keep marker hits here; let the existing route handlers own other clicks.
++        if(event.type==='click' || event.type==='dblclick') {
++          const point=this._map.mouseEventToLayerPoint(event);
++          const markerHit=Object.values(this._layers).some(layer=>layer.options.interactive && layer._containsPoint(point));
++          const routes=this._map._renderer;
++          if(!markerHit && routes && routes!==this && routes instanceof L.Canvas) return routes._onClick(event);
++        }
++        return L.Canvas.prototype._onClick.call(this,event);
++      },
+       _updateCircle(layer) {
+         if(!layer._planningCanvas)return L.Canvas.prototype._updateCircle.call(this,layer);
+         if(!this._drawing || layer._empty())return;

@@ -1,0 +1,22 @@
+[
+  {
+    "increment": "01-i18n",
+    "files": 25,
+    "exactLfReconstruction": true
+  },
+  {
+    "increment": "02-map-tools",
+    "files": 5,
+    "exactLfReconstruction": true
+  },
+  {
+    "increment": "03-recovery",
+    "files": 9,
+    "exactLfReconstruction": true
+  },
+  {
+    "increment": "04-manifest",
+    "files": 1,
+    "exactLfReconstruction": true
+  }
+]

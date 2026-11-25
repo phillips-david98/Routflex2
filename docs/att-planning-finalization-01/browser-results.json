@@ -1,0 +1,22 @@
+{
+  "clientCount": 800,
+  "checks": [
+    "manifest-normal",
+    "after-lasso-normal",
+    "after-ruler-normal",
+    "after-swap-normal",
+    "road-manifest-normal",
+    "marker-priority-normal",
+    "manifest-expanded",
+    "after-lasso-expanded",
+    "after-ruler-expanded",
+    "after-swap-expanded",
+    "road-manifest-expanded",
+    "marker-priority-expanded"
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "failedResources": [],
+  "businessWrites": 0,
+  "dataPreserved": true
+}

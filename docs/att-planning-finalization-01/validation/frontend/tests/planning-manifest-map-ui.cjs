@@ -135,7 +135,7 @@ const hitTargets = page => page.locator('.map-command-bar .command-btn, .map-com
       return route.fulfill({ json: { code: 'Ok', routes: [{ distance: km * 1000, duration: 900,
         geometry: { coordinates }, legs: coordinates.slice(1).map(() => ({ distance: km * 1000 / (coordinates.length - 1), duration: 450 })) }] } });
     });
-    const data = () => page.evaluate(() => JSON.stringify({ clients: state.clients, drivers: state.drivers,
+    const data = () => page.evaluate(() => JSON.stringify({ clients: state.clients.map(c=>Object.fromEntries(['id','customerKey','lat','lon','driverId','day','week','sequence','curva','frequencia','serviceTime','window','vehicle','priority'].map(key=>[key,c[key]]))), drivers: state.drivers,
       session: state.activePlanningSessionId, dirty: state.hasUnsavedPlanChanges }));
     await page.evaluate(() => { state.hasUnsavedPlanChanges = true; });
     const before = await data();
@@ -183,7 +183,9 @@ const hitTargets = page => page.locator('.map-command-bar .command-btn, .map-com
         assert.equal(await page.evaluate(()=>state.manualPlanningMode),layout==='expanded');
         await checkOpen('after-'+tool+'-'+layout);
       }
-      await page.evaluate(async()=>{await fetchRoadRoute();});
+      await page.evaluate(async()=>{await fetchRoadRoute({skipFitBounds:true});});
+      await page.waitForFunction(()=>!!roadRouteLayer);
+      await page.waitForTimeout(400);
       await checkOpen('road-manifest-'+layout);
       await page.evaluate(()=>{clearRoadRoute();});
       const markerPos=await target(true);await page.mouse.dblclick(markerPos.x,markerPos.y,{delay:100});
