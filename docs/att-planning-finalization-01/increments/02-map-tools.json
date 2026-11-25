@@ -1,0 +1,32 @@
+[
+  {
+    "path": "frontend/map.html",
+    "beforeSha256": "55c613d22087ea0c24e62cbadbd98b2b95dea0e97c977b6db992354dc6e93323",
+    "afterSha256": "cbe60b307a73e93fe4dfdd2be73f850a6110919abc7100b9f7448472d3eee411",
+    "afterLfSha256": "05a0642a56d1fe8626839ca25798f0ee75acce99c1c9d260936ceab0eb37b74b"
+  },
+  {
+    "path": "frontend/js/planning-i18n-en.js",
+    "beforeSha256": "6e8b839900bb7caae1631f06014dd3c13d95f735d16cd5dec009885cf5765fa0",
+    "afterSha256": "be1a506b71de50a4ec4b2113391ff4cce419d78278957cbcd2b5c61818a253e0",
+    "afterLfSha256": "be1a506b71de50a4ec4b2113391ff4cce419d78278957cbcd2b5c61818a253e0"
+  },
+  {
+    "path": "frontend/js/planning-i18n-es.js",
+    "beforeSha256": "27bb03e097e970fa18a7a3436622127bef0d86126bec5d4057edda1e1a506cca",
+    "afterSha256": "0128e16127fd0bec2bd548379750facd23362434b70198b53432aa153867acc6",
+    "afterLfSha256": "0128e16127fd0bec2bd548379750facd23362434b70198b53432aa153867acc6"
+  },
+  {
+    "path": "frontend/js/planning-i18n-pt-BR.js",
+    "beforeSha256": "1a6c4680253efcd51d10f7ca4e55c8cda9512020d896917a36755473b6d87862",
+    "afterSha256": "ebacfa7f1dc1c3cbea5b6437872b9632633ee3fdd7d02168f92bc50ab1b1fe1f",
+    "afterLfSha256": "ebacfa7f1dc1c3cbea5b6437872b9632633ee3fdd7d02168f92bc50ab1b1fe1f"
+  },
+  {
+    "path": "frontend/tests/planning-routex-correction.test.cjs",
+    "beforeSha256": "b89061be88aa255bfdbc5aedd2ad4cf7ee462597e378f23742c452ad79fdc347",
+    "afterSha256": "37d03c1e518154275787eee014b575875ccfba16527126f447f19a7685e007fc",
+    "afterLfSha256": "37d03c1e518154275787eee014b575875ccfba16527126f447f19a7685e007fc"
+  }
+]

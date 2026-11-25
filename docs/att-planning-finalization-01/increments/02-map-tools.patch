@@ -1,0 +1,387 @@
+diff --git a/frontend/map.html b/frontend/map.html
+--- a/frontend/map.html
++++ b/frontend/map.html
+@@ -5181,16 +5181,25 @@
+ @media (max-width: 600px) { .road-visual-status { font-size: 10px; } }
+ 
+ .sequence-km-toast {
+-  bottom: 94px;
+-  max-width: calc(100% - 32px);
+-  border-color: rgba(56, 199, 255, 0.62);
++  padding: 10px 12px;
++  border: 1px solid rgba(56, 199, 255, 0.62);
++  border-radius: 10px;
+   background: linear-gradient(110deg, rgba(5, 24, 39, 0.97), rgba(10, 55, 76, 0.96));
+   color: #e4f9ff;
+   font-weight: 700;
+   line-height: 1.3;
+   text-align: center;
+   white-space: normal;
++  overflow-wrap: anywhere;
++  font-size: 0.82rem;
+   box-shadow: 0 10px 26px rgba(0, 8, 18, 0.34), 0 0 18px rgba(56, 199, 255, 0.16), inset 3px 0 0 #38c7ff;
++}
++.sequence-km-toast[hidden] { display: none; }
++.sequence-km-toast small { display: block; margin-top: 4px; font-weight: 400; }
++body[data-theme="light"] .sequence-km-toast {
++  background: var(--rfx-theme-surface);
++  color: var(--rfx-theme-text);
++  box-shadow: var(--rfx-theme-shadow);
+ }
+ 
+ .lasso-selection-guide {
+@@ -9087,6 +9096,7 @@
+         </aside>
+ 
+         <div class="planner-stack" id="planner-stack">
++        <div id="sequence-km-toast" class="sequence-km-toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+         <details class="planner-guidance" id="planner-guidance">
+           <summary id="planner-hint-preview"><!--rfx-i18n:%EE%80%80%255B%2522planning.updateplannerhint.orientacao_do_mapa%2522%252C%257B%257D%255D%EE%80%81-->Orientação do mapa<!--/rfx-i18n--></summary>
+           <div class="planner-hint" id="planner-hint" tabindex="0"><!--rfx-i18n:%EE%80%80%255B%2522planning.interface.arraste_um_pdv_para_semana_e_dia_a_localizacao_do_cliente_permanece_fixa%2522%252C%257B%257D%255D%EE%80%81-->Arraste um PDV para semana e dia. A localização do cliente permanece fixa.<!--/rfx-i18n--></div>
+@@ -22443,12 +22453,12 @@
+   return bestMatch;
+ }
+ 
+-function clearLassoLayers() {
++function clearLassoLayers(options = {}) {
+   if (lassoDrawLayer) {
+     map.removeLayer(lassoDrawLayer);
+     lassoDrawLayer = null;
+   }
+-  if (lassoSelectionLayer) {
++  if (lassoSelectionLayer && !options.preserveSelection) {
+     map.removeLayer(lassoSelectionLayer);
+     lassoSelectionLayer = null;
+   }
+@@ -22605,16 +22615,28 @@
+ 
+ function clearSequenceKmSummary() {
+   const summary = document.getElementById('sequence-km-toast');
+-  if (summary) summary.remove();
++  if (summary) { summary.hidden = true; summary.replaceChildren(); }
+   const plannerHint = document.getElementById('planner-hint');
+   if (plannerHint) plannerHint.classList.remove('is-sequence-km-summary');
+ }
+ 
+-function showSequenceKmSummary(message) {
+-  // One accessible explanation, inside the existing collapsible map guidance.
++function showSequenceKmSummary(message, context) {
++  // Persistent result, independent of the collapsible guidance and other hints.
+   const summary = document.getElementById('sequence-km-toast');
+-  if (summary) summary.remove();
+-  updatePlannerHint((globalThis.PlanningI18n?.diagnostic || (value => value))(message));
++  if (!summary) return;
++  summary.hidden = false;
++  const total = document.createElement('strong');
++  total.textContent = PlanningI18n.text(total, message);
++  summary.replaceChildren(total);
++  if (context?.route) {
++    const scope = document.createElement('small');
++    scope.textContent = PlanningI18n.text(scope, PlanningI18n.message('planning.sequenceKm.scope', {
++      route: PlanningI18n.routeLabel(getOperationalRouteLabel(context.route), context.route),
++      driver: context.route.driver?.name || '',
++      count: PlanningI18n.numberText(context.route.clients.length)
++    }));
++    summary.appendChild(scope);
++  }
+ }
+ 
+ function clearSequenceKmRoute(options = {}) {
+@@ -22633,10 +22655,12 @@
+ function _buildSequenceKmSignature(route, stops) {
+   if (!route || !Array.isArray(stops)) return null;
+   return [
++    state.activePlanningSessionId,
+     route.routeId,
+     route.driver && route.driver.id,
+     route.week,
+     route.day,
++    (route.clients || []).map(client => client.id).join('|'),
+     stops.map(function(client) {
+       return [client.id, client.sequence || 0, Number(client.lat).toFixed(6), Number(client.lon).toFixed(6)].join(':');
+     }).join('|')
+@@ -22692,11 +22716,13 @@
+   _sequenceKmFailedSignature = null;
+   syncRulerModeMenuState();
+ 
+-  const km = formatPlannedKm(geometry.distanceKm || 0);
+-  const minutes = Math.round(Number(geometry.durationMin) || 0);
+-  const segments = Math.max(0, context.stops.length - 1);
+-  const ignoredLabel = context.ignoredNoCoord > 0 ? (globalThis.PlanningI18n?.message("planning.rendersequencekmroute.sem_coordenada_ignorado_s", {v0: context.ignoredNoCoord}) ?? ` | ${context.ignoredNoCoord} sem coordenada ignorado(s)`) : '';
+-  showSequenceKmSummary(`Entre paradas: ${km} km estimados | ${minutes} min | ${segments} trecho${segments === 1 ? '' : 's'}${ignoredLabel}`);
++  const available = typeof geometry.distanceKm === 'number' && Number.isFinite(geometry.distanceKm) && geometry.distanceKm >= 0;
++  const message = context.ignoredNoCoord > 0
++    ? PlanningI18n.message('planning.sequenceKm.missingCoordinates', { count: PlanningI18n.numberText(context.ignoredNoCoord) })
++    : available ? PlanningI18n.message('planning.sequenceKm.total', {
++      km: PlanningI18n.numberText(geometry.distanceKm, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
++    }) : PlanningI18n.message('planning.sequenceKm.unavailable');
++  showSequenceKmSummary(message, context);
+ }
+ 
+ async function calculateSequenceKm(contextOverride) {
+@@ -22706,12 +22732,12 @@
+   const waypoints = context.waypoints;
+   if (waypoints.length < 2) {
+     clearSequenceKmRoute({ preserveFailure: true });
+-    updatePlannerHint((globalThis.PlanningI18n?.message("planning.calculatesequencekm.km_da_sequencia_requer_pelo_menos_2_clientes") ?? 'KM da sequência requer pelo menos 2 clientes.'));
++    showSequenceKmSummary(PlanningI18n.message('planning.sequenceKm.tooFew'), context);
+     return;
+   }
+   if (waypoints.length > _ROAD_KM_MAX_WAYPOINTS) {
+     clearSequenceKmRoute({ preserveFailure: true });
+-    updatePlannerHint((globalThis.PlanningI18n?.message("planning.calculatesequencekm.km_da_sequencia_aceita_ate_clientes_por_calculo", {v0: _ROAD_KM_MAX_WAYPOINTS}) ?? `KM da sequência aceita até ${_ROAD_KM_MAX_WAYPOINTS} clientes por cálculo.`));
++    showSequenceKmSummary(PlanningI18n.message('planning.calculatesequencekm.km_da_sequencia_aceita_ate_clientes_por_calculo', {v0: _ROAD_KM_MAX_WAYPOINTS}), context);
+     return;
+   }
+ 
+@@ -22728,7 +22754,7 @@
+   const requestToken = ++_sequenceKmRequestToken;
+   _sequenceKmPendingSignature = context.signature;
+   _sequenceKmAbortController = typeof AbortController === 'function' ? new AbortController() : null;
+-  updatePlannerHint((globalThis.PlanningI18n?.message("planning.calculatesequencekm.calculando_km_da_sequencia_nas_estradas") ?? 'Calculando KM da sequência nas estradas…'));
++  showSequenceKmSummary(PlanningI18n.message('planning.calculatesequencekm.calculando_km_da_sequencia_nas_estradas'), context);
+ 
+   try {
+     const url = _OSRM_ROUTE_BASE + coordsStr + '?overview=full&geometries=geojson';
+@@ -22739,6 +22765,7 @@
+     if (!data.routes || !data.routes.length) throw new Error('sem rota OSRM');
+ 
+     const osrmRoute = data.routes[0];
++    if (typeof osrmRoute.distance !== 'number' || !Number.isFinite(osrmRoute.distance) || osrmRoute.distance < 0) throw new Error('OSRM sem distância válida');
+     const geometryCoords = osrmRoute.geometry && osrmRoute.geometry.coordinates;
+     if (!Array.isArray(geometryCoords) || !geometryCoords.length) throw new Error('OSRM sem geometria');
+     if (!sequenceKmModeActive || requestToken !== _sequenceKmRequestToken || context.signature !== _sequenceKmPendingSignature) return;
+@@ -22758,7 +22785,7 @@
+     _sequenceKmPendingSignature = null;
+     _sequenceKmActiveSignature = null;
+     _sequenceKmFailedSignature = context.signature;
+-    updatePlannerHint((globalThis.PlanningI18n?.message("planning.calculatesequencekm.nao_foi_possivel_calcular_o_km_da_sequencia_agora") ?? 'Não foi possível calcular o KM da sequência agora.'));
++    showSequenceKmSummary(PlanningI18n.message('planning.sequenceKm.unavailable'), context);
+     if (typeof console !== 'undefined' && console.warn) {
+       console.warn('[KM-SEQUÊNCIA] cálculo rodoviário indisponível:', error);
+     }
+@@ -22780,17 +22807,20 @@
+   const context = getCurrentRouteSequenceStops(routeOverride);
+   if (!context.route) {
+     clearSequenceKmRoute({ preserveFailure: true });
+-    updatePlannerHint((globalThis.PlanningI18n?.message("planning.refreshsequencekmifactive.selecione_uma_rota_para_calcular_o_km_da_sequencia") ?? 'Selecione uma rota para calcular o KM da sequência.'));
++    showSequenceKmSummary(PlanningI18n.message('planning.refreshsequencekmifactive.selecione_uma_rota_para_calcular_o_km_da_sequencia'));
+     return;
+   }
+   if (context.waypoints.length < 2) {
+     clearSequenceKmRoute({ preserveFailure: true });
+-    updatePlannerHint((globalThis.PlanningI18n?.message("planning.calculatesequencekm.km_da_sequencia_requer_pelo_menos_2_clientes") ?? 'KM da sequência requer pelo menos 2 clientes.'));
++    showSequenceKmSummary(PlanningI18n.message('planning.sequenceKm.tooFew'), context);
+     return;
+   }
+   if (context.signature === _sequenceKmActiveSignature && sequenceKmLayer) return;
+   if (context.signature === _sequenceKmPendingSignature) return;
+-  if (context.signature === _sequenceKmFailedSignature) return;
++  if (context.signature === _sequenceKmFailedSignature) {
++    showSequenceKmSummary(PlanningI18n.message('planning.sequenceKm.unavailable'), context);
++    return;
++  }
+ 
+   clearSequenceKmRoute({ preserveFailure: true });
+   calculateSequenceKm(context);
+@@ -22907,6 +22937,7 @@
+   const btn = document.getElementById('toggle-ruler-btn');
+   if (btn) btn.classList.remove('is-active');
+   map.getContainer().classList.remove('ruler-mode');
++  syncRulerModeMenuState();
+ }
+ 
+ function _drawRuler() {
+@@ -24245,7 +24276,7 @@
+   detachLassoDocumentListeners();
+   clearClientMarkerAssignmentPointerSession();
+   syncAssignmentDragVisualState({ active: false });
+-  state.lassoSelectionIds.clear();
++  if (!options.preserveSelection) state.lassoSelectionIds.clear();
+   state.lassoHoverDriverId = null;
+   state.lassoDragTarget = null;
+   state.lassoDrawingActive = false;
+@@ -24261,7 +24292,7 @@
+   document.body.classList.remove('rfx-dragging');
+   setLassoButtonState();
+   syncMapDragging();
+-  clearLassoLayers();
++  clearLassoLayers(options);
+   syncDriverListDragState();
+   syncPlannerDropState();
+ 
+@@ -25425,14 +25456,14 @@
+ function toggleLassoMode() {
+   state.lassoModeActive = !state.lassoModeActive;
+   if (!state.lassoModeActive) {
+-    clearLassoSelection({ skipRender: true });
++    clearLassoSelection({ skipRender: true, preserveSelection: true });
+     updatePlannerHint((globalThis.PlanningI18n?.message("planning.togglelassomode.modo_laco_desativado") ?? 'Modo Laço desativado.'));
+   } else {
+     // Deactivate conflicting tools when LAS turns on
+     if (state.rulerModeActive) clearRuler();
+     if (state.navToolActive) deactivateNavTool();
+     if (state.insightModeActive) toggleInsightMode(false);
+-    state.lassoSelectionIds.clear();
++    // Reuse a completed selection after Escape; Clear selection starts a new contour.
+     updatePlannerHint((globalThis.PlanningI18n?.message("planning.togglelassomode.modo_laco_ativo_desenhe_o_contorno_selecione_os_pdvs_e_arraste_um_selecionad") ?? 'Modo Laço ativo: desenhe o contorno, selecione os PDVs e arraste um selecionado para a rota alvo (dia/semana). Latitude e longitude não mudam.'));
+   }
+   setLassoButtonState();
+@@ -32793,6 +32824,7 @@
+ }
+ 
+ function clearSelection() {
++  clearLassoSelection({ skipRender: true });
+   state.selectedRouteId = null;
+   state.selectedStopId = null;
+   state.focusDriverId = null;
+@@ -33300,6 +33332,7 @@
+   if (event.key !== 'Escape') return;
+   const modal = document.getElementById('planning-create-modal');
+   if (!modal || modal.hidden) return;
++  event.preventDefault();
+   closePlanningCreateSessionModal();
+ });
+ 
+@@ -33695,7 +33728,11 @@
+ });
+ 
+ document.addEventListener('click', () => _hideContextMenu());
+-document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') _hideContextMenu(); }, { capture: false });
++document.addEventListener('keydown', (ev) => {
++  if (ev.key === 'Escape' && _ctxMenu?.style.display === 'block' && !ev.defaultPrevented) {
++    ev.preventDefault(); _hideContextMenu();
++  }
++}, { capture: false });
+ 
+ document.getElementById('ctx-gerar-base').onclick = gerarBaseCSV;
+ document.getElementById('ctx-open-windows').onclick = () => { _hideContextMenu(); openLassoClientWindows(); };
+@@ -33857,10 +33894,35 @@
+ document.getElementById('no-coord-section-toggle').onclick = () => toggleNoCoordinatePanel();
+ syncNoCoordinatePanelUI();
+ 
++function mapToolEscapeOwnedByInterface(event) {
++  // Keep component Escape handlers authoritative, including dialogs that moved
++  // focus or detached themselves earlier in this same event dispatch.
++  if (event.defaultPrevented || event.repeat || event.isComposing) return true;
++  const overlays = 'dialog[open], .modal-scrim:not([hidden]), .planning-apply-modal:not([hidden]), [aria-modal="true"], .leaflet-popup, #rf-search-modal.rf-open, #routex-ai-panel.is-open';
++  if (Array.from(document.querySelectorAll(overlays)).some(node => node.id !== 'ins-panel' && node.getClientRects().length)) return true;
++  // The INS panel already owns Escape and its existing draft confirmation.
++  if (_isInsightPanelOpen()) return false;
++  const owners = 'input, textarea, select, [contenteditable]:not([contenteditable="false"]), dialog, [role="dialog"], .modal-scrim, .planning-apply-modal, #rf-search-modal, #routex-ai-panel';
++  return (event.composedPath ? event.composedPath() : [event.target]).some(node => node.matches?.(owners));
++}
++
+ document.addEventListener('keydown', (event) => {
++  if (event.key === 'Escape') {
++    if (mapToolEscapeOwnedByInterface(event)) return;
++    if (_isInsightPanelOpen()) {
++      event.preventDefault();
++      requestCloseInsightPanel();
++      return;
++    }
++    if (closeRulerModeMenu()) {
++      event.preventDefault();
++      return;
++    }
++  }
+   if (event.key === 'Escape' && state._clientMarkerPointerDragSession) {
+     event.preventDefault();
+     cancelAssignmentPointerDrag('Movimentação cancelada.');
++    if (state.lassoModeActive) toggleLassoMode();
+     return;
+   }
+ 
+@@ -33879,11 +33941,6 @@
+   if (event.key === 'Escape' && sequenceKmModeActive) {
+     event.preventDefault();
+     toggleSequenceKmMode(false);
+-    return;
+-  }
+-
+-  if (event.key === 'Escape' && closeRulerModeMenu()) {
+-    event.preventDefault();
+     return;
+   }
+ 
+@@ -33911,9 +33968,7 @@
+ 
+   if (event.key === 'Escape' && state.lassoModeActive) {
+     event.preventDefault();
+-    clearLassoSelection({ skipRender: true });
+-    applyFilters({ skipFitBounds: true });
+-    updatePlannerHint((globalThis.PlanningI18n?.message("planning.interface.selecao_do_laco_encerrada") ?? 'Seleção do Laço encerrada.'));
++    toggleLassoMode();
+     return;
+   }
+ 
+diff --git a/frontend/js/planning-i18n-en.js b/frontend/js/planning-i18n-en.js
+--- a/frontend/js/planning-i18n-en.js
++++ b/frontend/js/planning-i18n-en.js
+@@ -2,6 +2,11 @@
+ (function(root) {
+   root.ROUTFLEX_PLANNING_TRANSLATIONS ||= {};
+   root.ROUTFLEX_PLANNING_TRANSLATIONS["en"] = Object.freeze({
++  "planning.sequenceKm.total": "Selected sequence distance: {km} km",
++  "planning.sequenceKm.scope": "{route} · {driver} · {count} stops · customer → customer, excluding base",
++  "planning.sequenceKm.unavailable": "Sequence distance: distance unavailable",
++  "planning.sequenceKm.missingCoordinates": "Distance unavailable: {count} stop(s) without coordinates",
++  "planning.sequenceKm.tooFew": "Distance unavailable: select a route with at least 2 customers with coordinates",
+   "planning.mount.atualizar_inteligencia_comercial_ins": "Update Commercial Intelligence (INS)",
+   "planning.mount.somente_clientes_do_plano_confirmado_celulas_vazias_preservam_valores_catego": "Only customers in the confirmed plan. Empty cells preserve values. INS category A/B/C is independent of the A–Z curve.",
+   "planning.mount.aba_da_planilha": "Worksheet",
+diff --git a/frontend/js/planning-i18n-es.js b/frontend/js/planning-i18n-es.js
+--- a/frontend/js/planning-i18n-es.js
++++ b/frontend/js/planning-i18n-es.js
+@@ -2,6 +2,11 @@
+ (function(root) {
+   root.ROUTFLEX_PLANNING_TRANSLATIONS ||= {};
+   root.ROUTFLEX_PLANNING_TRANSLATIONS["es"] = Object.freeze({
++  "planning.sequenceKm.total": "Distancia de la secuencia seleccionada: {km} km",
++  "planning.sequenceKm.scope": "{route} · {driver} · {count} paradas · cliente → cliente, sin base",
++  "planning.sequenceKm.unavailable": "Distancia de la secuencia: distancia no disponible",
++  "planning.sequenceKm.missingCoordinates": "Distancia no disponible: {count} parada(s) sin coordenadas",
++  "planning.sequenceKm.tooFew": "Distancia no disponible: seleccione una ruta con al menos 2 clientes con coordenadas",
+   "planning.mount.atualizar_inteligencia_comercial_ins": "Actualizar Inteligencia Comercial (INS)",
+   "planning.mount.somente_clientes_do_plano_confirmado_celulas_vazias_preservam_valores_catego": "Solo clientes del plan confirmado. Las celdas vacías conservan los valores. La categoría INS A/B/C es independiente de la curva A–Z.",
+   "planning.mount.aba_da_planilha": "Hoja de cálculo",
+diff --git a/frontend/js/planning-i18n-pt-BR.js b/frontend/js/planning-i18n-pt-BR.js
+--- a/frontend/js/planning-i18n-pt-BR.js
++++ b/frontend/js/planning-i18n-pt-BR.js
+@@ -2,6 +2,11 @@
+ (function(root) {
+   root.ROUTFLEX_PLANNING_TRANSLATIONS ||= {};
+   root.ROUTFLEX_PLANNING_TRANSLATIONS["pt-BR"] = Object.freeze({
++  "planning.sequenceKm.total": "KM da sequência selecionada: {km} km",
++  "planning.sequenceKm.scope": "{route} · {driver} · {count} paradas · cliente → cliente, sem base",
++  "planning.sequenceKm.unavailable": "KM da sequência: distância indisponível",
++  "planning.sequenceKm.missingCoordinates": "Distância indisponível: {count} parada(s) sem coordenadas",
++  "planning.sequenceKm.tooFew": "Distância indisponível: selecione uma rota com pelo menos 2 clientes com coordenadas",
+   "planning.mount.atualizar_inteligencia_comercial_ins": "Atualizar Inteligência Comercial (INS)",
+   "planning.mount.somente_clientes_do_plano_confirmado_celulas_vazias_preservam_valores_catego": "Somente clientes do plano confirmado. Células vazias preservam valores. Categoria INS A/B/C é independente da curva A–Z.",
+   "planning.mount.aba_da_planilha": "Aba da planilha",
+diff --git a/frontend/tests/planning-routex-correction.test.cjs b/frontend/tests/planning-routex-correction.test.cjs
+--- a/frontend/tests/planning-routex-correction.test.cjs
++++ b/frontend/tests/planning-routex-correction.test.cjs
+@@ -10,11 +10,16 @@
+   assert.equal(get('ins-map-hint-status').hidden,false);ctx.updatePlannerHint();assert.equal(get('ins-map-hint-status').hidden,true);
+   assert.doesNotMatch(decl('updatePlannerHint'),/ROUTFLEX_ROUTEX|foundation|notify\(/);
+ });
+-test('sequence distance explanation is shown once without another map toast',()=>{
+-  let removed=0;const messages=[];
+-  const ctx={document:{getElementById:()=>({remove(){removed++;}}),createElement(){assert.fail('no duplicate toast');}},updatePlannerHint:m=>messages.push(m)};
+-  vm.createContext(ctx);vm.runInContext(decl('showSequenceKmSummary'),ctx);ctx.showSequenceKmSummary('Entre paradas: 42 km');
+-  assert.equal(removed,1);assert.deepEqual(messages,['Entre paradas: 42 km']);
++test('sequence distance has one persistent status and preserves independent map guidance',()=>{
++  const messages=[],status={hidden:true,replaceChildren(...children){this.children=children;}};
++  const ctx={document:{getElementById:()=>status,createElement:()=>({textContent:''})},
++    PlanningI18n:{text:(_,value)=>value},updatePlannerHint:m=>messages.push(m)};
++  vm.createContext(ctx);vm.runInContext(decl('showSequenceKmSummary'),ctx);
++  ctx.showSequenceKmSummary('KM da sequência selecionada: 42,0 km');
++  ctx.showSequenceKmSummary('KM da sequência selecionada: 11,0 km');
++  assert.equal(status.hidden,false);assert.equal(status.children.length,1);
++  assert.equal(status.children[0].textContent,'KM da sequência selecionada: 11,0 km');
++  assert.deepEqual(messages,[]);
+ });
+ test('INS only reparents the existing local guidance into its access panel; text, open state and handlers survive',()=>{
+   const nodes={},events={click:'existing'},guide={open:true,textContent:'local warning',events,contains:()=>false};
